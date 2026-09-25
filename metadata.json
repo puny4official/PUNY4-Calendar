@@ -1,0 +1,6 @@
+{
+  "name": "PUNY4 Calendar",
+  "description": "تقویم هوشمند PUNY4 Calendar با پشتیبانی از تقویم‌های شمسی، میلادی و قمری، وضعیت‌های نجومی، فاز ماه، اوقات خورشیدی، تبدیل تاریخ و منوی ناوبری جانبی",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
