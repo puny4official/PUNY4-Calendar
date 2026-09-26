@@ -29,6 +29,9 @@ class UserSettings(context: Context) {
     private val _showSecondaryDates = MutableStateFlow(prefs.getBoolean("show_sec_dates", true))
     val showSecondaryDates: StateFlow<Boolean> = _showSecondaryDates.asStateFlow()
 
+    private val _showSeasonalRain = MutableStateFlow(prefs.getBoolean("show_seasonal_rain", true))
+    val showSeasonalRain: StateFlow<Boolean> = _showSeasonalRain.asStateFlow()
+
     private fun loadAppLanguage(): AppLanguage {
         val name = prefs.getString("app_language", AppLanguage.PERSIAN.name) ?: AppLanguage.PERSIAN.name
         return try {
@@ -84,6 +87,11 @@ class UserSettings(context: Context) {
     fun setShowSecondaryDates(show: Boolean) {
         prefs.edit().putBoolean("show_sec_dates", show).apply()
         _showSecondaryDates.value = show
+    }
+
+    fun setShowSeasonalRain(show: Boolean) {
+        prefs.edit().putBoolean("show_seasonal_rain", show).apply()
+        _showSeasonalRain.value = show
     }
 
     fun getNote(jdn: Long): String {

@@ -135,6 +135,7 @@ data class FullDayInfo(
     val daysRemainingJalali: Int,
     val weekOfYearJalali: Int,
     val seasonPersian: String,
+    val seasonEmoji: String = "🍂",
     val events: List<CalendarEvent>,
     val moonInfo: MoonInfo,
     val sunZodiac: ZodiacSign,

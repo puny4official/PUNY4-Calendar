@@ -17,11 +17,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calendar.core.AstronomicalCalculator
+import com.example.calendar.core.DigitFormatter
 import com.example.calendar.core.JalaliCalendar
 import com.example.calendar.model.CityLocation
 import com.example.calendar.model.EventType
@@ -35,6 +37,7 @@ fun DayDetailsView(
     userNote: String,
     onSaveNote: (String) -> Unit,
     modifier: Modifier = Modifier,
+    isFa: Boolean = true,
     onJumpToToday: (() -> Unit)? = null
 ) {
     var isEditingNote by remember(dayInfo.jalaliDate) { mutableStateOf(false) }
@@ -156,8 +159,8 @@ fun DayDetailsView(
                     icon = Icons.Default.WbSunny,
                     iconTint = AstroGold,
                     calendarName = "هجری شمسی",
-                    dateString = "${dayInfo.jalaliDate.day} ${JalaliCalendar.MONTH_NAMES_PERSIAN[dayInfo.jalaliDate.month - 1]} ${dayInfo.jalaliDate.year}",
-                    subtitle = "فصل ${dayInfo.seasonPersian}"
+                    dateString = "${DigitFormatter.toSystemDigits(dayInfo.jalaliDate.day, isFa)} ${JalaliCalendar.MONTH_NAMES_PERSIAN[dayInfo.jalaliDate.month - 1]} ${DigitFormatter.toSystemDigits(dayInfo.jalaliDate.year, isFa)}",
+                    subtitle = "فصل ${dayInfo.seasonPersian} ${dayInfo.seasonEmoji}"
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -166,7 +169,7 @@ fun DayDetailsView(
                     icon = Icons.Default.Public,
                     iconTint = PrimaryLight,
                     calendarName = "میلادی",
-                    dateString = "${dayInfo.gregorianDate.day} ${dayInfo.gregorianDate.month} ${dayInfo.gregorianDate.year}",
+                    dateString = "${DigitFormatter.toSystemDigits(dayInfo.gregorianDate.day, isFa)} ${dayInfo.gregorianDate.month} ${DigitFormatter.toSystemDigits(dayInfo.gregorianDate.year, isFa)}",
                     subtitle = "${dayInfo.gregorianDate} (${dayInfo.dayOfWeekEnglish})"
                 )
 
@@ -176,7 +179,7 @@ fun DayDetailsView(
                     icon = Icons.Default.Nightlight,
                     iconTint = TertiaryLight,
                     calendarName = "هجری قمری",
-                    dateString = "${dayInfo.islamicDate.day} ${com.example.calendar.core.IslamicCalendar.MONTH_NAMES_ARABIC[dayInfo.islamicDate.month - 1]} ${dayInfo.islamicDate.year}",
+                    dateString = "${DigitFormatter.toSystemDigits(dayInfo.islamicDate.day, isFa)} ${com.example.calendar.core.IslamicCalendar.MONTH_NAMES_ARABIC[dayInfo.islamicDate.month - 1]} ${DigitFormatter.toSystemDigits(dayInfo.islamicDate.year, isFa)}",
                     subtitle = "یوم ${dayInfo.dayOfWeekArabic}"
                 )
 
@@ -189,17 +192,17 @@ fun DayDetailsView(
                 ) {
                     StatisticPill(
                         label = "روز سال",
-                        value = "${dayInfo.dayOfYearJalali} از ۳۶۵",
+                        value = "${DigitFormatter.toSystemDigits(dayInfo.dayOfYearJalali, isFa)} از ${DigitFormatter.toSystemDigits(365, isFa)}",
                         modifier = Modifier.weight(1f)
                     )
                     StatisticPill(
                         label = "مانده تا عید",
-                        value = "${dayInfo.daysRemainingJalali} روز",
+                        value = "${DigitFormatter.toSystemDigits(dayInfo.daysRemainingJalali, isFa)} روز",
                         modifier = Modifier.weight(1f)
                     )
                     StatisticPill(
                         label = "شماره هفته",
-                        value = "هفته ${dayInfo.weekOfYearJalali}",
+                        value = "هفته ${DigitFormatter.toSystemDigits(dayInfo.weekOfYearJalali, isFa)}",
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -279,13 +282,13 @@ fun DayDetailsView(
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "${dayInfo.moonInfo.phaseType.titleEnglish} • سن: ${dayInfo.moonInfo.ageDays} روز",
-                                style = MaterialTheme.typography.bodySmall,
+                                text = "${dayInfo.moonInfo.phaseType.titleEnglish} • سن: ${DigitFormatter.toSystemDigits(dayInfo.moonInfo.ageDays, isFa)} روز",
+                                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Default),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                text = "موقعیت در آسمان: برج ${dayInfo.moonInfo.moonZodiacName} (${dayInfo.moonInfo.moonZodiacDegree}°)",
-                                style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                                text = "موقعیت در آسمان: برج ${dayInfo.moonInfo.moonZodiacName} (${DigitFormatter.toSystemDigits(dayInfo.moonInfo.moonZodiacDegree, isFa)}°)",
+                                style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, fontFamily = FontFamily.Default),
                                 color = MaterialTheme.colorScheme.primary
                             )
                         }
@@ -296,8 +299,9 @@ fun DayDetailsView(
                         color = MaterialTheme.colorScheme.primaryContainer
                     ) {
                         Text(
-                            text = "${dayInfo.moonInfo.illuminationPercent}%",
+                            text = "${DigitFormatter.toSystemDigits(dayInfo.moonInfo.illuminationPercent, isFa)}%",
                             fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Default,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                             fontSize = 13.sp,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -510,7 +514,7 @@ fun DayDetailsView(
                 Spacer(modifier = Modifier.height(14.dp))
 
                 // ----------------------------------------------------
-                // کل اوقات خورشیدی و شرعی (متن کاملاً بولد شده با رنگ طبیعی)
+                // کل اوقات خورشیدی (بدون اوقات اذان)
                 // ----------------------------------------------------
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -518,7 +522,7 @@ fun DayDetailsView(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "کل اوقات خورشیدی و شرعی (${currentCity.namePersian})",
+                        text = "کل اوقات خورشیدی (${currentCity.namePersian})",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -531,12 +535,10 @@ fun DayDetailsView(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
-                    SolarTimeItem("اذان صبح", dayInfo.solarTimes.dawn, Icons.Default.WbTwilight)
-                    SolarTimeItem("طلوع آفتاب", dayInfo.solarTimes.sunrise, Icons.Default.WbSunny)
-                    SolarTimeItem("ظهر شرعی", dayInfo.solarTimes.noon, Icons.Default.LightMode)
-                    SolarTimeItem("غروب آفتاب", dayInfo.solarTimes.sunset, Icons.Default.Bedtime)
-                    SolarTimeItem("اذان مغرب", dayInfo.solarTimes.maghrib, Icons.Default.Nightlife)
-                    SolarTimeItem("نیمه‌شب", dayInfo.solarTimes.midnight, Icons.Default.NightsStay)
+                    SolarTimeItem("طلوع آفتاب", DigitFormatter.toSystemDigits(dayInfo.solarTimes.sunrise, isFa), Icons.Default.WbSunny)
+                    SolarTimeItem("ظهر خورشیدی", DigitFormatter.toSystemDigits(dayInfo.solarTimes.noon, isFa), Icons.Default.LightMode)
+                    SolarTimeItem("غروب آفتاب", DigitFormatter.toSystemDigits(dayInfo.solarTimes.sunset, isFa), Icons.Default.Bedtime)
+                    SolarTimeItem("نیمه‌شب خورشیدی", DigitFormatter.toSystemDigits(dayInfo.solarTimes.midnight, isFa), Icons.Default.NightsStay)
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -546,14 +548,14 @@ fun DayDetailsView(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "طول روز: ${dayInfo.solarTimes.dayLengthFormatted}",
-                        style = MaterialTheme.typography.bodySmall,
+                        text = "طول روز: ${DigitFormatter.toSystemDigits(dayInfo.solarTimes.dayLengthFormatted, isFa)}",
+                        style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Default),
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "طول شب: ${dayInfo.solarTimes.nightLengthFormatted}",
-                        style = MaterialTheme.typography.bodySmall,
+                        text = "طول شب: ${DigitFormatter.toSystemDigits(dayInfo.solarTimes.nightLengthFormatted, isFa)}",
+                        style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Default),
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -1048,7 +1050,7 @@ private fun CalendarDateRow(
                 )
                 Text(
                     text = dateString,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Default),
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -1086,6 +1088,7 @@ private fun StatisticPill(
             Text(
                 text = value,
                 fontWeight = FontWeight.Bold,
+                fontFamily = FontFamily.Default,
                 fontSize = 11.sp,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -1117,6 +1120,7 @@ private fun SolarTimeItem(
         Text(
             text = time,
             fontWeight = FontWeight.Bold,
+            fontFamily = FontFamily.Default,
             fontSize = 11.sp,
             color = MaterialTheme.colorScheme.onSurface
         )

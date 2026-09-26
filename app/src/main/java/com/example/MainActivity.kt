@@ -19,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -30,9 +31,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.calendar.core.CalendarManager
+import com.example.calendar.core.JalaliCalendar
 import com.example.calendar.data.UserSettings
 import com.example.calendar.model.AppLanguage
 import com.example.calendar.ui.components.AppGuideDialog
+import com.example.calendar.ui.components.SeasonalRainOverlay
 import com.example.calendar.ui.screens.AstronomyScreen
 import com.example.calendar.ui.screens.CalendarScreen
 import com.example.calendar.ui.screens.DateConverterScreen
@@ -75,6 +79,12 @@ class MainActivity : ComponentActivity() {
                     val coroutineScope = rememberCoroutineScope()
                     var selectedTab by remember { mutableStateOf(MainTab.CALENDAR) }
                     var showGuideDialog by remember { mutableStateOf(false) }
+
+                    // Current season for app header rain effect
+                    val todayG = remember { CalendarManager.getTodayGregorian() }
+                    val todayJalali = remember { JalaliCalendar.gregorianToJalali(todayG.year, todayG.month, todayG.day) }
+                    val currentSeason = remember(todayJalali.month) { JalaliCalendar.getSeasonPersian(todayJalali.month) }
+                    val showSeasonalRain by userSettings.showSeasonalRain.collectAsState()
 
                     // Handle back press: close drawer if open, otherwise return to calendar
                     BackHandler(enabled = drawerState.isOpen || selectedTab != MainTab.CALENDAR) {
@@ -383,94 +393,112 @@ class MainActivity : ComponentActivity() {
                                 .fillMaxSize()
                                 .testTag("main_scaffold"),
                             topBar = {
-                                TopAppBar(
-                                    title = {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                                        ) {
-                                            Surface(
-                                                shape = RoundedCornerShape(8.dp),
-                                                color = Color.Black,
-                                                modifier = Modifier.size(32.dp),
-                                                shadowElevation = 2.dp
-                                            ) {
-                                                Image(
-                                                    painter = painterResource(id = R.drawable.calendar_astro_icon),
-                                                    contentDescription = "PUNY4 Logo",
-                                                    modifier = Modifier
-                                                        .fillMaxSize()
-                                                        .clip(RoundedCornerShape(8.dp)),
-                                                    contentScale = ContentScale.Crop
-                                                )
-                                            }
-                                            Text(
-                                                text = when (selectedTab) {
-                                                    MainTab.CALENDAR -> "PUNY4 Calendar"
-                                                    MainTab.ASTRONOMY -> if (isFa) "اطلاعات نجومی و رصد" else "Astronomy & Sky"
-                                                    MainTab.CONVERTER -> if (isFa) "تبدیل تاریخ تقویم‌ها" else "Calendar Converter"
-                                                    MainTab.SETTINGS -> if (isFa) "تنظیمات برنامه" else "App Settings"
-                                                },
-                                                fontWeight = FontWeight.Bold,
-                                                style = MaterialTheme.typography.titleLarge
-                                            )
-                                        }
-                                    },
-                                    navigationIcon = {
-                                        IconButton(
-                                            onClick = {
-                                                coroutineScope.launch {
-                                                    if (drawerState.isClosed) drawerState.open() else drawerState.close()
-                                                }
-                                            },
-                                            modifier = Modifier.testTag("hamburger_menu_button")
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Menu,
-                                                contentDescription = if (isFa) "منوی برنامه" else "Menu"
-                                            )
-                                        }
-                                    },
-                                    actions = {
-                                        if (selectedTab == MainTab.CALENDAR) {
-                                            IconButton(
-                                                onClick = { showGuideDialog = true },
-                                                modifier = Modifier.testTag("top_bar_guide_button")
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(MaterialTheme.colorScheme.surface)
+                                        .clipToBounds()
+                                ) {
+                                    // Seasonal falling emoji rain in top header where app name is written
+                                    if (showSeasonalRain && selectedTab == MainTab.CALENDAR) {
+                                        SeasonalRainOverlay(
+                                            season = currentSeason,
+                                            modifier = Modifier
+                                                .matchParentSize()
+                                                .clipToBounds(),
+                                            particleCount = 14
+                                        )
+                                    }
+
+                                    TopAppBar(
+                                        title = {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(10.dp)
                                             ) {
                                                 Surface(
-                                                    shape = CircleShape,
-                                                    color = Color(0xFF9333EA),
-                                                    border = BorderStroke(1.5.dp, Color(0xFFE879F9)),
-                                                    shadowElevation = 3.dp,
-                                                    modifier = Modifier.size(28.dp)
+                                                    shape = RoundedCornerShape(8.dp),
+                                                    color = Color.Black,
+                                                    modifier = Modifier.size(32.dp),
+                                                    shadowElevation = 2.dp
                                                 ) {
-                                                    Box(contentAlignment = Alignment.Center) {
-                                                        Text(
-                                                            text = "!",
-                                                            fontWeight = FontWeight.Black,
-                                                            fontSize = 15.sp,
-                                                            color = Color.White
-                                                        )
-                                                    }
+                                                    Image(
+                                                        painter = painterResource(id = R.drawable.calendar_astro_icon),
+                                                        contentDescription = "PUNY4 Logo",
+                                                        modifier = Modifier
+                                                            .fillMaxSize()
+                                                            .clip(RoundedCornerShape(8.dp)),
+                                                        contentScale = ContentScale.Crop
+                                                    )
                                                 }
-                                            }
-                                        } else {
-                                            IconButton(
-                                                onClick = { selectedTab = MainTab.CALENDAR },
-                                                modifier = Modifier.testTag("return_to_calendar_button")
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.CalendarMonth,
-                                                    contentDescription = if (isFa) "بازگشت به تقویم" else "Back to Calendar",
-                                                    tint = MaterialTheme.colorScheme.primary
+                                                Text(
+                                                    text = when (selectedTab) {
+                                                        MainTab.CALENDAR -> "PUNY4 Calendar"
+                                                        MainTab.ASTRONOMY -> if (isFa) "اطلاعات نجومی و رصد" else "Astronomy & Sky"
+                                                        MainTab.CONVERTER -> if (isFa) "تبدیل تاریخ تقویم‌ها" else "Calendar Converter"
+                                                        MainTab.SETTINGS -> if (isFa) "تنظیمات برنامه" else "App Settings"
+                                                    },
+                                                    fontWeight = FontWeight.Bold,
+                                                    style = MaterialTheme.typography.titleLarge
                                                 )
                                             }
-                                        }
-                                    },
-                                    colors = TopAppBarDefaults.topAppBarColors(
-                                        containerColor = MaterialTheme.colorScheme.surface
+                                        },
+                                        navigationIcon = {
+                                            IconButton(
+                                                onClick = {
+                                                    coroutineScope.launch {
+                                                        if (drawerState.isClosed) drawerState.open() else drawerState.close()
+                                                    }
+                                                },
+                                                modifier = Modifier.testTag("hamburger_menu_button")
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Menu,
+                                                    contentDescription = if (isFa) "منوی برنامه" else "Menu"
+                                                )
+                                            }
+                                        },
+                                        actions = {
+                                            if (selectedTab == MainTab.CALENDAR) {
+                                                IconButton(
+                                                    onClick = { showGuideDialog = true },
+                                                    modifier = Modifier.testTag("top_bar_guide_button")
+                                                ) {
+                                                    Surface(
+                                                        shape = CircleShape,
+                                                        color = Color(0xFF9333EA),
+                                                        border = BorderStroke(1.5.dp, Color(0xFFE879F9)),
+                                                        shadowElevation = 3.dp,
+                                                        modifier = Modifier.size(28.dp)
+                                                    ) {
+                                                        Box(contentAlignment = Alignment.Center) {
+                                                            Text(
+                                                                text = "!",
+                                                                fontWeight = FontWeight.Black,
+                                                                fontSize = 15.sp,
+                                                                color = Color.White
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            } else {
+                                                IconButton(
+                                                    onClick = { selectedTab = MainTab.CALENDAR },
+                                                    modifier = Modifier.testTag("return_to_calendar_button")
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.CalendarMonth,
+                                                        contentDescription = if (isFa) "بازگشت به تقویم" else "Back to Calendar",
+                                                        tint = MaterialTheme.colorScheme.primary
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        colors = TopAppBarDefaults.topAppBarColors(
+                                            containerColor = Color.Transparent
+                                        )
                                     )
-                                )
+                                }
                             }
                             // Note: bottomBar is intentionally completely omitted as requested:
                             // "و در پایین هیچ بخشی گزینه ای نباشه"

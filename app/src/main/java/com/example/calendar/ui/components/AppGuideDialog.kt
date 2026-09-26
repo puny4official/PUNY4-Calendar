@@ -68,23 +68,23 @@ fun AppGuideDialog(
                 )
             ),
             GuideTopic(
-                titlePersian = "۲. صفحه اوقات امروز با مکانیزم استوری اینستاگرام",
-                titleEnglish = "2. Today's Times with Instagram Story Mechanism",
-                descriptionPersian = "نمایش هوشمند اوقات شرعی، خورشیدی، تعطیلات و مناسبت‌های امروز با مکانیزم استوری.",
-                descriptionEnglish = "Smart card showing prayer times, solar hours, holidays, and occasions with an Instagram Story mechanism.",
+                titlePersian = "۲. تعطیلات و مناسبت‌های امروز با مکانیزم استوری",
+                titleEnglish = "2. Today's Holidays & Occasions (Story Mode)",
+                descriptionPersian = "نمایش هوشمند تعطیلات رسمی و مناسبت‌های جهانی و ایرانی با مکانیزم استوری.",
+                descriptionEnglish = "Smart card displaying official holidays and global/Iranian occasions with an Instagram Story mechanism.",
                 icon = Icons.Default.AutoAwesome,
                 iconTint = Color(0xFF9333EA),
                 tipsPersian = listOf(
                     "خط پیشرفت استوری ۳ ثانیه‌ای: با ورود به برنامه، یک خط بنفش نئونی در پایین کادر در عرض ۳ ثانیه پر می‌شود و سپس کادر به آرامی محو می‌گردد.",
                     "نگه‌داشتن دست (Hold-to-Pause): با فشردن و نگه‌داشتن انگشت روی کادر، زمان و خط پیشرفت در همان لحظه متوقف و فریز می‌شوند تا فرصت کافی برای مطالعه داشته باشید.",
-                    "اتصال خط‌چین هوشمند: فلش منحنی و حلقه خط‌چین چشمک‌زن، مستقیماً به روزی از جدول که نشانگر روی آن قرار دارد وصل می‌شوند.",
-                    "فراخوانی مجدد: هر زمان که بخواهید، با لمس دکمه ستاره آبی (اوقات امروز) در نوار ابزار تقویم، این کادر مجدداً نمایش داده می‌شود."
+                    "نشانگر شیشه‌ای و بنفش کم‌رنگ: روز انتخاب‌شده در تقویم با هاله‌ای شیشه‌ای و بنفش روشن هایلایت شده و خط‌چین‌ها مستقیماً به آن متصل می‌شوند.",
+                    "فراخوانی مجدد: هر زمان که بخواهید، با لمس دکمه ستاره آبی (مناسبت‌های امروز) در نوار ابزار تقویم، این کادر مجدداً نمایش داده می‌شود."
                 ),
                 tipsEnglish = listOf(
                     "3-Second Story Progress: On opening, a neon purple progress line fills at the bottom over 3 seconds before auto-dismissing.",
                     "Hold to Pause: Press & hold your finger anywhere on the card to pause time and freeze the progress line indefinitely.",
-                    "Dashed Arrow Connection: The pulsing dashed circle and arrow connect dynamically to the indicated day on the grid.",
-                    "Reopen Anytime: Tap the blue star button on the calendar toolbar to bring back the times overlay at any time."
+                    "Glassy Light Purple Indicator: The selected day is highlighted with a glassy light purple tone, and dashed lines point directly to it.",
+                    "Reopen Anytime: Tap the blue star button on the calendar toolbar to bring back the holidays overlay at any time."
                 )
             ),
             GuideTopic(

@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.testTag
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calendar.core.AstronomicalCalculator
 import com.example.calendar.core.CalendarManager
+import com.example.calendar.core.DigitFormatter
 import com.example.calendar.core.IslamicCalendar
 import com.example.calendar.core.JalaliCalendar
 import com.example.calendar.model.EventType
@@ -50,6 +52,7 @@ import com.example.calendar.model.FullDayInfo
 import com.example.ui.theme.AstroGold
 import com.example.ui.theme.HolidayPurple
 import com.example.ui.theme.HolidayPurpleContainer
+import com.example.ui.theme.OnHolidayPurpleContainer
 import com.example.ui.theme.ScorpioAlert
 import kotlinx.coroutines.delay
 import kotlin.math.atan2
@@ -127,6 +130,7 @@ fun TodaySpotlightOverlay(
         label = "dash_phase"
     )
 
+    var overlayLayoutCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     var cardPositionInOverlay by remember { mutableStateOf<Offset?>(null) }
     var cardHeightPx by remember { mutableFloatStateOf(0f) }
     var cardWidthPx by remember { mutableFloatStateOf(0f) }
@@ -141,6 +145,7 @@ fun TodaySpotlightOverlay(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.22f))
+                .onGloballyPositioned { overlayLayoutCoordinates = it }
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
@@ -152,33 +157,33 @@ fun TodaySpotlightOverlay(
                 .testTag("today_spotlight_overlay")
         ) {
             // -----------------------------------------------------------
-            // CANVAS: Pulsing Dashed Circle + Dashed Arrow to Indicated Day
+            // CANVAS: Pulsing Dashed Circle + Dashed Line to Indicated Day
             // -----------------------------------------------------------
             if (targetCenter != null && targetRadius > 0f) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val radius = targetRadius + 4.dp.toPx() + pulseOffset
 
-                    // 1. Highlight circle around the indicated day cell
+                    // 1. Highlight circle around the indicated day cell (Glassy and light purple)
                     drawCircle(
-                        color = HolidayPurple.copy(alpha = 0.18f),
+                        color = Color(0xFFC084FC).copy(alpha = 0.25f),
                         center = targetCenter,
                         radius = radius,
                         style = Fill
                     )
 
                     drawCircle(
-                        color = HolidayPurple,
+                        color = Color(0xFFA855F7).copy(alpha = 0.85f),
                         center = targetCenter,
                         radius = radius,
                         style = Stroke(
-                            width = 2.5.dp.toPx(),
+                            width = 2.dp.toPx(),
                             pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 7f), dashPhase)
                         )
                     )
 
-                    // Secondary subtle golden glow ring
+                    // Secondary subtle light purple glass aura
                     drawCircle(
-                        color = AstroGold.copy(alpha = 0.6f),
+                        color = Color(0xFFE9D5FF).copy(alpha = 0.5f),
                         center = targetCenter,
                         radius = radius + 3.dp.toPx(),
                         style = Stroke(
@@ -187,52 +192,62 @@ fun TodaySpotlightOverlay(
                         )
                     )
 
-                    // 2. Dashed Arrow connecting Card to Indicated Day's Circle
+                    // 2. Dashed Line: Attached directly to the indicated day (start) and to the times card (end)
                     val cardPos = cardPositionInOverlay
                     if (cardPos != null && cardHeightPx > 0f) {
                         val isCardAbove = cardPos.y < targetCenter.y
 
-                        val startX = (cardPos.x + cardWidthPx / 2f).coerceIn(40f, size.width - 40f)
-                        val startY = if (isCardAbove) cardPos.y + cardHeightPx else cardPos.y
+                        // Attachment point on the times card (انتهای خط چین بچسبه به بخش اوقات)
+                        val cardAttachX = targetCenter.x.coerceIn(cardPos.x + 36f, cardPos.x + cardWidthPx - 36f)
+                        val cardAttachY = if (isCardAbove) cardPos.y + cardHeightPx else cardPos.y
+                        val end = Offset(cardAttachX, cardAttachY)
 
-                        val endTargetY = if (isCardAbove) targetCenter.y - radius else targetCenter.y + radius
-                        val endTargetX = targetCenter.x
-
+                        // Attachment point on the indicated day circle (ابتدای خط چین بچسبه به روزی که نشانگر روشه)
+                        val angleToCard = atan2((end.y - targetCenter.y).toDouble(), (end.x - targetCenter.x).toDouble())
+                        val startX = (targetCenter.x + radius * cos(angleToCard)).toFloat()
+                        val startY = (targetCenter.y + radius * sin(angleToCard)).toFloat()
                         val start = Offset(startX, startY)
-                        val end = Offset(endTargetX, endTargetY)
 
                         val dx = end.x - start.x
                         val dy = end.y - start.y
 
-                        val control1 = Offset(start.x + dx * 0.15f, start.y + dy * 0.65f)
-                        val control2 = Offset(start.x + dx * 0.85f, start.y + dy * 0.35f)
+                        val control1 = Offset(start.x + dx * 0.12f, start.y + dy * 0.60f)
+                        val control2 = Offset(start.x + dx * 0.88f, start.y + dy * 0.40f)
 
-                        val arrowPath = Path().apply {
+                        val dashedPath = Path().apply {
                             moveTo(start.x, start.y)
                             cubicTo(control1.x, control1.y, control2.x, control2.y, end.x, end.y)
                         }
 
+                        // Connecting dashed line
                         drawPath(
-                            path = arrowPath,
-                            color = HolidayPurple,
+                            path = dashedPath,
+                            color = Color(0xFFA855F7).copy(alpha = 0.90f),
                             style = Stroke(
-                                width = 2.6.dp.toPx(),
+                                width = 2.4.dp.toPx(),
                                 pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 7f), dashPhase)
                             )
                         )
 
-                        // Arrowhead
-                        val angle = atan2((end.y - control2.y).toDouble(), (end.x - control2.x).toDouble())
-                        val arrowLength = 22f
+                        // Solid anchor dot at the start (on the day circle)
+                        drawCircle(
+                            color = Color(0xFFA855F7),
+                            radius = 3.5.dp.toPx(),
+                            center = start
+                        )
+
+                        // Arrowhead at the end (pointing directly into the times card)
+                        val endAngle = atan2((end.y - control2.y).toDouble(), (end.x - control2.x).toDouble())
+                        val arrowLength = 20f
                         val arrowAngle = Math.PI / 6.0
 
                         val p1 = Offset(
-                            (end.x - arrowLength * cos(angle - arrowAngle)).toFloat(),
-                            (end.y - arrowLength * sin(angle - arrowAngle)).toFloat()
+                            (end.x - arrowLength * cos(endAngle - arrowAngle)).toFloat(),
+                            (end.y - arrowLength * sin(endAngle - arrowAngle)).toFloat()
                         )
                         val p2 = Offset(
-                            (end.x - arrowLength * cos(angle + arrowAngle)).toFloat(),
-                            (end.y - arrowLength * sin(angle + arrowAngle)).toFloat()
+                            (end.x - arrowLength * cos(endAngle + arrowAngle)).toFloat(),
+                            (end.y - arrowLength * sin(endAngle + arrowAngle)).toFloat()
                         )
 
                         val headPath = Path().apply {
@@ -244,7 +259,7 @@ fun TodaySpotlightOverlay(
 
                         drawPath(
                             path = headPath,
-                            color = HolidayPurple,
+                            color = Color(0xFFA855F7),
                             style = Fill
                         )
                     }
@@ -263,9 +278,12 @@ fun TodaySpotlightOverlay(
                     .align(if (isTargetCellHigh) Alignment.BottomCenter else Alignment.TopCenter)
                     .padding(top = if (isTargetCellHigh) 0.dp else 40.dp, bottom = if (isTargetCellHigh) 20.dp else 0.dp)
                     .onGloballyPositioned { coordinates ->
-                        cardPositionInOverlay = Offset(coordinates.positionInRoot().x, coordinates.positionInRoot().y)
-                        cardHeightPx = coordinates.size.height.toFloat()
-                        cardWidthPx = coordinates.size.width.toFloat()
+                        val overlayCoords = overlayLayoutCoordinates
+                        if (overlayCoords != null && overlayCoords.isAttached && coordinates.isAttached) {
+                            cardPositionInOverlay = overlayCoords.localPositionOf(coordinates, Offset.Zero)
+                            cardHeightPx = coordinates.size.height.toFloat()
+                            cardWidthPx = coordinates.size.width.toFloat()
+                        }
                     }
             ) {
                 Card(
@@ -319,7 +337,7 @@ fun TodaySpotlightOverlay(
                                 }
 
                                 Text(
-                                    text = if (isFa) "اوقات و مناسبت‌های امروز" else "Today's Times & Occasions",
+                                    text = if (isFa) "مناسبت‌ها و تعطیلات امروز" else "Today's Occasions & Holidays",
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface
@@ -346,11 +364,7 @@ fun TodaySpotlightOverlay(
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
                         )
 
-                        // 2. Compact Content Summary (Concise, high-density format)
-                        val jalaliMonthName = JalaliCalendar.MONTH_NAMES_PERSIAN.getOrElse(dayInfo.jalaliDate.month - 1) { "" }
-                        val gregorianMonthName = CalendarManager.GREGORIAN_MONTH_NAMES_PERSIAN.getOrElse(dayInfo.gregorianDate.month - 1) { "" }
-                        val islamicMonthName = IslamicCalendar.MONTH_NAMES_ARABIC.getOrElse(dayInfo.islamicDate.month - 1) { "" }
-
+                        // ONLY Official Holidays and Global & Iranian Occasions (بدون نمایش تایم)
                         val officialHolidays = dayInfo.events.filter { it.isHoliday }
                         val isFriday = (dayInfo.dayOfWeekPersian == "جمعه")
                         val hasAnyHoliday = officialHolidays.isNotEmpty() || isFriday
@@ -367,44 +381,12 @@ fun TodaySpotlightOverlay(
                             .filter { !it.isHoliday }
                             .map { it.title }
 
-                        val animal = dayInfo.yearAnimal ?: AstronomicalCalculator.getYearAnimal(dayInfo.jalaliDate.year)
-                        val element = dayInfo.monthElement ?: AstronomicalCalculator.getMonthElement(dayInfo.jalaliDate.month)
-
                         val summaryText = buildAnnotatedString {
-                            // Date line & Animal
-                            withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)) {
-                                append("📅 ")
-                            }
-                            withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)) {
-                                append("${dayInfo.dayOfWeekPersian}، ${dayInfo.jalaliDate.day} $jalaliMonthName")
-                                append(" | ${dayInfo.gregorianDate.day} $gregorianMonthName")
-                                append(" | ${dayInfo.islamicDate.day} $islamicMonthName")
-                            }
-                            withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurfaceVariant)) {
-                                append(" • ${animal.namePersian} ${animal.emoji} (${element.titlePersian})\n")
-                            }
-
-                            // Solar times in single compact line
-                            withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)) {
-                                append("🕌 اوقات: ")
+                            // Official holidays
+                            withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = HolidayPurple)) {
+                                append(if (isFa) "🟣 تعطیلات رسمی: " else "🟣 Official Holidays: ")
                             }
                             withStyle(SpanStyle(fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)) {
-                                append("صبح ")
-                                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(dayInfo.solarTimes.dawn) }
-                                append(" • طلوع ")
-                                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(dayInfo.solarTimes.sunrise) }
-                                append(" • ظهر ")
-                                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(dayInfo.solarTimes.noon) }
-                                append(" • غروب ")
-                                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(dayInfo.solarTimes.sunset) }
-                                append(" • مغرب ")
-                                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(dayInfo.solarTimes.maghrib) }
-                                append("\n")
-                            }
-
-                            // Holidays
-                            withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = HolidayPurple)) {
-                                append("🟣 تعطیلات: ")
                                 if (hasAnyHoliday) {
                                     append(holidaysText)
                                 } else {
@@ -412,24 +394,16 @@ fun TodaySpotlightOverlay(
                                 }
                             }
 
-                            // Occasions (if any)
-                            if (otherOccasions.isNotEmpty()) {
-                                append("\n")
-                                withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)) {
-                                    append("🌍 مناسبت: ")
-                                }
-                                withStyle(SpanStyle(fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)) {
-                                    append(otherOccasions.take(2).joinToString(" • "))
-                                    if (otherOccasions.size > 2) append(" ...")
-                                }
+                            // Global and Iranian occasions
+                            append("\n\n")
+                            withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)) {
+                                append(if (isFa) "🌍 مناسبت‌های جهانی و ایرانی: " else "🌍 Global & Iranian Occasions: ")
                             }
-
-                            // Scorpio indicator (if any)
-                            val isInScorpioToday = dayInfo.qamarDarAqrab.isInTropicalScorpio || dayInfo.qamarDarAqrab.isInSiderealScorpio
-                            if (isInScorpioToday) {
-                                append("\n")
-                                withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = ScorpioAlert)) {
-                                    append("♏ وضعیت نجومی: قمر در عقرب")
+                            withStyle(SpanStyle(fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)) {
+                                if (otherOccasions.isNotEmpty()) {
+                                    append(otherOccasions.joinToString(" • "))
+                                } else {
+                                    append(if (isFa) "مناسبت ثبت‌شده‌ای برای امروز وجود ندارد." else "No occasions recorded for today.")
                                 }
                             }
                         }

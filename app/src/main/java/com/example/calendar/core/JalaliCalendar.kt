@@ -163,4 +163,24 @@ object JalaliCalendar {
             else -> "بهار"
         }
     }
+
+    fun getSeasonEmoji(month: Int): String {
+        return when (month) {
+            1, 2, 3 -> "🌸"
+            4, 5, 6 -> "☀️"
+            7, 8, 9 -> "🍂"
+            10, 11, 12 -> "❄️"
+            else -> "🍂"
+        }
+    }
+
+    fun getSeasonEmojiByName(season: String): String {
+        return when (season) {
+            "بهار" -> "🌸"
+            "تابستان" -> "☀️"
+            "پاییز" -> "🍂"
+            "زمستان" -> "❄️"
+            else -> "🍂"
+        }
+    }
 }

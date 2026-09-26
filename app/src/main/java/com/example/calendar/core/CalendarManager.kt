@@ -41,6 +41,7 @@ object CalendarManager {
         val daysRemaining = totalDays - dayOfYear
         val weekOfYear = ((dayOfYear - 1) / 7) + 1
         val season = JalaliCalendar.getSeasonPersian(jalali.month)
+        val seasonEmoji = JalaliCalendar.getSeasonEmoji(jalali.month)
 
         val events = EventsRepository.getEvents(jalali, islamic, gregorian)
         val moonInfo = AstronomicalCalculator.calculateMoonInfo(jdn)
@@ -63,6 +64,7 @@ object CalendarManager {
             daysRemainingJalali = daysRemaining,
             weekOfYearJalali = weekOfYear,
             seasonPersian = season,
+            seasonEmoji = seasonEmoji,
             events = events,
             moonInfo = moonInfo,
             sunZodiac = sunZodiac,

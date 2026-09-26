@@ -22,14 +22,17 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calendar.core.AstronomicalCalculator
 import com.example.calendar.core.CalendarManager
+import com.example.calendar.core.DigitFormatter
 import com.example.calendar.core.IslamicCalendar
 import com.example.calendar.core.JalaliCalendar
 import com.example.calendar.core.MonthlyPredictionHelper
@@ -77,32 +80,18 @@ fun CalendarGridView(
     }
 
     val monthTitle = remember(calendarType, currentYear, currentMonth, appLanguage) {
+        val yearStr = DigitFormatter.toSystemDigits(currentYear, isFa)
         when (calendarType) {
-            CalendarType.SOLAR_HIJRI -> "${JalaliCalendar.MONTH_NAMES_PERSIAN[currentMonth - 1]} $currentYear"
+            CalendarType.SOLAR_HIJRI -> "${JalaliCalendar.MONTH_NAMES_PERSIAN[currentMonth - 1]} $yearStr"
             CalendarType.GREGORIAN -> {
                 if (isFa) {
-                    "${CalendarManager.GREGORIAN_MONTH_NAMES_PERSIAN[currentMonth - 1]} $currentYear"
+                    "${CalendarManager.GREGORIAN_MONTH_NAMES_PERSIAN[currentMonth - 1]} $yearStr"
                 } else {
                     "${java.time.Month.of(currentMonth).name.lowercase().replaceFirstChar { it.uppercase() }} $currentYear"
                 }
             }
-            CalendarType.LUNAR_HIJRI -> "${IslamicCalendar.MONTH_NAMES_ARABIC[currentMonth - 1]} $currentYear"
+            CalendarType.LUNAR_HIJRI -> "${IslamicCalendar.MONTH_NAMES_ARABIC[currentMonth - 1]} $yearStr"
         }
-    }
-
-    // Solar year animal & month element calculations
-    val currentSolarDate = remember(calendarType, currentYear, currentMonth, selectedJdn) {
-        if (calendarType == CalendarType.SOLAR_HIJRI) {
-            JalaliDate(currentYear, currentMonth, 1)
-        } else {
-            JalaliCalendar.jdnToJalali(selectedJdn)
-        }
-    }
-    val yearAnimal = remember(currentSolarDate.year) {
-        AstronomicalCalculator.getYearAnimal(currentSolarDate.year)
-    }
-    val monthElement = remember(currentSolarDate.month) {
-        AstronomicalCalculator.getMonthElement(currentSolarDate.month)
     }
 
     Card(
@@ -276,46 +265,7 @@ fun CalendarGridView(
                 }
             }
 
-            // Year Animal & Month Element Header Banner (نماد سال و عنصر ماه جاری)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 6.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = HolidayPurpleContainer.copy(alpha = 0.45f),
-                    border = BorderStroke(1.dp, HolidayPurple.copy(alpha = 0.22f))
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = if (isFa) "سال ${yearAnimal.namePersian} ${yearAnimal.emoji}" else "Year: ${yearAnimal.nameAlternative.ifBlank { yearAnimal.namePersian }} ${yearAnimal.emoji}",
-                            fontSize = 11.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = OnHolidayPurpleContainer
-                        )
-                        Text(
-                            text = "•",
-                            fontSize = 10.sp,
-                            color = OnHolidayPurpleContainer.copy(alpha = 0.5f)
-                        )
-                        Text(
-                            text = if (isFa) "عنصر ماه: ${monthElement.titlePersian} ${monthElement.emoji}" else "Element: ${monthElement.name.lowercase().replaceFirstChar { it.uppercase() }} ${monthElement.emoji}",
-                            fontSize = 11.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = OnHolidayPurpleContainer
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // Weekday Headers
             Row(
@@ -354,6 +304,7 @@ fun CalendarGridView(
                         DayCellView(
                             cell = cell,
                             showSecondaryDates = showSecondaryDates,
+                            isFa = isFa,
                             onDateSelected = onDateSelected,
                             onTodayPositioned = onTodayPositioned,
                             onIndicatorPositioned = onIndicatorPositioned,
@@ -418,6 +369,7 @@ private fun DayCellView(
     showSecondaryDates: Boolean,
     onDateSelected: (Long) -> Unit,
     modifier: Modifier = Modifier,
+    isFa: Boolean = true,
     onTodayPositioned: ((LayoutCoordinates) -> Unit)? = null,
     onIndicatorPositioned: ((LayoutCoordinates) -> Unit)? = null
 ) {
@@ -434,8 +386,9 @@ private fun DayCellView(
     val isSelected = cell.isSelected
     val isToday = cell.isToday
 
+    // Glassy and light purple indicator styling
     val targetBackground = if (isSelected) {
-        HolidayPurple
+        Color(0xFFC084FC).copy(alpha = 0.28f)
     } else {
         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.28f)
     }
@@ -446,7 +399,7 @@ private fun DayCellView(
     )
 
     val targetBorderColor = when {
-        isSelected -> HolidayPurpleLight
+        isSelected -> Color(0xFFA855F7).copy(alpha = 0.85f)
         isToday -> HolidayPurple.copy(alpha = 0.85f)
         else -> MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)
     }
@@ -455,16 +408,16 @@ private fun DayCellView(
         animationSpec = tween(durationMillis = 200),
         label = "cellBorder"
     )
-    val borderWidth = if (isSelected || isToday) 1.5.dp else 1.dp
+    val borderWidth = if (isSelected) 1.8.dp else if (isToday) 1.5.dp else 1.dp
 
     val textColor = when {
-        isSelected -> Color.White
+        isSelected -> HolidayPurple
         cell.hasHoliday -> HolidayPurple
         else -> MaterialTheme.colorScheme.onSurface
     }
 
     val secondaryTextColor = if (isSelected) {
-        Color.White.copy(alpha = 0.85f)
+        HolidayPurple.copy(alpha = 0.85f)
     } else {
         MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
     }
@@ -498,23 +451,26 @@ private fun DayCellView(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Main day number
+            // Main day number (برگرفته از فونت پیش‌فرض خود گوشی)
             Text(
-                text = "${cell.primaryNumber}",
-                style = MaterialTheme.typography.bodyLarge,
+                text = DigitFormatter.toSystemDigits(cell.primaryNumber, isFa),
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontFamily = FontFamily.Default
+                ),
                 fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Medium,
                 color = textColor,
                 fontSize = 15.sp
             )
 
-            // Secondary calendar dates
+            // Secondary calendar dates (برگرفته از فونت پیش‌فرض خود گوشی)
             if (showSecondaryDates) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(2.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = cell.secondaryText1,
+                        text = DigitFormatter.toSystemDigits(cell.secondaryText1, isFa),
+                        fontFamily = FontFamily.Default,
                         fontSize = 9.sp,
                         color = secondaryTextColor
                     )
@@ -524,7 +480,8 @@ private fun DayCellView(
                         color = secondaryTextColor.copy(alpha = 0.5f)
                     )
                     Text(
-                        text = cell.secondaryText2,
+                        text = DigitFormatter.toSystemDigits(cell.secondaryText2, isFa),
+                        fontFamily = FontFamily.Default,
                         fontSize = 9.sp,
                         color = secondaryTextColor
                     )
@@ -606,8 +563,10 @@ fun YearMonthPickerDialog(
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "$selectedYear",
-                            style = MaterialTheme.typography.headlineSmall,
+                            text = DigitFormatter.toSystemDigits(selectedYear, true),
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontFamily = FontFamily.Default
+                            ),
                             fontWeight = FontWeight.Bold,
                             color = HolidayPurple
                         )

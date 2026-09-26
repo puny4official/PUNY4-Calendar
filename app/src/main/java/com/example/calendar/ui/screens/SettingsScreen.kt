@@ -42,6 +42,7 @@ fun SettingsScreen(
     val calendarType by userSettings.calendarType.collectAsState()
     val selectedCity by userSettings.selectedCity.collectAsState()
     val showSecondaryDates by userSettings.showSecondaryDates.collectAsState()
+    val showSeasonalRain by userSettings.showSeasonalRain.collectAsState()
 
     val isFa = (appLanguage == AppLanguage.PERSIAN)
     var showCityDialog by remember { mutableStateOf(false) }
@@ -264,6 +265,45 @@ fun SettingsScreen(
                             checked = showSecondaryDates,
                             onCheckedChange = { userSettings.setShowSecondaryDates(it) },
                             modifier = Modifier.testTag("toggle_secondary_dates")
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Surface(
+                    shape = RoundedCornerShape(14.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { userSettings.setShowSeasonalRain(!showSeasonalRain) }
+                            .padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = if (isFa) "باران انیمیشنی ایموجی‌های فصلی 🍂" else "Seasonal Emoji Rain Animation 🍂",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = if (isFa) "بارش ملایم برگ‌های پاییز، برف زمستان، شکوفه‌های بهار و پرتوهای تابستان در سربرگ نام برنامه" else "Gentle falling autumn leaves, winter snow, spring blossoms, or summer sparkles in the top header",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Switch(
+                            checked = showSeasonalRain,
+                            onCheckedChange = { userSettings.setShowSeasonalRain(it) },
+                            modifier = Modifier.testTag("toggle_seasonal_rain")
                         )
                     }
                 }

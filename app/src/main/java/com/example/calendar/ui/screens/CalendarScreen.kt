@@ -200,6 +200,7 @@ fun CalendarScreen(
                     dayInfo = selectedDayInfo,
                     currentCity = currentCity,
                     userNote = userNote,
+                    isFa = (appLanguage == AppLanguage.PERSIAN),
                     onSaveNote = { newNote ->
                         userSettings.saveNote(selectedJdn, newNote)
                         userNote = newNote
