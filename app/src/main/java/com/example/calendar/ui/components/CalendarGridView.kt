@@ -63,6 +63,8 @@ fun CalendarGridView(
     onCalendarTypeChanged: (CalendarType) -> Unit,
     modifier: Modifier = Modifier,
     appLanguage: AppLanguage = AppLanguage.PERSIAN,
+    useEnglishDayNumbers: Boolean = false,
+    holidayColor: Color = Color(0xFF8B5CF6L),
     onTodayPositioned: ((LayoutCoordinates) -> Unit)? = null,
     onIndicatorPositioned: ((LayoutCoordinates) -> Unit)? = null,
     onShowTodaySpotlight: (() -> Unit)? = null
@@ -144,8 +146,8 @@ fun CalendarGridView(
                         ) {
                             Text(
                                 text = label,
-                                fontSize = 11.5.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                fontSize = 12.5.sp,
+                                fontWeight = FontWeight.Bold,
                                 color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
                                 maxLines = 1,
                                 textAlign = TextAlign.Center
@@ -175,11 +177,11 @@ fun CalendarGridView(
                             .fillMaxSize()
                             .padding(horizontal = 2.dp)
                     ) {
-                        Text(text = "🔮", fontSize = 10.sp)
+                        Text(text = "🔮", fontSize = 11.sp)
                         Spacer(modifier = Modifier.width(3.dp))
                         Text(
                             text = if (isFa) "پیشگویی" else "Forecast",
-                            fontSize = 11.5.sp,
+                            fontSize = 12.5.sp,
                             fontWeight = FontWeight.Bold,
                             color = if (showMonthlyPredictionsDialog) Color.White else OnHolidayPurpleContainer,
                             maxLines = 1,
@@ -240,8 +242,9 @@ fun CalendarGridView(
                 ) {
                     Text(
                         text = monthTitle,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontSize = 18.5.sp,
+                        fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.width(4.dp))
@@ -249,7 +252,7 @@ fun CalendarGridView(
                         imageVector = Icons.Default.ExpandMore,
                         contentDescription = "انتخاب ماه و سال",
                         tint = HolidayPurple,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(22.dp)
                     )
                 }
 
@@ -277,8 +280,8 @@ fun CalendarGridView(
                     val isFriday = (index == 6)
                     Text(
                         text = name,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
                         color = if (isFriday) HolidayPurple else MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f)
@@ -305,6 +308,8 @@ fun CalendarGridView(
                             cell = cell,
                             showSecondaryDates = showSecondaryDates,
                             isFa = isFa,
+                            useEnglishDayNumbers = useEnglishDayNumbers,
+                            holidayColor = holidayColor,
                             onDateSelected = onDateSelected,
                             onTodayPositioned = onTodayPositioned,
                             onIndicatorPositioned = onIndicatorPositioned,
@@ -328,14 +333,14 @@ fun CalendarGridView(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     ScorpioIcon(
-                        modifier = Modifier.size(13.dp),
+                        modifier = Modifier.size(15.dp),
                         tint = ScorpioAlert
                     )
                     Text(
                         text = "قمر در عقرب",
-                        fontSize = 11.5.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.Medium
+                        fontSize = 12.5.sp,
+                        color = ScorpioAlert,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
             }
@@ -370,6 +375,8 @@ private fun DayCellView(
     onDateSelected: (Long) -> Unit,
     modifier: Modifier = Modifier,
     isFa: Boolean = true,
+    useEnglishDayNumbers: Boolean = false,
+    holidayColor: Color = Color(0xFF8B5CF6L),
     onTodayPositioned: ((LayoutCoordinates) -> Unit)? = null,
     onIndicatorPositioned: ((LayoutCoordinates) -> Unit)? = null
 ) {
@@ -385,10 +392,12 @@ private fun DayCellView(
 
     val isSelected = cell.isSelected
     val isToday = cell.isToday
+    val isHoliday = cell.hasHoliday
 
-    // Glassy and light purple indicator styling
-    val targetBackground = if (isSelected) {
-        Color(0xFFC084FC).copy(alpha = 0.28f)
+    // کادر روزهای تعطیلات رسمی: رنگ انتخابی کاربر به‌صورت شیشه‌ای و نوشته داخل آن سفید
+    // روزهای غیرتعطیل: بدون رنگ (هم‌رنگ پس‌زمینه) و در صورت انتخاب دور آن فیروزه‌ای
+    val targetBackground = if (isHoliday) {
+        holidayColor.copy(alpha = 0.50f)
     } else {
         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.28f)
     }
@@ -399,8 +408,9 @@ private fun DayCellView(
     )
 
     val targetBorderColor = when {
-        isSelected -> Color(0xFFA855F7).copy(alpha = 0.85f)
-        isToday -> HolidayPurple.copy(alpha = 0.85f)
+        isSelected -> Color(0xFF06B6D4) // دور نشانگر فیروزه‌ای
+        isHoliday -> holidayColor.copy(alpha = 0.80f) // کادر شیشه‌ای به رنگ انتخابی کاربر
+        isToday -> Color(0xFF06B6D4).copy(alpha = 0.65f)
         else -> MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)
     }
     val animatedBorderColor by animateColorAsState(
@@ -408,18 +418,18 @@ private fun DayCellView(
         animationSpec = tween(durationMillis = 200),
         label = "cellBorder"
     )
-    val borderWidth = if (isSelected) 1.8.dp else if (isToday) 1.5.dp else 1.dp
+    val borderWidth = if (isSelected) 2.2.dp else if (isHoliday) 1.5.dp else if (isToday) 1.5.dp else 1.dp
 
     val textColor = when {
-        isSelected -> HolidayPurple
-        cell.hasHoliday -> HolidayPurple
+        isHoliday -> Color.White // نوشته داخل تعطیلات رسمی سفید
+        isSelected -> Color(0xFF0891B2)
         else -> MaterialTheme.colorScheme.onSurface
     }
 
-    val secondaryTextColor = if (isSelected) {
-        HolidayPurple.copy(alpha = 0.85f)
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+    val secondaryTextColor = when {
+        isHoliday -> Color.White.copy(alpha = 0.88f) // نوشته‌های کوچک زیر روزهای تعطیل رسمی نیز سفید
+        isSelected -> Color(0xFF0891B2).copy(alpha = 0.85f)
+        else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
     }
 
     Box(
@@ -447,19 +457,21 @@ private fun DayCellView(
             .testTag("day_cell_${cell.primaryNumber}"),
         contentAlignment = Alignment.Center
     ) {
+        val renderFaDigits = isFa && !useEnglishDayNumbers
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             // Main day number (برگرفته از فونت پیش‌فرض خود گوشی)
             Text(
-                text = DigitFormatter.toSystemDigits(cell.primaryNumber, isFa),
+                text = DigitFormatter.toSystemDigits(cell.primaryNumber, renderFaDigits),
                 style = MaterialTheme.typography.bodyLarge.copy(
                     fontFamily = FontFamily.Default
                 ),
-                fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Medium,
+                fontWeight = if (isSelected || isToday) FontWeight.ExtraBold else FontWeight.Bold,
                 color = textColor,
-                fontSize = 15.sp
+                fontSize = if (showSecondaryDates) 15.5.sp else 18.sp
             )
 
             // Secondary calendar dates (برگرفته از فونت پیش‌فرض خود گوشی)
@@ -469,20 +481,22 @@ private fun DayCellView(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = DigitFormatter.toSystemDigits(cell.secondaryText1, isFa),
+                        text = DigitFormatter.toSystemDigits(cell.secondaryText1, renderFaDigits),
                         fontFamily = FontFamily.Default,
-                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 9.5.sp,
                         color = secondaryTextColor
                     )
                     Text(
                         text = "•",
-                        fontSize = 7.sp,
+                        fontSize = 7.5.sp,
                         color = secondaryTextColor.copy(alpha = 0.5f)
                     )
                     Text(
-                        text = DigitFormatter.toSystemDigits(cell.secondaryText2, isFa),
+                        text = DigitFormatter.toSystemDigits(cell.secondaryText2, renderFaDigits),
                         fontFamily = FontFamily.Default,
-                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 9.5.sp,
                         color = secondaryTextColor
                     )
                 }
@@ -498,7 +512,7 @@ private fun DayCellView(
             ) {
                 ScorpioIcon(
                     modifier = Modifier.size(9.5.dp),
-                    tint = if (isSelected) Color.White else ScorpioAlert
+                    tint = if (isHoliday) Color.White.copy(alpha = 0.95f) else if (isSelected) Color.White else ScorpioAlert
                 )
             }
         }
@@ -510,7 +524,7 @@ private fun DayCellView(
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 3.dp)
                     .size(4.dp)
-                    .background(HolidayPurple, CircleShape)
+                    .background(if (isHoliday) Color.White else HolidayPurple, CircleShape)
             )
         }
     }

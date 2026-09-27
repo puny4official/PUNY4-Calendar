@@ -50,113 +50,137 @@ fun AppGuideDialog(
             GuideTopic(
                 titlePersian = "۱. گاه‌شماری‌های سه‌گانه و نوار ابزار فشرده",
                 titleEnglish = "1. Triple Calendars & Compact Toolbar",
-                descriptionPersian = "پشتیبانی همزمان از تقویم‌های هجری شمسی، میلادی و هجری قمری با طراحی خلوت و یکپارچه.",
+                descriptionPersian = "پشتیبانی همزمان از تقویم‌های هجری شمسی، میلادی و هجری قمری با طراحی خلوت، سریع و یکپارچه.",
                 descriptionEnglish = "Simultaneous support for Solar Hijri, Gregorian, and Lunar Hijri calendars in a clean, unified view.",
                 icon = Icons.Default.CalendarMonth,
                 iconTint = Color(0xFF2563EB),
                 tipsPersian = listOf(
                     "نوار ابزار تک‌ردیفه: گزینه‌های «شمسی»، «میلادی»، «قمری» و «پیشگویی 🔮» همگی در یک ردیف فشرده بدون نیاز به اسکرول در دسترس هستند.",
-                    "نمایش اختصاصی ماه جاری: در جدول تقویم فقط روزهای متعلق به همان ماه نشان داده می‌شوند و روزهای ماه قبل و بعد برای جلوگیری از شلوغی پنهان شده‌اند.",
+                    "نمایش اختصاصی ماه جاری: در جدول تقویم فقط روزهای متعلق به همان ماه نشان داده می‌شوند و روزهای ماه قبل و بعد پنهان شده‌اند.",
                     "انتخاب سریع سال و ماه: با ضربه روی نام ماه و سال بالای تقویم، پنجره انتخاب سریع برای جهش به هر سال و ماه باز می‌شود.",
-                    "تاریخ‌های فرعی: در صورت فعال بودن در تنظیمات، اعداد کوچک زیر هر روز تاریخ معادل دو تقویم دیگر را نشان می‌دهند."
+                    "نشانگر روز انتخاب‌شده: روز لمس‌شده با کادر فیروزه‌ای چشم‌نواز و شفاف دور آن مشخص می‌گردد."
                 ),
                 tipsEnglish = listOf(
                     "Single-Row Toolbar: 'Solar', 'Gregorian', 'Lunar', and 'Forecast 🔮' are all instantly accessible in a compact header row.",
                     "Current Month Focus: Only days of the current month are displayed; surrounding months are hidden for a clean look.",
                     "Quick Month/Year Jump: Tap the current month & year title to jump to any date across years in seconds.",
-                    "Secondary Dates: Small indicators beneath each day show equivalent dates in the other two calendars."
+                    "Selected Day Indicator: The tapped day is cleanly highlighted with a vibrant turquoise border."
                 )
             ),
             GuideTopic(
-                titlePersian = "۲. تعطیلات و مناسبت‌های امروز با مکانیزم استوری",
-                titleEnglish = "2. Today's Holidays & Occasions (Story Mode)",
-                descriptionPersian = "نمایش هوشمند تعطیلات رسمی و مناسبت‌های جهانی و ایرانی با مکانیزم استوری.",
-                descriptionEnglish = "Smart card displaying official holidays and global/Iranian occasions with an Instagram Story mechanism.",
-                icon = Icons.Default.AutoAwesome,
-                iconTint = Color(0xFF9333EA),
+                titlePersian = "۲. ویرایش ظاهر و تم رنگی تعطیلات رسمی",
+                titleEnglish = "2. Appearance & Holiday Colors Customization",
+                descriptionPersian = "امکان شخصی‌سازی کامل رنگ تعطیلات رسمی، کادرها و نمایه‌های تقویم مطابق با سلیقه شخصی شما.",
+                descriptionEnglish = "Full customization of official holiday colors, glassy borders, and calendar themes to match your personal taste.",
+                icon = Icons.Default.Palette,
+                iconTint = Color(0xFF8B5CF6),
                 tipsPersian = listOf(
-                    "خط پیشرفت استوری ۳ ثانیه‌ای: با ورود به برنامه، یک خط بنفش نئونی در پایین کادر در عرض ۳ ثانیه پر می‌شود و سپس کادر به آرامی محو می‌گردد.",
-                    "نگه‌داشتن دست (Hold-to-Pause): با فشردن و نگه‌داشتن انگشت روی کادر، زمان و خط پیشرفت در همان لحظه متوقف و فریز می‌شوند تا فرصت کافی برای مطالعه داشته باشید.",
-                    "نشانگر شیشه‌ای و بنفش کم‌رنگ: روز انتخاب‌شده در تقویم با هاله‌ای شیشه‌ای و بنفش روشن هایلایت شده و خط‌چین‌ها مستقیماً به آن متصل می‌شوند.",
-                    "فراخوانی مجدد: هر زمان که بخواهید، با لمس دکمه ستاره آبی (مناسبت‌های امروز) در نوار ابزار تقویم، این کادر مجدداً نمایش داده می‌شود."
+                    "دسترسی از منوی کشویی: از منوی همبرگری (سمت راست بالا) یا صفحه تنظیمات، گزینه «ویرایش ظاهر» را انتخاب نمایید.",
+                    "۱۶ پالت رنگی آماده: انتخاب از میان انواع رنگ‌های جذاب و اصیل شامل بنفش رویایی، یاقوتی درباری، زرشکی، یشمی ایرانی، فیروزه‌ای، لاجوردی، کهربایی، زمردی و...",
+                    "اسلایدر طیف رنگین‌کمانی دلخواه: با اسلایدر رنگین‌کمان می‌توانید دقیقاً هر رنگ خاص و بی‌نهایت دلخواهی را برای تعطیلات برگزینید.",
+                    "کادر شیشه‌ای و نوشته سفید: روزهای تعطیل رسمی به صورت شیشه‌ای به رنگ منتخب شما و با نوشته‌های کاملاً خوانای سفید نمایش می‌یابند.",
+                    "پیش‌نمایش زنده: در پنجره ویرایش ظاهر، نمونه روز تعطیل و برچسب رسمی به صورت زنده نمایش داده می‌شود."
                 ),
                 tipsEnglish = listOf(
-                    "3-Second Story Progress: On opening, a neon purple progress line fills at the bottom over 3 seconds before auto-dismissing.",
-                    "Hold to Pause: Press & hold your finger anywhere on the card to pause time and freeze the progress line indefinitely.",
-                    "Glassy Light Purple Indicator: The selected day is highlighted with a glassy light purple tone, and dashed lines point directly to it.",
-                    "Reopen Anytime: Tap the blue star button on the calendar toolbar to bring back the holidays overlay at any time."
+                    "Drawer & Settings Access: Tap 'Appearance' in the hamburger navigation drawer or the Settings screen.",
+                    "16 Preset Color Themes: Pick from a curated palette including Dreamy Purple, Royal Ruby, Persian Jade, Persian Turquoise, Azure, Emerald, Amber, and more.",
+                    "Rainbow Custom Color Slider: Freely choose any precise custom hue using the continuous rainbow color slider.",
+                    "Glassy Cells & White Text: Holiday cells adopt your chosen color with an elegant glassy finish and crisp white typography.",
+                    "Live Preview: Directly see a live preview of how holiday days and badges will look before closing the dialog."
                 )
             ),
             GuideTopic(
-                titlePersian = "۳. پیشگویی‌های ماهانه و طالع کواکب",
-                titleEnglish = "3. Monthly Astrological Forecasts",
-                descriptionPersian = "روایات، طالع‌بینی سنتی نجومی و احکام کواکب مربوط به هر ماه خورشیدی.",
-                descriptionEnglish = "Traditional astrological forecasts, celestial guidance, and monthly fortunes.",
+                titlePersian = "۳. اوقات خورشیدی و اذان‌های شرعی هر شهر",
+                titleEnglish = "3. Solar Times & Azan for Any City",
+                descriptionPersian = "محاسبه دقیق اوقات فلکی خورشید و اذان‌های شش‌گانه شرعی به افق شهر انتخابی شما.",
+                descriptionEnglish = "Precise astronomical solar times and six prayer times (Azan) calculated for your selected city horizon.",
+                icon = Icons.Default.Mosque,
+                iconTint = Color(0xFF0D9488),
+                tipsPersian = listOf(
+                    "کل اوقات خورشیدی: شامل زمان دقیق طلوع، غروب، ظهر نجومی، طول روز، طول شب و زاویه تابش خورشید با انیمیشن کمان خورشید.",
+                    "اذان‌ها و اوقات شرعی شش‌گانه: دقیقاً در زیر اوقات خورشیدی، زمان اذان صبح، طلوع آفتاب، اذان ظهر، غروب آفتاب، اذان مغرب و نیمه‌شب شرعی با ارقام فارسی آورده شده است.",
+                    "تغییر شهر با جستجوی سریع: با زدن دکمه «تغییر شهر» در کنار اوقات شرعی، می‌توانید در میان تمام ۳۱ استان ایران، اماکن متبرکه (کربلا، نجف، مکه، مدینه) و شهرهای زیارتی فوراً جستجو و شهر دلخواه را انتخاب فرمایید."
+                ),
+                tipsEnglish = listOf(
+                    "Solar Times: Detailed sunrise, sunset, solar noon, day length, night length, and sun altitude angle with a visual arc.",
+                    "Six Prayer Times (Azan): Located directly beneath solar times, showing Fajr, Sunrise, Dhuhr, Sunset, Maghrib, and Midnight.",
+                    "Quick City Picker & Search: Tap 'Change City' to instantly search across all 31 Iranian provincial capitals, holy pilgrimage cities (Najaf, Karbala, Mecca, Medina), and international locations."
+                )
+            ),
+            GuideTopic(
+                titlePersian = "۴. قمر در عقرب با رنگ طوسی و اطلاعات نجومی",
+                titleEnglish = "4. Moon in Scorpio (Grey) & Astronomy",
+                descriptionPersian = "رصد و تقویم وضعیت قمر در عقرب با رنگ طوسی اختصاصی، فازهای ماه و بروج فلکی.",
+                descriptionEnglish = "Moon-in-Scorpio tracking in designated elegant grey, lunar phases, and zodiac constellations.",
+                icon = Icons.Default.Nightlight,
+                iconTint = Color(0xFF64748B),
+                tipsPersian = listOf(
+                    "رنگ طوسی نماد قمر در عقرب: نماد اختصاصی عقرب (♏) در جدول تقویم، بنر روزانه، راهنمای پایین جدول و صفحه نجوم با رنگ طوسی (خاکستری) متمایز شده است تا جلوه‌ای شیک، استاندارد و آرامش‌بخش داشته باشد.",
+                    "برج و صورت فلکی: تفکیک دقیق قمر در برج عقرب (تروپیکال) و صورت فلکی عقرب (سایدرال) بر اساس محاسبات علمی معتبر.",
+                    "فاز زنده ماه: سن ماه، درصد روشنایی و نام هلال تا بدر کامل در بالای صفحه نجوم و جزئیات روز به صورت زنده نمایش می‌یابد.",
+                    "حیوان سال و عنصر ماه: حیوان تقویم دوازده‌حیوانی و عنصر چهارگانه ماه جاری در نوار سربرگ بالای تقویم نمایان است."
+                ),
+                tipsEnglish = listOf(
+                    "Distinct Grey Theme for Scorpio: The custom Scorpio symbol (♏) in calendar cells, daily banners, bottom legend, and the Astronomy tab is rendered in sophisticated grey.",
+                    "Sign vs Constellation: Clear distinction between Tropical Scorpio sign and Sidereal Scorpio constellation based on rigorous celestial algorithms.",
+                    "Live Moon Phase: Illumination percentage, lunar age in days, and astronomical moon phase name.",
+                    "Year Animal & Zodiac Element: The 12-animal year sign and the 4-element nature of the current month shown in the header."
+                )
+            ),
+            GuideTopic(
+                titlePersian = "۵. تعطیلات و مناسبت‌های امروز با مکانیزم استوری",
+                titleEnglish = "5. Today's Holidays & Occasions (Story Mode)",
+                descriptionPersian = "کارت شناور هوشمند برای مرور سریع تعطیلات و مناسبت‌های روز جاری با مکانیزم استوری.",
+                descriptionEnglish = "Smart floating card for quick daily holiday and occasion overview featuring story playback.",
+                icon = Icons.Default.AutoAwesome,
+                iconTint = Color(0xFFD946EF),
+                tipsPersian = listOf(
+                    "خط پیشرفت استوری ۳ ثانیه‌ای: هنگام ورود به برنامه، یک خط پیشرفت نئونی در پایین کارت پر می‌شود و پس از ۳ ثانیه محو می‌گردد.",
+                    "نگه‌داشتن دست (Hold-to-Pause): با فشردن و نگه‌داشتن انگشت روی کادر، زمان و خط پیشرفت بلافاصله متوقف و فریز می‌شوند تا فرصت کافی برای مطالعه داشته باشید.",
+                    "فراخوانی مجدد: هر زمان بخواهید، با لمس آیکون ستاره در نوار ابزار تقویم، این کادر مجدداً فراخوانی می‌شود."
+                ),
+                tipsEnglish = listOf(
+                    "3-Second Story Progress: Fills a smooth progress bar at the bottom over 3 seconds before auto-dismissing.",
+                    "Hold to Pause: Touch and hold anywhere on the card to pause time and freeze the progress line indefinitely.",
+                    "Reopen Anytime: Tap the star button on the calendar toolbar to bring back the occasions overlay whenever you wish."
+                )
+            ),
+            GuideTopic(
+                titlePersian = "۶. پیشگویی‌های ماهانه و طالع کواکب",
+                titleEnglish = "6. Monthly Astrological Forecasts",
+                descriptionPersian = "روایات، طالع‌بینی سنتی نجومی، روزهای سعد و نحس و احکام کواکب هر ماه خورشیدی.",
+                descriptionEnglish = "Traditional astrological forecasts, auspicious/inauspicious days, and seasonal guidance.",
                 icon = Icons.Default.Psychology,
                 iconTint = AstroGold,
                 tipsPersian = listOf(
                     "دسترسی سریع 🔮: با زدن دکمه «پیشگویی» در نوار ابزار بالای تقویم، پنجره فال و طالع ماه جاری گشوده می‌شود.",
-                    "توصیه‌های سلامت و سبک زندگی: راهنمایی‌های حکمای کهن برای تصمیم‌گیری‌ها، سلامت تن و روان و برنامه‌ریزی هر فصل."
+                    "روزهای سعد و نحس: نمایش ایام برکت و روزهای نیازمند احتیاط در کارهای اساسی.",
+                    "توصیه‌های سلامت و سبک زندگی: راهنمایی‌های حکمای کهن برای تصمیم‌گیری‌ها، سلامت تن و روان و برنامه‌ریزی فصلی."
                 ),
                 tipsEnglish = listOf(
                     "Quick Access 🔮: Tap the 'Forecast' pill on the top toolbar to reveal traditional celestial predictions for the month.",
-                    "Wellness & Lifestyle: Historical astrological advice for seasonal wellbeing, health, and mindful decision making."
+                    "Auspicious & Caution Days: Clear view of auspicious days and days recommended for extra prudence.",
+                    "Wellness & Lifestyle: Historical astrological advice for seasonal wellbeing, health, and mindful living."
                 )
             ),
             GuideTopic(
-                titlePersian = "۴. اطلاعات نجومی، فاز ماه و قمر در عقرب",
-                titleEnglish = "4. Astronomy, Moon Phases & Scorpio",
-                descriptionPersian = "محاسبات زنده فلکی، وضعیت قمر در عقرب و چرخه روشنایی ماه.",
-                descriptionEnglish = "Real-time celestial calculations, Moon-in-Scorpio status, and lunar illumination cycles.",
-                icon = Icons.Default.Nightlight,
-                iconTint = Color(0xFFD97706),
-                tipsPersian = listOf(
-                    "قمر در عقرب: در سربرگ «نجوم»، وضعیت ورود و خروج ماه از برج عقرب و صورت فلکی عقرب با تاریخ و ساعت دقیق اعلام می‌شود.",
-                    "نماد در تقویم: روزهایی که ماه در عقرب است با نماد اختصاصی عقرب در تقویم مشخص شده‌اند.",
-                    "فاز ماه: سن ماه، درصد روشنایی و نام نجومی هلال تا بدر کامل به صورت زنده محاسبه می‌گردد.",
-                    "نماد حیوان سال و عنصر ماه: حیوان تقویم دوازده‌حیوانی (مثلاً مار، اژدها و...) و عنصر چهارگانه ماه جاری بالای صفحه نشان داده می‌شود."
-                ),
-                tipsEnglish = listOf(
-                    "Qamar Dar Aqrab: The Astronomy tab tracks lunar transit through the Scorpio sign and constellation with exact ingress/egress hours.",
-                    "Calendar Symbol: Days during Scorpio moon are marked with a distinct scorpio icon on the calendar grid.",
-                    "Moon Phase: Lunar age, illumination percentage, and astronomical phase (New Moon to Full Moon).",
-                    "Year Animal & Zodiac Element: Year animal sign (e.g. Snake, Dragon) and nature element displayed in the header."
-                )
-            ),
-            GuideTopic(
-                titlePersian = "۵. ابزار تبدیل دقیق تاریخ‌ها",
-                titleEnglish = "5. Accurate Three-Way Date Converter",
-                descriptionPersian = "تبدیل بی‌درنگ هر تاریخ بین هجری شمسی، میلادی و قمری با استاندارد روز ژولیوسی (JDN).",
-                descriptionEnglish = "Instant three-way conversion between Solar Hijri, Gregorian, and Lunar Hijri using standard Julian Day Numbers.",
-                icon = Icons.Default.SyncAlt,
-                iconTint = Color(0xFF059669),
-                tipsPersian = listOf(
-                    "تبدیل آنی: در منوی کشویی گزینه «تبدیل تاریخ» را انتخاب کنید؛ با وارد کردن هر تاریخ، معادل آن در ۲ تقویم دیگر بلافاصله ظاهر می‌شود.",
-                    "کبیسه‌سنج: سال‌های کبیسه و روز دقیق هفته به صورت هوشمند و بدون خطا محاسبه می‌گردند."
-                ),
-                tipsEnglish = listOf(
-                    "Instant Conversion: Open 'Date Converter' from the drawer; type any date to see instant equivalents in the other two systems.",
-                    "Leap Year & Weekday: Automatically verifies leap years and exact day of the week."
-                )
-            ),
-            GuideTopic(
-                titlePersian = "۶. یادداشت‌گذاری، قطب‌نما و تنظیمات",
-                titleEnglish = "6. Notes, Qibla Compass & Settings",
-                descriptionPersian = "ثبت یادداشت اختصاصی برای هر روز، جهت‌یابی قبله و شخصی‌سازی کامل برنامه.",
-                descriptionEnglish = "Daily personal notes, sensor-based Qibla compass, and personalized preferences.",
+                titlePersian = "۷. ابزارها، قطب‌نما، یادداشت‌گذاری و تنظیمات",
+                titleEnglish = "7. Tools, Qibla Compass, Notes & Settings",
+                descriptionPersian = "تبدیل تاریخ سه‌طرفه، جهت‌یابی قبله با سنسور، یادداشت اختصاصی و تنظیمات پیشرفته.",
+                descriptionEnglish = "Three-way date conversion, sensor-driven Qibla compass, personal daily notes, and advanced settings.",
                 icon = Icons.Default.Settings,
                 iconTint = Color(0xFF6366F1),
                 tipsPersian = listOf(
-                    "یادداشت روزانه: با لمس هر روز و نوشتن در کادر «یادداشت»، متن شما برای آن روز ذخیره می‌شود.",
+                    "تبدیل تاریخ: در منوی کشویی گزینه «تبدیل تاریخ» را انتخاب کنید؛ با وارد کردن هر تاریخ، معادل آن در ۲ گاه‌شماری دیگر بلافاصله ظاهر می‌شود.",
                     "قطب‌نما و قبله‌نما: در صفحه اختصاصی جهت‌یاب، با چرخش گوشی زاویه قطب‌نما و جهت دقیق قبله مشخص می‌شود.",
-                    "زبان و ظاهر: از منوی تنظیمات می‌توانید زبان برنامه را بین فارسی 🇮🇷 و انگلیسی 🇺🇸 و پوسته را بین تاریک و روشن تغییر دهید.",
-                    "دایره بنفش نئونی راهنما (!): هر زمان نیاز به راهنمایی داشتید با لمس این دایره در بالای تقویم پنجره حاضر را مشاهده فرمایید."
+                    "یادداشت روزانه: با لمس هر روز و نوشتن در کادر «یادداشت»، متن شما برای آن روز ذخیره می‌شود.",
+                    "تنظیمات قلم و بارش فصلی: در تنظیمات امکان تغییر اندازه قلم اعداد تقویم، فعال/غیرفعال‌سازی بارش زیبای فصلی و انتخاب زبان (فارسی و انگلیسی) وجود دارد."
                 ),
                 tipsEnglish = listOf(
-                    "Daily Notes: Select any day to write and persist personal notes directly onto that date.",
-                    "Qibla Compass: Sensor-driven compass pointing to the Kaaba direction based on your location.",
-                    "Language & Theme: Switch between Persian and English, and toggle Light/Dark mode in Settings.",
-                    "Neon Purple Guide Badge (!): Tap the neon purple circle at the top anytime to reopen this comprehensive guide."
+                    "Date Converter: Access 'Date Converter' from the drawer to convert dates instantly between Solar, Gregorian, and Lunar.",
+                    "Qibla Compass: Sensor-driven compass pointing to the Kaaba direction based on your location coordinates.",
+                    "Daily Notes: Select any date to record personal notes preserved in local storage.",
+                    "Font Sizing & Seasonal Rain: Customize calendar digit font sizes, toggle animated seasonal rain effect, and switch between Persian and English."
                 )
             )
         )

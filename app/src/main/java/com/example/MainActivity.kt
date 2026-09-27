@@ -24,10 +24,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,6 +38,7 @@ import com.example.calendar.core.JalaliCalendar
 import com.example.calendar.data.UserSettings
 import com.example.calendar.model.AppLanguage
 import com.example.calendar.ui.components.AppGuideDialog
+import com.example.calendar.ui.components.AppearanceDialog
 import com.example.calendar.ui.components.SeasonalRainOverlay
 import com.example.calendar.ui.screens.AstronomyScreen
 import com.example.calendar.ui.screens.CalendarScreen
@@ -69,16 +72,29 @@ class MainActivity : ComponentActivity() {
         setContent {
             val themeMode by userSettings.themeMode.collectAsState()
             val appLanguage by userSettings.appLanguage.collectAsState()
+            val fontScalePercent by userSettings.fontScalePercent.collectAsState()
             val isFa = (appLanguage == AppLanguage.PERSIAN)
             val layoutDirection = if (isFa) LayoutDirection.Rtl else LayoutDirection.Ltr
 
+            val currentDensity = LocalDensity.current
+            val customDensity = remember(currentDensity, fontScalePercent) {
+                Density(
+                    density = currentDensity.density,
+                    fontScale = currentDensity.fontScale * (fontScalePercent / 100f)
+                )
+            }
+
             MyApplicationTheme(themeMode = themeMode) {
-                // Respect layout direction based on selected language (RTL for Persian, LTR for English)
-                CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
+                // Respect layout direction and custom percentage font scale without moving any UI components
+                CompositionLocalProvider(
+                    LocalLayoutDirection provides layoutDirection,
+                    LocalDensity provides customDensity
+                ) {
                     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                     val coroutineScope = rememberCoroutineScope()
                     var selectedTab by remember { mutableStateOf(MainTab.CALENDAR) }
                     var showGuideDialog by remember { mutableStateOf(false) }
+                    var showAppearanceDialog by remember { mutableStateOf(false) }
 
                     // Current season for app header rain effect
                     val todayG = remember { CalendarManager.getTodayGregorian() }
@@ -275,6 +291,31 @@ class MainActivity : ComponentActivity() {
                                         modifier = Modifier
                                             .padding(NavigationDrawerItemDefaults.ItemPadding)
                                             .testTag("drawer_item_settings")
+                                    )
+
+                                    NavigationDrawerItem(
+                                        icon = {
+                                            val currentHolColorLong by userSettings.holidayColorLong.collectAsState()
+                                            Icon(
+                                                imageVector = Icons.Default.Palette,
+                                                contentDescription = null,
+                                                tint = Color(currentHolColorLong)
+                                            )
+                                        },
+                                        label = {
+                                            Text(
+                                                text = if (isFa) "ویرایش ظاهر" else "Appearance",
+                                                fontWeight = FontWeight.Normal
+                                            )
+                                        },
+                                        selected = false,
+                                        onClick = {
+                                            coroutineScope.launch { drawerState.close() }
+                                            showAppearanceDialog = true
+                                        },
+                                        modifier = Modifier
+                                            .padding(NavigationDrawerItemDefaults.ItemPadding)
+                                            .testTag("drawer_item_appearance")
                                     )
 
                                     NavigationDrawerItem(
@@ -533,6 +574,14 @@ class MainActivity : ComponentActivity() {
                         AppGuideDialog(
                             isFa = isFa,
                             onDismiss = { showGuideDialog = false }
+                        )
+                    }
+
+                    if (showAppearanceDialog) {
+                        AppearanceDialog(
+                            userSettings = userSettings,
+                            isFa = isFa,
+                            onDismiss = { showAppearanceDialog = false }
                         )
                     }
                 }

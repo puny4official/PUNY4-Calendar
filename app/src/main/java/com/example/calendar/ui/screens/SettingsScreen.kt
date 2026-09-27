@@ -29,6 +29,7 @@ import com.example.calendar.data.UserSettings
 import com.example.calendar.model.AppLanguage
 import com.example.calendar.model.CalendarType
 import com.example.calendar.model.CityLocation
+import com.example.calendar.ui.components.AppearanceDialog
 import com.example.ui.theme.HolidayPurple
 import com.example.ui.theme.ThemeMode
 
@@ -43,9 +44,13 @@ fun SettingsScreen(
     val selectedCity by userSettings.selectedCity.collectAsState()
     val showSecondaryDates by userSettings.showSecondaryDates.collectAsState()
     val showSeasonalRain by userSettings.showSeasonalRain.collectAsState()
+    val fontScalePercent by userSettings.fontScalePercent.collectAsState()
+    val useEnglishDayNumbers by userSettings.useEnglishDayNumbers.collectAsState()
+    val holidayColorLong by userSettings.holidayColorLong.collectAsState()
 
     val isFa = (appLanguage == AppLanguage.PERSIAN)
     var showCityDialog by remember { mutableStateOf(false) }
+    var showAppearanceDialog by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = modifier
@@ -134,7 +139,256 @@ fun SettingsScreen(
         }
 
         // ----------------------------------------------------
-        // 3. DEFAULT CALENDAR (بخش تقویم پیش‌فرض اولیه)
+        // 3. FONT & TEXT SCALE (بخش نوشتاری درصدی برای بزرگی متن‌های کل تقویم)
+        // ----------------------------------------------------
+        item {
+            SettingsCategoryCard(
+                icon = Icons.Default.FormatSize,
+                iconTint = MaterialTheme.colorScheme.primary,
+                iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                title = if (isFa) "بزرگی متن‌ها و قلم تقویم (درصدی)" else "Calendar Text Size (Percentage)",
+                subtitle = if (isFa) "تنظیم درصد بزرگی نوشته‌های کل تقویم بدون کوچک‌ترین جابه‌جایی یا تغییر در شکل برنامه" else "Scale all calendar text sizes cleanly without moving any layout elements",
+                cardTag = "settings_card_font_scale"
+            ) {
+                // Header with current percentage value and scale label badge
+                val scaleBadge = when {
+                    fontScalePercent < 90 -> if (isFa) "کوچک" else "Compact"
+                    fontScalePercent in 90..105 -> if (isFa) "استاندارد (پیش‌فرض)" else "Standard (Default)"
+                    fontScalePercent in 106..120 -> if (isFa) "متوسط و خوانا" else "Medium"
+                    fontScalePercent in 121..135 -> if (isFa) "بزرگ" else "Large"
+                    else -> if (isFa) "خیلی بزرگ" else "Extra Large"
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text(
+                                    text = if (isFa) "درصد بزرگی فعلی متن‌ها:" else "Current Font Scale:",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Row(
+                                    verticalAlignment = Alignment.Bottom,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Text(
+                                        text = if (isFa) "$fontScalePercent٪" else "$fontScalePercent%",
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Text(
+                                        text = if (isFa) "مقیاس کل" else "scale",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(bottom = 4.dp)
+                                    )
+                                }
+                            }
+
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = MaterialTheme.colorScheme.primaryContainer
+                            ) {
+                                Text(
+                                    text = scaleBadge,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        // Stepper row with (-) button, slider, and (+) button
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            FilledTonalIconButton(
+                                onClick = { userSettings.setFontScalePercent(fontScalePercent - 5) },
+                                enabled = fontScalePercent > 70,
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .testTag("font_scale_decrease_button")
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Remove,
+                                    contentDescription = if (isFa) "کاهش ۵ درصد" else "Decrease 5%"
+                                )
+                            }
+
+                            Slider(
+                                value = fontScalePercent.toFloat(),
+                                onValueChange = { userSettings.setFontScalePercent(it.toInt()) },
+                                valueRange = 70f..160f,
+                                steps = 17,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .testTag("font_scale_slider")
+                            )
+
+                            FilledTonalIconButton(
+                                onClick = { userSettings.setFontScalePercent(fontScalePercent + 5) },
+                                enabled = fontScalePercent < 160,
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .testTag("font_scale_increase_button")
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = if (isFa) "افزایش ۵ درصد" else "Increase 5%"
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Quick presets chips
+                        Text(
+                            text = if (isFa) "انتخاب سریع درصد مقیاس:" else "Quick Scale Presets:",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        val presets = listOf(
+                            85 to if (isFa) "۸۵٪ کوچک" else "85% Small",
+                            100 to if (isFa) "۱۰۰٪ پیش‌فرض" else "100% Default",
+                            115 to if (isFa) "۱۱۵٪ متوسط" else "115% Medium",
+                            130 to if (isFa) "۱۳۰٪ بزرگ" else "130% Large",
+                            145 to if (isFa) "۱۴۵٪ خیلی بزرگ" else "145% X-Large"
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            presets.forEach { (percent, label) ->
+                                val isSelected = (fontScalePercent == percent)
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                                    border = BorderStroke(
+                                        1.dp,
+                                        if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                                    ),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable { userSettings.setFontScalePercent(percent) }
+                                        .testTag("font_preset_$percent")
+                                ) {
+                                    Box(
+                                        modifier = Modifier.padding(vertical = 7.dp, horizontal = 2.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = if (isFa) "$percent٪" else "$percent%",
+                                            fontSize = 12.sp,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Live Preview Box showing text rendering at current percentage
+                Surface(
+                    shape = RoundedCornerShape(14.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Visibility,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Text(
+                                text = if (isFa) "پیش‌نمایش زنده اندازه فونت تقویم:" else "Live Calendar Font Preview:",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = if (isFa) "شنبه ۱۵ فروردین ۱۴۰۵ • روز طبیعت و نوروز" else "Saturday, April 4, 2026 • Spring Festival",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = if (isFa) {
+                                "تمامی نوشته‌های تقویم به این مقیاس بزرگ یا کوچک می‌شوند، بدون اینکه هیچ جابه‌جایی یا تغییری در شکل کادرها و دکمه‌ها رخ دهد."
+                            } else {
+                                "All calendar texts scale dynamically with this percentage without shifting any card frames or grid buttons."
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                if (fontScalePercent != 100) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    OutlinedButton(
+                        onClick = { userSettings.setFontScalePercent(100) },
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("reset_font_scale_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.RestartAlt,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = if (isFa) "بازنشانی اندازه فونت به ۱۰۰٪ (حالت پیش‌فرض)" else "Reset Font Size to 100% (Default)")
+                    }
+                }
+            }
+        }
+
+        // ----------------------------------------------------
+        // 4. DEFAULT CALENDAR (بخش تقویم پیش‌فرض اولیه)
         // ----------------------------------------------------
         item {
             SettingsCategoryCard(
@@ -248,14 +502,14 @@ fun SettingsScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = if (isFa) "نمایش تاریخ‌های معادل در تقویم" else "Show Equivalent Dates",
+                                text = if (isFa) "نمایش تاریخ‌های قمری و میلادی زیر هر روز" else "Show Lunar & Gregorian Dates in Day Cells",
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = if (isFa) "نمایش تاریخ میلادی و قمری در کنار تاریخ اصلی روز" else "Display Gregorian and Lunar dates in day cells",
+                                text = if (isFa) "نمایش ارقام کوچک معادل قمری و میلادی در زیر شماره روزها (به‌صورت پیش‌فرض خاموش)" else "Display small equivalent lunar and gregorian dates below each day number",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -304,6 +558,95 @@ fun SettingsScreen(
                             checked = showSeasonalRain,
                             onCheckedChange = { userSettings.setShowSeasonalRain(it) },
                             modifier = Modifier.testTag("toggle_seasonal_rain")
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Surface(
+                    shape = RoundedCornerShape(14.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { userSettings.setUseEnglishDayNumbers(!useEnglishDayNumbers) }
+                            .padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = if (isFa) "اعداد روزهای تقویم با فونت لاتین / انگلیسی" else "Day Numbers in Latin / English Digits",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = if (isFa) "نمایش ارقام روزهای تقویم به صورت 1, 2, 3... با فونت استاندارد گوشی حتی در زبان فارسی" else "Show calendar day cells with English digits (1, 2, 3...) using device default font",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Switch(
+                            checked = useEnglishDayNumbers,
+                            onCheckedChange = { userSettings.setUseEnglishDayNumbers(it) },
+                            modifier = Modifier.testTag("toggle_english_day_numbers")
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Surface(
+                    shape = RoundedCornerShape(14.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showAppearanceDialog = true }
+                            .padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(holidayColorLong),
+                                modifier = Modifier.size(28.dp)
+                            ) {}
+                            Column {
+                                Text(
+                                    text = if (isFa) "ویرایش ظاهر و رنگ تعطیلات رسمی" else "Customize Holiday Color & Appearance",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = if (isFa) "انتخاب از میان ۱۶ رنگ متنوع یا طیف رنگین‌کمانی دلخواه" else "Choose from 16 preset colors or custom rainbow slider",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
+                        Icon(
+                            imageVector = Icons.Default.Palette,
+                            contentDescription = null,
+                            tint = Color(holidayColorLong)
                         )
                     }
                 }
@@ -479,6 +822,14 @@ fun SettingsScreen(
                     Text(if (isFa) "بستن" else "Close")
                 }
             }
+        )
+    }
+
+    if (showAppearanceDialog) {
+        AppearanceDialog(
+            userSettings = userSettings,
+            isFa = isFa,
+            onDismiss = { showAppearanceDialog = false }
         )
     }
 }

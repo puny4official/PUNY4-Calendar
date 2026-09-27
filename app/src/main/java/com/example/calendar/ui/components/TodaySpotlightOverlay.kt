@@ -75,7 +75,8 @@ fun TodaySpotlightOverlay(
     visible: Boolean,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
-    isFa: Boolean = true
+    isFa: Boolean = true,
+    holidayColor: Color = Color(0xFF8B5CF6L)
 ) {
     var progress by remember { mutableFloatStateOf(0f) }
     var isHolding by remember { mutableStateOf(false) }
@@ -163,31 +164,26 @@ fun TodaySpotlightOverlay(
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val radius = targetRadius + 4.dp.toPx() + pulseOffset
 
-                    // 1. Highlight circle around the indicated day cell (Glassy and light purple)
-                    drawCircle(
-                        color = Color(0xFFC084FC).copy(alpha = 0.25f),
-                        center = targetCenter,
-                        radius = radius,
-                        style = Fill
-                    )
+                    // 1. Highlight circle around the indicated day cell (داخل نشانگر بدون رنگ / هم‌رنگ پس‌زمینه و دور آن فیروزه‌ای)
+                    val turquoise = Color(0xFF06B6D4)
 
                     drawCircle(
-                        color = Color(0xFFA855F7).copy(alpha = 0.85f),
+                        color = turquoise,
                         center = targetCenter,
                         radius = radius,
                         style = Stroke(
-                            width = 2.dp.toPx(),
+                            width = 2.4.dp.toPx(),
                             pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 7f), dashPhase)
                         )
                     )
 
-                    // Secondary subtle light purple glass aura
+                    // Secondary subtle turquoise aura around the indicator
                     drawCircle(
-                        color = Color(0xFFE9D5FF).copy(alpha = 0.5f),
+                        color = turquoise.copy(alpha = 0.4f),
                         center = targetCenter,
                         radius = radius + 3.dp.toPx(),
                         style = Stroke(
-                            width = 1.dp.toPx(),
+                            width = 1.2.dp.toPx(),
                             pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), -dashPhase)
                         )
                     )
@@ -222,7 +218,7 @@ fun TodaySpotlightOverlay(
                         // Connecting dashed line
                         drawPath(
                             path = dashedPath,
-                            color = Color(0xFFA855F7).copy(alpha = 0.90f),
+                            color = turquoise.copy(alpha = 0.95f),
                             style = Stroke(
                                 width = 2.4.dp.toPx(),
                                 pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 7f), dashPhase)
@@ -231,7 +227,7 @@ fun TodaySpotlightOverlay(
 
                         // Solid anchor dot at the start (on the day circle)
                         drawCircle(
-                            color = Color(0xFFA855F7),
+                            color = turquoise,
                             radius = 3.5.dp.toPx(),
                             center = start
                         )
@@ -259,7 +255,7 @@ fun TodaySpotlightOverlay(
 
                         drawPath(
                             path = headPath,
-                            color = Color(0xFFA855F7),
+                            color = turquoise,
                             style = Fill
                         )
                     }
@@ -381,21 +377,39 @@ fun TodaySpotlightOverlay(
                             .filter { !it.isHoliday }
                             .map { it.title }
 
-                        val summaryText = buildAnnotatedString {
-                            // Official holidays
-                            withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = HolidayPurple)) {
-                                append(if (isFa) "🟣 تعطیلات رسمی: " else "🟣 Official Holidays: ")
-                            }
-                            withStyle(SpanStyle(fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)) {
-                                if (hasAnyHoliday) {
-                                    append(holidaysText)
-                                } else {
-                                    append(if (isFa) "امروز تعطیل رسمی نیست." else "No official holiday today.")
+                        if (hasAnyHoliday) {
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = holidayColor.copy(alpha = 0.55f),
+                                border = BorderStroke(1.dp, holidayColor.copy(alpha = 0.65f)),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 8.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .clip(CircleShape)
+                                            .background(Color.White)
+                                    )
+                                    Text(
+                                        text = (if (isFa) "تعطیل رسمی: " else "Official Holiday: ") + holidaysText,
+                                        color = Color.White,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        lineHeight = 17.sp
+                                    )
                                 }
                             }
+                        }
 
+                        val summaryText = buildAnnotatedString {
                             // Global and Iranian occasions
-                            append("\n\n")
                             withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)) {
                                 append(if (isFa) "🌍 مناسبت‌های جهانی و ایرانی: " else "🌍 Global & Iranian Occasions: ")
                             }
@@ -403,7 +417,7 @@ fun TodaySpotlightOverlay(
                                 if (otherOccasions.isNotEmpty()) {
                                     append(otherOccasions.joinToString(" • "))
                                 } else {
-                                    append(if (isFa) "مناسبت ثبت‌شده‌ای برای امروز وجود ندارد." else "No occasions recorded for today.")
+                                    append(if (isFa) "مناسبت دیگری برای امروز ثبت نشده است." else "No other occasions recorded for today.")
                                 }
                             }
                         }

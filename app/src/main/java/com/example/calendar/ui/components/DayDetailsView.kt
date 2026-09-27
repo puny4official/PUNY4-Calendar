@@ -3,7 +3,10 @@ package com.example.calendar.ui.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -19,6 +22,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,10 +42,14 @@ fun DayDetailsView(
     onSaveNote: (String) -> Unit,
     modifier: Modifier = Modifier,
     isFa: Boolean = true,
-    onJumpToToday: (() -> Unit)? = null
+    holidayColor: Color = Color(0xFF8B5CF6L),
+    onJumpToToday: (() -> Unit)? = null,
+    onSelectCity: ((CityLocation) -> Unit)? = null
 ) {
     var isEditingNote by remember(dayInfo.jalaliDate) { mutableStateOf(false) }
     var noteText by remember(dayInfo.jalaliDate, userNote) { mutableStateOf(userNote) }
+    var showCityPicker by remember { mutableStateOf(false) }
+    var citySearchQuery by remember { mutableStateOf("") }
 
     Column(
         modifier = modifier
@@ -186,25 +194,49 @@ fun DayDetailsView(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Time Statistics Badges
-                Row(
+                val jalaliCentury = ((dayInfo.jalaliDate.year - 1) / 100) + 1
+                val centuryNumberFa = DigitFormatter.toSystemDigits(jalaliCentury, isFa)
+                val centuryText = when (jalaliCentury) {
+                    14 -> if (isFa) "قرن ۱۴ (چهاردهم)" else "14th Century"
+                    15 -> if (isFa) "قرن ۱۵ (پانزدهم)" else "15th Century"
+                    16 -> if (isFa) "قرن ۱۶ (شانزدهم)" else "16th Century"
+                    else -> if (isFa) "قرن $centuryNumberFa خورشیدی" else "$jalaliCentury th Century"
+                }
+
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    StatisticPill(
-                        label = "روز سال",
-                        value = "${DigitFormatter.toSystemDigits(dayInfo.dayOfYearJalali, isFa)} از ${DigitFormatter.toSystemDigits(365, isFa)}",
-                        modifier = Modifier.weight(1f)
-                    )
-                    StatisticPill(
-                        label = "مانده تا عید",
-                        value = "${DigitFormatter.toSystemDigits(dayInfo.daysRemainingJalali, isFa)} روز",
-                        modifier = Modifier.weight(1f)
-                    )
-                    StatisticPill(
-                        label = "شماره هفته",
-                        value = "هفته ${DigitFormatter.toSystemDigits(dayInfo.weekOfYearJalali, isFa)}",
-                        modifier = Modifier.weight(1f)
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        StatisticPill(
+                            label = if (isFa) "روز سال" else "Day of Year",
+                            value = "${DigitFormatter.toSystemDigits(dayInfo.dayOfYearJalali, isFa)} از ${DigitFormatter.toSystemDigits(JalaliCalendar.getTotalDaysInYear(dayInfo.jalaliDate.year), isFa)}",
+                            modifier = Modifier.weight(1f)
+                        )
+                        StatisticPill(
+                            label = if (isFa) "مانده تا عید" else "Until Nowruz",
+                            value = "${DigitFormatter.toSystemDigits(dayInfo.daysRemainingJalali, isFa)} ${if (isFa) "روز" else "days"}",
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        StatisticPill(
+                            label = if (isFa) "شماره هفته" else "Week Number",
+                            value = "${if (isFa) "هفته" else "Week"} ${DigitFormatter.toSystemDigits(dayInfo.weekOfYearJalali, isFa)}",
+                            modifier = Modifier.weight(1f)
+                        )
+                        StatisticPill(
+                            label = if (isFa) "قرن" else "Century",
+                            value = centuryText,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
         }
@@ -560,6 +592,137 @@ fun DayDetailsView(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
+
+                // ----------------------------------------------------
+                // بخش اذان‌ها و اوقات شرعی (به افق شهر انتخابی کاربر)
+                // ----------------------------------------------------
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 12.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.75f),
+                            modifier = Modifier.size(34.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Mosque,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(19.dp)
+                                )
+                            }
+                        }
+                        Column {
+                            Text(
+                                text = if (isFa) "اوقات شرعی و اذان‌ها" else "Prayer Times (Azan)",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = if (isFa) "به افق ${currentCity.namePersian}" else "Horizon: ${currentCity.nameEnglish}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+
+                    // دکمه انتخاب / تغییر شهر
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .clickable { showCityPicker = true }
+                            .testTag("change_city_azan_button")
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 9.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.LocationOn,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Text(
+                                text = if (isFa) "تغییر شهر" else "Change City",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // نمایش شش‌گانه اوقات شرعی شهر منتخب
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    AzanTimeCard(
+                        title = if (isFa) "اذان صبح" else "Fajr",
+                        time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.dawn, isFa),
+                        icon = Icons.Default.Bedtime,
+                        modifier = Modifier.weight(1f)
+                    )
+                    AzanTimeCard(
+                        title = if (isFa) "طلوع آفتاب" else "Sunrise",
+                        time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.sunrise, isFa),
+                        icon = Icons.Default.WbSunny,
+                        modifier = Modifier.weight(1f)
+                    )
+                    AzanTimeCard(
+                        title = if (isFa) "اذان ظهر" else "Dhuhr",
+                        time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.noon, isFa),
+                        icon = Icons.Default.LightMode,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    AzanTimeCard(
+                        title = if (isFa) "غروب آفتاب" else "Sunset",
+                        time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.sunset, isFa),
+                        icon = Icons.Default.WbTwilight,
+                        modifier = Modifier.weight(1f)
+                    )
+                    AzanTimeCard(
+                        title = if (isFa) "اذان مغرب" else "Maghrib",
+                        time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.maghrib, isFa),
+                        icon = Icons.Default.NightsStay,
+                        modifier = Modifier.weight(1f)
+                    )
+                    AzanTimeCard(
+                        title = if (isFa) "نیمه‌شب" else "Midnight",
+                        time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.midnight, isFa),
+                        icon = Icons.Default.Brightness3,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
 
@@ -576,8 +739,9 @@ fun DayDetailsView(
                 .testTag("iran_official_holidays_card"),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
+                containerColor = if (hasOfficialHoliday) holidayColor.copy(alpha = 0.50f) else MaterialTheme.colorScheme.surface
             ),
+            border = if (hasOfficialHoliday) BorderStroke(1.5.dp, holidayColor.copy(alpha = 0.70f)) else null,
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column(
@@ -591,14 +755,14 @@ fun DayDetailsView(
                 ) {
                     Surface(
                         shape = CircleShape,
-                        color = HolidayPurpleContainer,
+                        color = if (hasOfficialHoliday) Color.White.copy(alpha = 0.20f) else HolidayPurpleContainer,
                         modifier = Modifier.size(36.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Default.Celebration,
                                 contentDescription = null,
-                                tint = HolidayPurple,
+                                tint = if (hasOfficialHoliday) Color.White else HolidayPurple,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -607,13 +771,13 @@ fun DayDetailsView(
                         text = "تعطیلات رسمی ایران",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = HolidayPurple
+                        color = if (hasOfficialHoliday) Color.White else HolidayPurple
                     )
                 }
 
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 12.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant
+                    color = if (hasOfficialHoliday) Color.White.copy(alpha = 0.25f) else MaterialTheme.colorScheme.surfaceVariant
                 )
 
                 if (hasOfficialHoliday) {
@@ -634,22 +798,22 @@ fun DayDetailsView(
                                     modifier = Modifier
                                         .size(10.dp)
                                         .clip(CircleShape)
-                                        .background(HolidayPurple)
+                                        .background(Color.White)
                                 )
                                 Text(
                                     text = "جمعه (تعطیل رسمی پایان هفته)",
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = HolidayPurple
+                                    color = Color.White
                                 )
                             }
                             Surface(
                                 shape = RoundedCornerShape(6.dp),
-                                color = HolidayPurpleContainer
+                                color = Color.White.copy(alpha = 0.25f)
                             ) {
                                 Text(
                                     text = "تعطیل رسمی",
-                                    color = OnHolidayPurpleContainer,
+                                    color = Color.White,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
@@ -675,22 +839,22 @@ fun DayDetailsView(
                                     modifier = Modifier
                                         .size(10.dp)
                                         .clip(CircleShape)
-                                        .background(HolidayPurple)
+                                        .background(Color.White)
                                 )
                                 Text(
                                     text = holidayEvent.title,
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = HolidayPurple
+                                    color = Color.White
                                 )
                             }
                             Surface(
                                 shape = RoundedCornerShape(6.dp),
-                                color = HolidayPurpleContainer
+                                color = Color.White.copy(alpha = 0.25f)
                             ) {
                                 Text(
                                     text = "تعطیل رسمی کشور",
-                                    color = OnHolidayPurpleContainer,
+                                    color = Color.White,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
@@ -1012,6 +1176,128 @@ fun DayDetailsView(
                 }
             }
         }
+
+        // دیالوگ انتخاب شهر برای اوقات شرعی و اذان‌ها
+        if (showCityPicker) {
+            val filteredCities = remember(citySearchQuery) {
+                if (citySearchQuery.isBlank()) {
+                    AstronomicalCalculator.CITIES
+                } else {
+                    val q = citySearchQuery.trim().lowercase()
+                    AstronomicalCalculator.CITIES.filter {
+                        it.namePersian.contains(q) || it.nameEnglish.lowercase().contains(q)
+                    }
+                }
+            }
+
+            AlertDialog(
+                onDismissRequest = {
+                    showCityPicker = false
+                    citySearchQuery = ""
+                },
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = if (isFa) "انتخاب شهر برای اوقات شرعی و اذان" else "Select City for Prayer Times",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                },
+                text = {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = citySearchQuery,
+                            onValueChange = { citySearchQuery = it },
+                            placeholder = { Text(if (isFa) "جستجوی شهر..." else "Search city...") },
+                            leadingIcon = {
+                                Icon(imageVector = Icons.Default.Search, contentDescription = null)
+                            },
+                            trailingIcon = {
+                                if (citySearchQuery.isNotEmpty()) {
+                                    IconButton(onClick = { citySearchQuery = "" }) {
+                                        Icon(imageVector = Icons.Default.Close, contentDescription = null)
+                                    }
+                                }
+                            },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(300.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            items(filteredCities) { city ->
+                                val isChosen = (city.id == currentCity.id)
+                                val cityName = if (isFa) city.namePersian else city.nameEnglish
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(
+                                            if (isChosen) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+                                        )
+                                        .clickable {
+                                            onSelectCity?.invoke(city)
+                                            showCityPicker = false
+                                            citySearchQuery = ""
+                                        }
+                                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column {
+                                        Text(
+                                            text = cityName,
+                                            fontWeight = if (isChosen) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (isChosen) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            text = "${city.latitude}°N, ${city.longitude}°E",
+                                            fontSize = 11.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    RadioButton(
+                                        selected = isChosen,
+                                        onClick = {
+                                            onSelectCity?.invoke(city)
+                                            showCityPicker = false
+                                            citySearchQuery = ""
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showCityPicker = false
+                        citySearchQuery = ""
+                    }) {
+                        Text(if (isFa) "بستن" else "Close")
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -1027,8 +1313,8 @@ private fun CalendarDateRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
-            .padding(10.dp),
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f))
+            .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -1040,18 +1326,21 @@ private fun CalendarDateRow(
                 imageVector = icon,
                 contentDescription = null,
                 tint = iconTint,
-                modifier = Modifier.size(22.dp)
+                modifier = Modifier.size(24.dp)
             )
             Column {
                 Text(
                     text = calendarName,
-                    style = MaterialTheme.typography.labelSmall,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 12.5.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     text = dateString,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Default),
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Default),
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
@@ -1059,7 +1348,8 @@ private fun CalendarDateRow(
 
         Text(
             text = subtitle,
-            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
+            fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
@@ -1074,23 +1364,27 @@ private fun StatisticPill(
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
     ) {
         Column(
-            modifier = Modifier.padding(vertical = 8.dp, horizontal = 6.dp),
+            modifier = Modifier.padding(vertical = 10.dp, horizontal = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = label,
-                fontSize = 10.sp,
+                fontSize = 12.5.sp,
+                fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            Spacer(modifier = Modifier.height(3.dp))
             Text(
                 text = value,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.ExtraBold,
                 fontFamily = FontFamily.Default,
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onSurface
+                fontSize = 14.5.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
             )
         }
     }
@@ -1108,21 +1402,70 @@ private fun SolarTimeItem(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            modifier = Modifier.size(16.dp),
+            modifier = Modifier.size(19.dp),
             tint = MaterialTheme.colorScheme.primary
         )
-        Spacer(modifier = Modifier.height(2.dp))
+        Spacer(modifier = Modifier.height(3.dp))
         Text(
             text = title,
-            fontSize = 9.sp,
+            fontSize = 11.5.sp,
+            fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
             text = time,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.ExtraBold,
             fontFamily = FontFamily.Default,
-            fontSize = 11.sp,
+            fontSize = 13.5.sp,
             color = MaterialTheme.colorScheme.onSurface
         )
+    }
+}
+
+@Composable
+private fun AzanTimeCard(
+    title: String,
+    time: String,
+    icon: ImageVector,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f))
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 10.dp, horizontal = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = title,
+                fontSize = 11.5.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = time,
+                fontWeight = FontWeight.ExtraBold,
+                fontFamily = FontFamily.Default,
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }

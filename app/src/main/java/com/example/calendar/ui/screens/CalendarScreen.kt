@@ -6,6 +6,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
@@ -28,7 +29,10 @@ fun CalendarScreen(
     val defaultCalType by userSettings.calendarType.collectAsState()
     val currentCity by userSettings.selectedCity.collectAsState()
     val showSecondaryDates by userSettings.showSecondaryDates.collectAsState()
+    val useEnglishDayNumbers by userSettings.useEnglishDayNumbers.collectAsState()
     val appLanguage by userSettings.appLanguage.collectAsState()
+    val holidayColorLong by userSettings.holidayColorLong.collectAsState()
+    val holidayColor = remember(holidayColorLong) { Color(holidayColorLong) }
 
     var activeCalendarType by remember(defaultCalType) { mutableStateOf(defaultCalType) }
 
@@ -119,6 +123,7 @@ fun CalendarScreen(
                     currentMonth = currentMonth,
                     selectedJdn = selectedJdn,
                     showSecondaryDates = showSecondaryDates,
+                    useEnglishDayNumbers = useEnglishDayNumbers,
                     onDateSelected = { jdn ->
                         selectedJdn = jdn
                         userNote = userSettings.getNote(jdn)
@@ -190,7 +195,8 @@ fun CalendarScreen(
                     onShowTodaySpotlight = {
                         showIntroSpotlight = true
                     },
-                    appLanguage = appLanguage
+                    appLanguage = appLanguage,
+                    holidayColor = holidayColor
                 )
             }
 
@@ -201,11 +207,15 @@ fun CalendarScreen(
                     currentCity = currentCity,
                     userNote = userNote,
                     isFa = (appLanguage == AppLanguage.PERSIAN),
+                    holidayColor = holidayColor,
                     onSaveNote = { newNote ->
                         userSettings.saveNote(selectedJdn, newNote)
                         userNote = newNote
                     },
-                    onJumpToToday = handleGoToToday
+                    onJumpToToday = handleGoToToday,
+                    onSelectCity = { city ->
+                        userSettings.setCity(city)
+                    }
                 )
             }
         }
@@ -217,6 +227,7 @@ fun CalendarScreen(
             targetRadius = if (indicatorCellRadius > 0f) indicatorCellRadius else todayCellRadius,
             visible = showIntroSpotlight,
             isFa = (appLanguage == AppLanguage.PERSIAN),
+            holidayColor = holidayColor,
             onDismiss = { showIntroSpotlight = false }
         )
     }

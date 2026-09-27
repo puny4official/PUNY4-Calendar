@@ -26,11 +26,20 @@ class UserSettings(context: Context) {
     private val _selectedCity = MutableStateFlow(loadCity())
     val selectedCity: StateFlow<CityLocation> = _selectedCity.asStateFlow()
 
-    private val _showSecondaryDates = MutableStateFlow(prefs.getBoolean("show_sec_dates", true))
+    private val _showSecondaryDates = MutableStateFlow(prefs.getBoolean("show_sec_dates_v2", false))
     val showSecondaryDates: StateFlow<Boolean> = _showSecondaryDates.asStateFlow()
 
     private val _showSeasonalRain = MutableStateFlow(prefs.getBoolean("show_seasonal_rain", true))
     val showSeasonalRain: StateFlow<Boolean> = _showSeasonalRain.asStateFlow()
+
+    private val _fontScalePercent = MutableStateFlow(prefs.getInt("font_scale_percent", 100))
+    val fontScalePercent: StateFlow<Int> = _fontScalePercent.asStateFlow()
+
+    private val _useEnglishDayNumbers = MutableStateFlow(prefs.getBoolean("use_english_day_numbers", false))
+    val useEnglishDayNumbers: StateFlow<Boolean> = _useEnglishDayNumbers.asStateFlow()
+
+    private val _holidayColorLong = MutableStateFlow(prefs.getLong("holiday_color_long", 0xFF8B5CF6L))
+    val holidayColorLong: StateFlow<Long> = _holidayColorLong.asStateFlow()
 
     private fun loadAppLanguage(): AppLanguage {
         val name = prefs.getString("app_language", AppLanguage.PERSIAN.name) ?: AppLanguage.PERSIAN.name
@@ -85,13 +94,29 @@ class UserSettings(context: Context) {
     }
 
     fun setShowSecondaryDates(show: Boolean) {
-        prefs.edit().putBoolean("show_sec_dates", show).apply()
+        prefs.edit().putBoolean("show_sec_dates_v2", show).apply()
         _showSecondaryDates.value = show
     }
 
     fun setShowSeasonalRain(show: Boolean) {
         prefs.edit().putBoolean("show_seasonal_rain", show).apply()
         _showSeasonalRain.value = show
+    }
+
+    fun setFontScalePercent(percent: Int) {
+        val clamped = percent.coerceIn(70, 160)
+        prefs.edit().putInt("font_scale_percent", clamped).apply()
+        _fontScalePercent.value = clamped
+    }
+
+    fun setUseEnglishDayNumbers(enabled: Boolean) {
+        prefs.edit().putBoolean("use_english_day_numbers", enabled).apply()
+        _useEnglishDayNumbers.value = enabled
+    }
+
+    fun setHolidayColor(colorLong: Long) {
+        prefs.edit().putLong("holiday_color_long", colorLong).apply()
+        _holidayColorLong.value = colorLong
     }
 
     fun getNote(jdn: Long): String {
