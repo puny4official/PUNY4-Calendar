@@ -28,15 +28,15 @@ data class IslamicDate(val year: Int, val month: Int, val day: Int) {
     override fun toString(): String = String.format("%04d/%02d/%02d", year, month, day)
 }
 
-enum class MoonPhaseType(val titlePersian: String, val titleEnglish: String) {
-    NEW_MOON("ماه نو (محاق)", "New Moon"),
-    WAXING_CRESCENT("هلال افزاینده", "Waxing Crescent"),
-    FIRST_QUARTER("تربیع اول (یک‌چهارم)", "First Quarter"),
-    WAXING_GIBBOUS("تحدب فزاینده", "Waxing Gibbous"),
-    FULL_MOON("بدر کامل (ماه شب چهارده)", "Full Moon"),
-    WANING_GIBBOUS("تحدب کاهنده", "Waning Gibbous"),
-    THIRD_QUARTER("تربیع دوم (آخر)", "Third Quarter"),
-    WANING_CRESCENT("هلال کاهنده", "Waning Crescent")
+enum class MoonPhaseType(val titlePersian: String, val titleEnglish: String, val emoji: String) {
+    NEW_MOON("ماه نو (محاق)", "New Moon", "🌑"),
+    WAXING_CRESCENT("هلال افزاینده", "Waxing Crescent", "🌒"),
+    FIRST_QUARTER("تربیع اول (یک‌چهارم)", "First Quarter", "🌓"),
+    WAXING_GIBBOUS("تحدب فزاینده", "Waxing Gibbous", "🌔"),
+    FULL_MOON("بدر کامل (ماه شب چهارده)", "Full Moon", "🌕"),
+    WANING_GIBBOUS("تحدب کاهنده", "Waning Gibbous", "🌖"),
+    THIRD_QUARTER("تربیع دوم (آخر)", "Third Quarter", "🌗"),
+    WANING_CRESCENT("هلال کاهنده", "Waning Crescent", "🌘")
 }
 
 data class MoonInfo(

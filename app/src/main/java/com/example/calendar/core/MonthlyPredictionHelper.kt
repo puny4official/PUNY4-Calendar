@@ -17,7 +17,24 @@ data class MonthlyPrediction(
 
 object MonthlyPredictionHelper {
 
+    private val predictionCache = java.util.concurrent.ConcurrentHashMap<String, MonthlyPrediction>()
+
+    fun clearCache() {
+        predictionCache.clear()
+    }
+
     fun generatePrediction(
+        calendarType: CalendarType,
+        year: Int,
+        month: Int
+    ): MonthlyPrediction {
+        val key = "$calendarType-$year-$month"
+        return predictionCache.getOrPut(key) {
+            computePrediction(calendarType, year, month)
+        }
+    }
+
+    private fun computePrediction(
         calendarType: CalendarType,
         year: Int,
         month: Int

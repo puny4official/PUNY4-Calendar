@@ -22,7 +22,9 @@ import com.example.calendar.core.CalendarManager
 import com.example.calendar.core.JalaliCalendar
 import com.example.calendar.data.UserSettings
 import com.example.calendar.ui.components.MoonPhaseCanvas
+import com.example.calendar.ui.components.MoonPhaseProgressionBar
 import com.example.ui.theme.AstroGold
+import com.example.ui.theme.MoonPaleYellow
 import com.example.ui.theme.ScorpioAlert
 import com.example.ui.theme.SuccessGreen
 
@@ -85,16 +87,21 @@ fun AstronomyScreen(
 
                     MoonPhaseCanvas(moonInfo = todayInfo.moonInfo, size = 96.dp)
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Full moon progression bar (روند گام‌های ماه از هلال تا بدر کامل و محو شدن: 🌒 🌓 🌔 🌕 🌖 🌗 🌘)
+                    MoonPhaseProgressionBar(currentPhase = todayInfo.moonInfo.phaseType)
+
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
-                        text = todayInfo.moonInfo.phaseType.titlePersian,
+                        text = "${todayInfo.moonInfo.phaseType.emoji} ${todayInfo.moonInfo.phaseType.titlePersian}",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
-                        color = AstroGold
+                        color = MoonPaleYellow
                     )
                     Text(
-                        text = "${todayInfo.moonInfo.phaseType.titleEnglish} • سن ماه: ${todayInfo.moonInfo.ageDays} روز",
+                        text = "${todayInfo.moonInfo.phaseType.titleEnglish} • سن ماه: ${String.format(java.util.Locale.US, "%.1f", todayInfo.moonInfo.ageDays)} روز",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

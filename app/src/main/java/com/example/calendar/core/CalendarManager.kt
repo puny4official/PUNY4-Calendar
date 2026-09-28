@@ -26,7 +26,22 @@ object CalendarManager {
         return JalaliCalendar.gregorianToJalali(g.year, g.month, g.day)
     }
 
+    private val dayInfoCache = java.util.concurrent.ConcurrentHashMap<String, FullDayInfo>()
+    private val monthBaseCache = java.util.concurrent.ConcurrentHashMap<String, List<CalendarGridCell>>()
+
+    fun clearCache() {
+        dayInfoCache.clear()
+        monthBaseCache.clear()
+    }
+
     fun getFullDayInfo(jdn: Long, city: CityLocation = AstronomicalCalculator.CITIES[0]): FullDayInfo {
+        val cacheKey = "$jdn-${city.id}"
+        return dayInfoCache.getOrPut(cacheKey) {
+            computeFullDayInfo(jdn, city)
+        }
+    }
+
+    private fun computeFullDayInfo(jdn: Long, city: CityLocation): FullDayInfo {
         val gregorian = JalaliCalendar.jdnToGregorian(jdn)
         val jalali = JalaliCalendar.jdnToJalali(jdn)
         val islamic = IslamicCalendar.jdnToIslamic(jdn)
@@ -115,9 +130,27 @@ object CalendarManager {
         month: Int,
         selectedJdn: Long
     ): List<CalendarGridCell> {
-        val cells = mutableListOf<CalendarGridCell>()
+        val cacheKey = "$calendarType-$year-$month"
+        val baseCells = monthBaseCache.getOrPut(cacheKey) {
+            computeMonthBaseGrid(calendarType, year, month)
+        }
         val todayG = getTodayGregorian()
         val todayJdn = JalaliCalendar.gregorianToJdn(todayG.year, todayG.month, todayG.day)
+
+        return baseCells.map { cell ->
+            cell.copy(
+                isSelected = (cell.jdn == selectedJdn),
+                isToday = (cell.jdn == todayJdn)
+            )
+        }
+    }
+
+    private fun computeMonthBaseGrid(
+        calendarType: CalendarType,
+        year: Int,
+        month: Int
+    ): List<CalendarGridCell> {
+        val cells = mutableListOf<CalendarGridCell>()
 
         when (calendarType) {
             CalendarType.SOLAR_HIJRI -> {
@@ -128,13 +161,13 @@ object CalendarManager {
                 // Leading days from previous month
                 for (i in startDayOfWeek downTo 1) {
                     val prevJdn = firstJdn - i
-                    cells.add(createCell(prevJdn, false, selectedJdn, todayJdn, calendarType))
+                    cells.add(createCell(prevJdn, false, -1L, -1L, calendarType))
                 }
 
                 // Days of current month
                 for (day in 1..daysInMonth) {
                     val jdn = JalaliCalendar.jalaliToJdn(year, month, day)
-                    cells.add(createCell(jdn, true, selectedJdn, todayJdn, calendarType))
+                    cells.add(createCell(jdn, true, -1L, -1L, calendarType))
                 }
 
                 // Trailing days to complete grid to multiple of 7
@@ -142,7 +175,7 @@ object CalendarManager {
                 val lastJdn = JalaliCalendar.jalaliToJdn(year, month, daysInMonth)
                 for (i in 1..remaining) {
                     val nextJdn = lastJdn + i
-                    cells.add(createCell(nextJdn, false, selectedJdn, todayJdn, calendarType))
+                    cells.add(createCell(nextJdn, false, -1L, -1L, calendarType))
                 }
             }
 
@@ -154,19 +187,19 @@ object CalendarManager {
 
                 for (i in startDayOfWeek downTo 1) {
                     val prevJdn = firstJdn - i
-                    cells.add(createCell(prevJdn, false, selectedJdn, todayJdn, calendarType))
+                    cells.add(createCell(prevJdn, false, -1L, -1L, calendarType))
                 }
 
                 for (day in 1..daysInMonth) {
                     val jdn = JalaliCalendar.gregorianToJdn(year, month, day)
-                    cells.add(createCell(jdn, true, selectedJdn, todayJdn, calendarType))
+                    cells.add(createCell(jdn, true, -1L, -1L, calendarType))
                 }
 
                 val remaining = (7 - (cells.size % 7)) % 7
                 val lastJdn = JalaliCalendar.gregorianToJdn(year, month, daysInMonth)
                 for (i in 1..remaining) {
                     val nextJdn = lastJdn + i
-                    cells.add(createCell(nextJdn, false, selectedJdn, todayJdn, calendarType))
+                    cells.add(createCell(nextJdn, false, -1L, -1L, calendarType))
                 }
             }
 
@@ -177,19 +210,19 @@ object CalendarManager {
 
                 for (i in startDayOfWeek downTo 1) {
                     val prevJdn = firstJdn - i
-                    cells.add(createCell(prevJdn, false, selectedJdn, todayJdn, calendarType))
+                    cells.add(createCell(prevJdn, false, -1L, -1L, calendarType))
                 }
 
                 for (day in 1..daysInMonth) {
                     val jdn = IslamicCalendar.islamicToJdn(year, month, day)
-                    cells.add(createCell(jdn, true, selectedJdn, todayJdn, calendarType))
+                    cells.add(createCell(jdn, true, -1L, -1L, calendarType))
                 }
 
                 val remaining = (7 - (cells.size % 7)) % 7
                 val lastJdn = IslamicCalendar.islamicToJdn(year, month, daysInMonth)
                 for (i in 1..remaining) {
                     val nextJdn = lastJdn + i
-                    cells.add(createCell(nextJdn, false, selectedJdn, todayJdn, calendarType))
+                    cells.add(createCell(nextJdn, false, -1L, -1L, calendarType))
                 }
             }
         }

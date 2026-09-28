@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calendar.core.AstronomicalCalculator
+import com.example.calendar.core.CalendarManager
 import com.example.calendar.core.DigitFormatter
 import com.example.calendar.core.JalaliCalendar
 import com.example.calendar.model.CityLocation
@@ -185,7 +186,7 @@ fun DayDetailsView(
 
                 CalendarDateRow(
                     icon = Icons.Default.Nightlight,
-                    iconTint = TertiaryLight,
+                    iconTint = MoonPaleYellow,
                     calendarName = "هجری قمری",
                     dateString = "${DigitFormatter.toSystemDigits(dayInfo.islamicDate.day, isFa)} ${com.example.calendar.core.IslamicCalendar.MONTH_NAMES_ARABIC[dayInfo.islamicDate.month - 1]} ${DigitFormatter.toSystemDigits(dayInfo.islamicDate.year, isFa)}",
                     subtitle = "یوم ${dayInfo.dayOfWeekArabic}"
@@ -201,6 +202,33 @@ fun DayDetailsView(
                     15 -> if (isFa) "قرن ۱۵ (پانزدهم)" else "15th Century"
                     16 -> if (isFa) "قرن ۱۶ (شانزدهم)" else "16th Century"
                     else -> if (isFa) "قرن $centuryNumberFa خورشیدی" else "$jalaliCentury th Century"
+                }
+
+                // محاسبه فاصله روز انتخابی با تاریخ جاری
+                val todayG = CalendarManager.getTodayGregorian()
+                val todayJdn = JalaliCalendar.gregorianToJdn(todayG.year, todayG.month, todayG.day)
+                val selectedDayJdn = JalaliCalendar.gregorianToJdn(
+                    dayInfo.gregorianDate.year,
+                    dayInfo.gregorianDate.month,
+                    dayInfo.gregorianDate.day
+                )
+                val dayDifference = (selectedDayJdn - todayJdn).toInt()
+                val relativeDaysText = when {
+                    dayDifference == 0 -> if (isFa) "امروز" else "Today"
+                    dayDifference > 0 -> {
+                        val diffFa = DigitFormatter.toSystemDigits(dayDifference, isFa)
+                        if (isFa) "$diffFa روز مانده" else "$dayDifference ${if (dayDifference == 1) "day left" else "days left"}"
+                    }
+                    else -> {
+                        val absDiff = kotlin.math.abs(dayDifference)
+                        val diffFa = DigitFormatter.toSystemDigits(absDiff, isFa)
+                        if (isFa) "$diffFa روز گذشته" else "$absDiff ${if (absDiff == 1) "day ago" else "days ago"}"
+                    }
+                }
+                val relativeDaysColor = when {
+                    dayDifference == 0 -> Color(0xFF0891B2)
+                    dayDifference > 0 -> holidayColor
+                    else -> MaterialTheme.colorScheme.onSurface
                 }
 
                 Column(
@@ -232,9 +260,29 @@ fun DayDetailsView(
                             modifier = Modifier.weight(1f)
                         )
                         StatisticPill(
+                            label = if (isFa) "فصل سال" else "Season",
+                            value = "${dayInfo.seasonPersian} ${dayInfo.seasonEmoji}",
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        StatisticPill(
                             label = if (isFa) "قرن" else "Century",
                             value = centuryText,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("century_pill")
+                        )
+                        StatisticPill(
+                            label = if (isFa) "فاصله تا امروز" else "From Today",
+                            value = relativeDaysText,
+                            valueColor = relativeDaysColor,
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("relative_days_pill")
                         )
                     }
                 }
@@ -308,7 +356,7 @@ fun DayDetailsView(
                         MoonPhaseCanvas(moonInfo = dayInfo.moonInfo, size = 48.dp)
                         Column {
                             Text(
-                                text = "فاز ماه: ${dayInfo.moonInfo.phaseType.titlePersian}",
+                                text = "فاز ماه: ${dayInfo.moonInfo.phaseType.emoji} ${dayInfo.moonInfo.phaseType.titlePersian}",
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -424,18 +472,18 @@ fun DayDetailsView(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Year Animal
+                    // Year Animal (کادر هم‌رنگ پس‌زمینه خود اپلیکیشن)
                     Surface(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(14.dp),
-                        color = HolidayPurpleContainer.copy(alpha = 0.45f),
-                        border = BorderStroke(1.dp, HolidayPurple.copy(alpha = 0.22f))
+                        color = MaterialTheme.colorScheme.background,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f))
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text(
-                                text = "حیوان نماد سال ${dayInfo.jalaliDate.year}",
+                                text = "حیوان نماد سال ${DigitFormatter.toSystemDigits(dayInfo.jalaliDate.year, isFa)}",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = OnHolidayPurpleContainer.copy(alpha = 0.8f)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Row(
@@ -447,13 +495,13 @@ fun DayDetailsView(
                                     text = "سال ${currentYearAnimal.namePersian}",
                                     fontWeight = FontWeight.Bold,
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = OnHolidayPurpleContainer
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
                             Text(
                                 text = currentYearAnimal.characteristics,
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.5.sp),
-                                color = OnHolidayPurpleContainer.copy(alpha = 0.85f),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
@@ -1359,7 +1407,8 @@ private fun CalendarDateRow(
 private fun StatisticPill(
     label: String,
     value: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    valueColor: Color = MaterialTheme.colorScheme.onSurface
 ) {
     Surface(
         modifier = modifier,
@@ -1375,16 +1424,20 @@ private fun StatisticPill(
                 text = label,
                 fontSize = 12.5.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             Spacer(modifier = Modifier.height(3.dp))
             Text(
                 text = value,
                 fontWeight = FontWeight.ExtraBold,
                 fontFamily = FontFamily.Default,
-                fontSize = 14.5.sp,
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center
+                fontSize = 14.sp,
+                color = valueColor,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }

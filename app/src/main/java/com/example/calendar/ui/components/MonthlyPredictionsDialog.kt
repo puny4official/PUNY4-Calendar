@@ -10,13 +10,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -30,22 +35,36 @@ import com.example.ui.theme.SuccessGreen
 @Composable
 fun MonthlyPredictionsDialog(
     prediction: MonthlyPrediction,
+    fontScalePercent: Int = 100,
+    isFa: Boolean = true,
     onDismiss: () -> Unit
 ) {
+    val currentDensity = LocalDensity.current
+    val dialogDensity = remember(currentDensity, fontScalePercent) {
+        Density(
+            density = currentDensity.density,
+            fontScale = currentDensity.fontScale * (fontScalePercent / 100f)
+        )
+    }
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth(0.92f)
-                .fillMaxHeight(0.85f)
-                .testTag("monthly_predictions_dialog"),
-            shape = RoundedCornerShape(24.dp),
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 6.dp,
-            border = BorderStroke(1.dp, HolidayPurple.copy(alpha = 0.25f))
+        CompositionLocalProvider(
+            LocalDensity provides dialogDensity,
+            LocalLayoutDirection provides if (isFa) LayoutDirection.Rtl else LayoutDirection.Ltr
         ) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth(0.92f)
+                    .fillMaxHeight(0.85f)
+                    .testTag("monthly_predictions_dialog"),
+                shape = RoundedCornerShape(24.dp),
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = 6.dp,
+                border = BorderStroke(1.dp, HolidayPurple.copy(alpha = 0.25f))
+            ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -206,6 +225,7 @@ fun MonthlyPredictionsDialog(
                 }
             }
         }
+        }
     }
 }
 
@@ -244,7 +264,7 @@ private fun PredictionCard(
                 text = content,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                lineHeight = 22.sp,
+                lineHeight = 1.55.em,
                 fontSize = 13.sp
             )
         }

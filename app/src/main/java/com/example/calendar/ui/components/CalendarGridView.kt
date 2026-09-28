@@ -24,10 +24,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calendar.core.AstronomicalCalculator
@@ -64,6 +70,7 @@ fun CalendarGridView(
     modifier: Modifier = Modifier,
     appLanguage: AppLanguage = AppLanguage.PERSIAN,
     useEnglishDayNumbers: Boolean = false,
+    fontScalePercent: Int = 100,
     holidayColor: Color = Color(0xFF8B5CF6L),
     onTodayPositioned: ((LayoutCoordinates) -> Unit)? = null,
     onIndicatorPositioned: ((LayoutCoordinates) -> Unit)? = null,
@@ -363,6 +370,8 @@ fun CalendarGridView(
     if (showMonthlyPredictionsDialog) {
         MonthlyPredictionsDialog(
             prediction = monthlyPrediction,
+            fontScalePercent = fontScalePercent,
+            isFa = isFa,
             onDismiss = { showMonthlyPredictionsDialog = false }
         )
     }
@@ -394,12 +403,12 @@ private fun DayCellView(
     val isToday = cell.isToday
     val isHoliday = cell.hasHoliday
 
-    // کادر روزهای تعطیلات رسمی: رنگ انتخابی کاربر به‌صورت شیشه‌ای و نوشته داخل آن سفید
-    // روزهای غیرتعطیل: بدون رنگ (هم‌رنگ پس‌زمینه) و در صورت انتخاب دور آن فیروزه‌ای
-    val targetBackground = if (isHoliday) {
-        holidayColor.copy(alpha = 0.50f)
-    } else {
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.28f)
+    // داخل نشانگر: هم‌رنگ پس‌زمینه تقویم (بدون پر کردن تیره)
+    // روزهای تعطیل رسمی غیر نشانگر: رنگ تعطیلات به‌صورت ملایم
+    val targetBackground = when {
+        isSelected -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.28f) // داخل نشانگر به رنگ پس‌زمینه
+        isHoliday -> holidayColor.copy(alpha = 0.50f)
+        else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.28f)
     }
     val animatedBackground by animateColorAsState(
         targetValue = targetBackground,
@@ -408,7 +417,7 @@ private fun DayCellView(
     )
 
     val targetBorderColor = when {
-        isSelected -> Color(0xFF06B6D4) // دور نشانگر فیروزه‌ای
+        isSelected -> Color(0xFF06B6D4) // دور نشانگر فیروزه‌ای روشن و شفاف
         isHoliday -> holidayColor.copy(alpha = 0.80f) // کادر شیشه‌ای به رنگ انتخابی کاربر
         isToday -> Color(0xFF06B6D4).copy(alpha = 0.65f)
         else -> MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)
@@ -418,24 +427,34 @@ private fun DayCellView(
         animationSpec = tween(durationMillis = 200),
         label = "cellBorder"
     )
-    val borderWidth = if (isSelected) 2.2.dp else if (isHoliday) 1.5.dp else if (isToday) 1.5.dp else 1.dp
+    val borderWidth = if (isSelected) 2.5.dp else if (isHoliday) 1.5.dp else if (isToday) 1.5.dp else 1.dp
+
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val indicatorColor = if (isDark) Color(0xFF22D3EE) else Color(0xFF0891B2)
 
     val textColor = when {
+        isSelected -> if (isHoliday) holidayColor else indicatorColor
         isHoliday -> Color.White // نوشته داخل تعطیلات رسمی سفید
-        isSelected -> Color(0xFF0891B2)
         else -> MaterialTheme.colorScheme.onSurface
     }
 
     val secondaryTextColor = when {
+        isSelected -> if (isHoliday) holidayColor.copy(alpha = 0.90f) else indicatorColor.copy(alpha = 0.90f)
         isHoliday -> Color.White.copy(alpha = 0.88f) // نوشته‌های کوچک زیر روزهای تعطیل رسمی نیز سفید
-        isSelected -> Color(0xFF0891B2).copy(alpha = 0.85f)
-        else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+        else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f)
+    }
+
+    val currentDensity = LocalDensity.current
+    // کنترل مقیاس فونت در کادر یک هفتم تقویم جهت جلوگیری از بیرون زدن و به هم چسبیدن اعداد
+    val safeFontScale = currentDensity.fontScale.coerceIn(0.85f, 1.10f)
+    val safeDensity = remember(currentDensity.density, safeFontScale) {
+        Density(density = currentDensity.density, fontScale = safeFontScale)
     }
 
     Box(
         modifier = modifier
             .aspectRatio(1f)
-            .padding(2.5.dp)
+            .padding(2.dp)
             .clip(RoundedCornerShape(12.dp))
             .then(
                 if (isSelected && onIndicatorPositioned != null) {
@@ -457,62 +476,96 @@ private fun DayCellView(
             .testTag("day_cell_${cell.primaryNumber}"),
         contentAlignment = Alignment.Center
     ) {
-        val renderFaDigits = isFa && !useEnglishDayNumbers
+        CompositionLocalProvider(LocalDensity provides safeDensity) {
+            val renderFaDigits = isFa && !useEnglishDayNumbers
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            // Main day number (برگرفته از فونت پیش‌فرض خود گوشی)
-            Text(
-                text = DigitFormatter.toSystemDigits(cell.primaryNumber, renderFaDigits),
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontFamily = FontFamily.Default
-                ),
-                fontWeight = if (isSelected || isToday) FontWeight.ExtraBold else FontWeight.Bold,
-                color = textColor,
-                fontSize = if (showSecondaryDates) 15.5.sp else 18.sp
+            val compactStyle = TextStyle(
+                platformStyle = PlatformTextStyle(includeFontPadding = false),
+                lineHeightStyle = LineHeightStyle(
+                    alignment = LineHeightStyle.Alignment.Center,
+                    trim = LineHeightStyle.Trim.Both
+                )
             )
 
-            // Secondary calendar dates (برگرفته از فونت پیش‌فرض خود گوشی)
-            if (showSecondaryDates) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(2.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = DigitFormatter.toSystemDigits(cell.secondaryText1, renderFaDigits),
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 2.dp, vertical = 2.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                // Main day number (برگرفته از فونت پیش‌فرض خود گوشی و متمرکز در وسط)
+                Text(
+                    text = DigitFormatter.toSystemDigits(cell.primaryNumber, renderFaDigits),
+                    style = MaterialTheme.typography.bodyLarge.copy(
                         fontFamily = FontFamily.Default,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 9.5.sp,
-                        color = secondaryTextColor
-                    )
-                    Text(
-                        text = "•",
-                        fontSize = 7.5.sp,
-                        color = secondaryTextColor.copy(alpha = 0.5f)
-                    )
-                    Text(
-                        text = DigitFormatter.toSystemDigits(cell.secondaryText2, renderFaDigits),
-                        fontFamily = FontFamily.Default,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 9.5.sp,
-                        color = secondaryTextColor
-                    )
+                        platformStyle = PlatformTextStyle(includeFontPadding = false),
+                        lineHeightStyle = LineHeightStyle(
+                            alignment = LineHeightStyle.Alignment.Center,
+                            trim = LineHeightStyle.Trim.Both
+                        )
+                    ),
+                    fontWeight = if (isSelected || isToday) FontWeight.ExtraBold else FontWeight.Bold,
+                    color = textColor,
+                    fontSize = if (showSecondaryDates) 14.5.sp else 18.sp,
+                    maxLines = 1,
+                    softWrap = false,
+                    textAlign = TextAlign.Center
+                )
+
+                // Secondary calendar dates (میلادی و قمری در کنار هم بدون به هم چسبیدن و در وسط کادر)
+                if (showSecondaryDates) {
+                    Spacer(modifier = Modifier.height(1.5.dp))
+
+                    Row(
+                        modifier = Modifier.wrapContentWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = DigitFormatter.toSystemDigits(cell.secondaryText1, renderFaDigits),
+                            style = compactStyle,
+                            fontFamily = FontFamily.Default,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 8.8.sp,
+                            color = secondaryTextColor,
+                            maxLines = 1,
+                            softWrap = false
+                        )
+
+                        // نقطه تفکیک‌کننده با فاصله استاندارد از دو عدد
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 2.5.dp)
+                                .size(2.dp)
+                                .background(secondaryTextColor.copy(alpha = 0.6f), CircleShape)
+                        )
+
+                        Text(
+                            text = DigitFormatter.toSystemDigits(cell.secondaryText2, renderFaDigits),
+                            style = compactStyle,
+                            fontFamily = FontFamily.Default,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 8.8.sp,
+                            color = secondaryTextColor,
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                    }
                 }
             }
         }
 
-        // Qamar Dar Aqrab symbol (نماد قمر در عقرب وکتوری بدون ایموجی و بدون دایره فیروزه‌ای)
+        // Qamar Dar Aqrab symbol (نماد قمر در عقرب وکتوری به رنگ قرمز بدون دایره فیروزه‌ای)
         if (cell.isQamarDarAqrab) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(top = 3.dp, end = 3.dp)
+                    .padding(top = 2.dp, end = 2.dp)
             ) {
                 ScorpioIcon(
-                    modifier = Modifier.size(9.5.dp),
-                    tint = if (isHoliday) Color.White.copy(alpha = 0.95f) else if (isSelected) Color.White else ScorpioAlert
+                    modifier = Modifier.size(9.dp),
+                    tint = ScorpioAlert
                 )
             }
         }
@@ -522,8 +575,8 @@ private fun DayCellView(
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 3.dp)
-                    .size(4.dp)
+                    .padding(bottom = 2.5.dp)
+                    .size(3.5.dp)
                     .background(if (isHoliday) Color.White else HolidayPurple, CircleShape)
             )
         }

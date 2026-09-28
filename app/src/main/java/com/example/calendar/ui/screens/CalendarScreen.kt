@@ -1,16 +1,21 @@
 package com.example.calendar.ui.screens
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.calendar.core.CalendarManager
 import com.example.calendar.core.IslamicCalendar
 import com.example.calendar.core.JalaliCalendar
@@ -20,6 +25,9 @@ import com.example.calendar.model.CalendarType
 import com.example.calendar.ui.components.CalendarGridView
 import com.example.calendar.ui.components.DayDetailsView
 import com.example.calendar.ui.components.TodaySpotlightOverlay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 @Composable
 fun CalendarScreen(
@@ -33,6 +41,7 @@ fun CalendarScreen(
     val appLanguage by userSettings.appLanguage.collectAsState()
     val holidayColorLong by userSettings.holidayColorLong.collectAsState()
     val holidayColor = remember(holidayColorLong) { Color(holidayColorLong) }
+    val fontScalePercent by userSettings.fontScalePercent.collectAsState()
 
     var activeCalendarType by remember(defaultCalType) { mutableStateOf(defaultCalType) }
 
@@ -58,6 +67,18 @@ fun CalendarScreen(
                 CalendarType.LUNAR_HIJRI -> IslamicCalendar.jdnToIslamic(todayJdn).month
             }
         )
+    }
+
+    // Initial pre-load when entering the calendar screen
+    var isLoaded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.Default) {
+            CalendarManager.buildMonthGrid(activeCalendarType, currentYear, currentMonth, selectedJdn)
+            CalendarManager.getFullDayInfo(selectedJdn, currentCity)
+        }
+        delay(120)
+        isLoaded = true
     }
 
     val selectedDayInfo = remember(selectedJdn, currentCity) {
@@ -102,21 +123,48 @@ fun CalendarScreen(
         }
     }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .onGloballyPositioned { rootLayoutCoordinates = it }
-            .testTag("calendar_screen_root")
-    ) {
-        LazyColumn(
-            modifier = Modifier
+    if (!isLoaded) {
+        Box(
+            modifier = modifier
                 .fillMaxSize()
-                .testTag("calendar_screen_scroll"),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .testTag("calendar_initial_loading"),
+            contentAlignment = Alignment.Center
         ) {
-            // Upper part: Calendar Grid
-            item {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                CircularProgressIndicator(
+                    color = holidayColor,
+                    strokeWidth = 3.dp,
+                    modifier = Modifier.size(38.dp)
+                )
+                Text(
+                    text = if (appLanguage == AppLanguage.PERSIAN) "در حال بارگذاری تقویم..." else "Loading calendar...",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    } else {
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .onGloballyPositioned { rootLayoutCoordinates = it }
+                .testTag("calendar_screen_root")
+        ) {
+            val scrollState = rememberScrollState()
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .padding(16.dp)
+                    .testTag("calendar_screen_scroll"),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Upper part: Calendar Grid
                 CalendarGridView(
                     calendarType = activeCalendarType,
                     currentYear = currentYear,
@@ -124,6 +172,7 @@ fun CalendarScreen(
                     selectedJdn = selectedJdn,
                     showSecondaryDates = showSecondaryDates,
                     useEnglishDayNumbers = useEnglishDayNumbers,
+                    fontScalePercent = fontScalePercent,
                     onDateSelected = { jdn ->
                         selectedJdn = jdn
                         userNote = userSettings.getNote(jdn)
@@ -170,38 +219,42 @@ fun CalendarScreen(
                             }
                         }
                     },
-                    onTodayPositioned = { cellCoords ->
+                    onTodayPositioned = if (showIntroSpotlight) { cellCoords ->
                         val root = rootLayoutCoordinates
                         if (root != null && root.isAttached && cellCoords.isAttached) {
                             val localPos = root.localPositionOf(cellCoords, Offset.Zero)
-                            todayCenterOffset = Offset(
+                            val newOffset = Offset(
                                 localPos.x + cellCoords.size.width / 2f,
                                 localPos.y + cellCoords.size.height / 2f
                             )
-                            todayCellRadius = cellCoords.size.width / 2f
+                            if (todayCenterOffset == null || (todayCenterOffset!! - newOffset).getDistance() > 1f) {
+                                todayCenterOffset = newOffset
+                                todayCellRadius = cellCoords.size.width / 2f
+                            }
                         }
-                    },
-                    onIndicatorPositioned = { cellCoords ->
+                    } else null,
+                    onIndicatorPositioned = if (showIntroSpotlight) { cellCoords ->
                         val root = rootLayoutCoordinates
                         if (root != null && root.isAttached && cellCoords.isAttached) {
                             val localPos = root.localPositionOf(cellCoords, Offset.Zero)
-                            indicatorCenterOffset = Offset(
+                            val newOffset = Offset(
                                 localPos.x + cellCoords.size.width / 2f,
                                 localPos.y + cellCoords.size.height / 2f
                             )
-                            indicatorCellRadius = cellCoords.size.width / 2f
+                            if (indicatorCenterOffset == null || (indicatorCenterOffset!! - newOffset).getDistance() > 1f) {
+                                indicatorCenterOffset = newOffset
+                                indicatorCellRadius = cellCoords.size.width / 2f
+                            }
                         }
-                    },
+                    } else null,
                     onShowTodaySpotlight = {
                         showIntroSpotlight = true
                     },
                     appLanguage = appLanguage,
                     holidayColor = holidayColor
                 )
-            }
 
-            // Lower part: Detailed info for the selected day (all dates + astronomy)
-            item {
+                // Lower part: Detailed info for the selected day (all dates + astronomy)
                 DayDetailsView(
                     dayInfo = selectedDayInfo,
                     currentCity = currentCity,
@@ -218,17 +271,17 @@ fun CalendarScreen(
                     }
                 )
             }
-        }
 
-        // Ephemeral launch spotlight overlay (momentary circle + dashed arrow + rich paragraph, then fades out)
-        TodaySpotlightOverlay(
-            dayInfo = if (selectedJdn == todayJdn) todayDayInfo else selectedDayInfo,
-            targetCenter = indicatorCenterOffset ?: todayCenterOffset,
-            targetRadius = if (indicatorCellRadius > 0f) indicatorCellRadius else todayCellRadius,
-            visible = showIntroSpotlight,
-            isFa = (appLanguage == AppLanguage.PERSIAN),
-            holidayColor = holidayColor,
-            onDismiss = { showIntroSpotlight = false }
-        )
+            // Ephemeral launch spotlight overlay (momentary circle + dashed arrow + rich paragraph, then fades out)
+            TodaySpotlightOverlay(
+                dayInfo = if (selectedJdn == todayJdn) todayDayInfo else selectedDayInfo,
+                targetCenter = indicatorCenterOffset ?: todayCenterOffset,
+                targetRadius = if (indicatorCellRadius > 0f) indicatorCellRadius else todayCellRadius,
+                visible = showIntroSpotlight,
+                isFa = (appLanguage == AppLanguage.PERSIAN),
+                holidayColor = holidayColor,
+                onDismiss = { showIntroSpotlight = false }
+            )
+        }
     }
 }

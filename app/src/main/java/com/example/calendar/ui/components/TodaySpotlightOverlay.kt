@@ -6,7 +6,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -80,7 +79,7 @@ fun TodaySpotlightOverlay(
 ) {
     var progress by remember { mutableFloatStateOf(0f) }
     var isHolding by remember { mutableStateOf(false) }
-    val totalDurationMs = 3000L
+    val totalDurationMs = 6000L
 
     // Reset progress whenever becoming visible
     LaunchedEffect(visible) {
@@ -90,7 +89,7 @@ fun TodaySpotlightOverlay(
         }
     }
 
-    // Instagram story 3-second auto-dismiss progress ticker
+    // Instagram story auto-dismiss progress ticker (6 seconds)
     // Pauses immediately when user holds finger (isHolding)
     LaunchedEffect(visible, isHolding) {
         if (visible && !isHolding) {
@@ -145,16 +144,7 @@ fun TodaySpotlightOverlay(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.22f))
                 .onGloballyPositioned { overlayLayoutCoordinates = it }
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = {
-                        // Clicking backdrop dismisses only if not holding
-                        if (!isHolding) onDismiss()
-                    }
-                )
                 .testTag("today_spotlight_overlay")
         ) {
             // -----------------------------------------------------------
@@ -162,7 +152,9 @@ fun TodaySpotlightOverlay(
             // -----------------------------------------------------------
             if (targetCenter != null && targetRadius > 0f) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
-                    val radius = targetRadius + 4.dp.toPx() + pulseOffset
+                    val isCellVisible = targetCenter.y in -30f..(size.height + 30f)
+                    if (isCellVisible) {
+                        val radius = targetRadius + 4.dp.toPx() + pulseOffset
 
                     // 1. Highlight circle around the indicated day cell (داخل نشانگر بدون رنگ / هم‌رنگ پس‌زمینه و دور آن فیروزه‌ای)
                     val turquoise = Color(0xFF06B6D4)
@@ -258,6 +250,7 @@ fun TodaySpotlightOverlay(
                             color = turquoise,
                             style = Fill
                         )
+                    }
                     }
                 }
             }

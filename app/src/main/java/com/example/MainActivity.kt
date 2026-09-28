@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
@@ -100,6 +101,10 @@ class MainActivity : ComponentActivity() {
                     val todayG = remember { CalendarManager.getTodayGregorian() }
                     val todayJalali = remember { JalaliCalendar.gregorianToJalali(todayG.year, todayG.month, todayG.day) }
                     val currentSeason = remember(todayJalali.month) { JalaliCalendar.getSeasonPersian(todayJalali.month) }
+                    val isSpring = remember(todayJalali.month) { todayJalali.month in 1..3 || currentSeason == "بهار" }
+                    val isSummer = remember(todayJalali.month) { todayJalali.month in 4..6 || currentSeason == "تابستان" }
+                    val isAutumn = remember(todayJalali.month) { todayJalali.month in 7..9 || currentSeason == "پاییز" }
+                    val isWinter = remember(todayJalali.month) { todayJalali.month in 10..12 || currentSeason == "زمستان" }
                     val showSeasonalRain by userSettings.showSeasonalRain.collectAsState()
 
                     // Handle back press: close drawer if open, otherwise return to calendar
@@ -127,55 +132,126 @@ class MainActivity : ComponentActivity() {
                                         .padding(vertical = 16.dp, horizontal = 12.dp)
                                 ) {
                                     // ---------------------------------------------
-                                    // DRAWER HEADER (PUNY4 Calendar Branding)
+                                    // DRAWER HEADER (Spring / Summer / Autumn / Winter / Standard)
                                     // ---------------------------------------------
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clip(RoundedCornerShape(20.dp))
-                                            .background(
-                                                Brush.linearGradient(
-                                                    colors = listOf(
-                                                        CelestialBlue,
-                                                        MaterialTheme.colorScheme.primary
+                                    if (isSpring) {
+                                        // SPRING SEASON BANNER (بنر مستقیم عین خودش بدون بریدن و بدون دستکاری نام و لوگو)
+                                        Surface(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(16.dp))
+                                                .testTag("spring_drawer_banner"),
+                                            shape = RoundedCornerShape(16.dp),
+                                            shadowElevation = 4.dp
+                                        ) {
+                                            Image(
+                                                painter = painterResource(id = R.drawable.spring_drawer_banner),
+                                                contentDescription = "PUNY4 Calendar Spring Banner",
+                                                modifier = Modifier.fillMaxWidth(),
+                                                contentScale = ContentScale.FillWidth
+                                            )
+                                        }
+                                    } else if (isSummer) {
+                                        // SUMMER SEASON BANNER (بنر مستقیم عین خودش بدون بریدن و بدون دستکاری نام و لوگو)
+                                        Surface(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(16.dp))
+                                                .testTag("summer_drawer_banner"),
+                                            shape = RoundedCornerShape(16.dp),
+                                            shadowElevation = 4.dp
+                                        ) {
+                                            Image(
+                                                painter = painterResource(id = R.drawable.summer_drawer_banner),
+                                                contentDescription = "PUNY4 Calendar Summer Banner",
+                                                modifier = Modifier.fillMaxWidth(),
+                                                contentScale = ContentScale.FillWidth
+                                            )
+                                        }
+                                    } else if (isAutumn) {
+                                        // AUTUMN SEASON BANNER (بنر مستقیم عین خودش بدون بریدن و بدون دستکاری نام و لوگو)
+                                        Surface(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(16.dp))
+                                                .testTag("autumn_drawer_banner"),
+                                            shape = RoundedCornerShape(16.dp),
+                                            shadowElevation = 4.dp
+                                        ) {
+                                            Image(
+                                                painter = painterResource(id = R.drawable.autumn_drawer_banner),
+                                                contentDescription = "PUNY4 Calendar Autumn Banner",
+                                                modifier = Modifier.fillMaxWidth(),
+                                                contentScale = ContentScale.FillWidth
+                                            )
+                                        }
+                                    } else if (isWinter) {
+                                        // WINTER SEASON BANNER (بنر مستقیم عین خودش بدون بریدن و بدون دستکاری نام و لوگو)
+                                        Surface(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(16.dp))
+                                                .testTag("winter_drawer_banner"),
+                                            shape = RoundedCornerShape(16.dp),
+                                            shadowElevation = 4.dp
+                                        ) {
+                                            Image(
+                                                painter = painterResource(id = R.drawable.winter_drawer_banner),
+                                                contentDescription = "PUNY4 Calendar Winter Banner",
+                                                modifier = Modifier.fillMaxWidth(),
+                                                contentScale = ContentScale.FillWidth
+                                            )
+                                        }
+                                    } else {
+                                        // Standard Header for other seasons
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(20.dp))
+                                                .background(
+                                                    Brush.linearGradient(
+                                                        colors = listOf(
+                                                            CelestialBlue,
+                                                            MaterialTheme.colorScheme.primary
+                                                        )
                                                     )
                                                 )
-                                            )
-                                            .padding(18.dp)
-                                    ) {
-                                        Column {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                            ) {
-                                                Surface(
-                                                    shape = RoundedCornerShape(12.dp),
-                                                    color = Color.Black,
-                                                    modifier = Modifier.size(48.dp),
-                                                    shadowElevation = 3.dp
+                                                .padding(18.dp)
+                                        ) {
+                                            Column {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                                                 ) {
-                                                    Image(
-                                                        painter = painterResource(id = R.drawable.calendar_astro_icon),
-                                                        contentDescription = "PUNY4 Logo",
-                                                        modifier = Modifier
-                                                            .fillMaxSize()
-                                                            .clip(RoundedCornerShape(12.dp)),
-                                                        contentScale = ContentScale.Crop
-                                                    )
-                                                }
+                                                    Surface(
+                                                        shape = RoundedCornerShape(12.dp),
+                                                        color = Color.Black,
+                                                        modifier = Modifier.size(48.dp),
+                                                        shadowElevation = 3.dp
+                                                    ) {
+                                                        Image(
+                                                            painter = painterResource(id = R.drawable.calendar_astro_icon),
+                                                            contentDescription = "PUNY4 Logo",
+                                                            modifier = Modifier
+                                                                .fillMaxSize()
+                                                                .clip(RoundedCornerShape(12.dp)),
+                                                            contentScale = ContentScale.Crop
+                                                        )
+                                                    }
 
-                                                Column {
-                                                    Text(
-                                                        text = "PUNY4 Calendar",
-                                                        style = MaterialTheme.typography.titleLarge,
-                                                        fontWeight = FontWeight.Bold,
-                                                        color = MaterialTheme.colorScheme.onPrimary
-                                                    )
-                                                    Text(
-                                                        text = if (isFa) "تقویم جامع و نجوم" else "Comprehensive Calendar & Astronomy",
-                                                        style = MaterialTheme.typography.bodySmall,
-                                                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
-                                                    )
+                                                    Column {
+                                                        Text(
+                                                            text = "PUNY4 Calendar",
+                                                            style = MaterialTheme.typography.titleLarge,
+                                                            fontWeight = FontWeight.Bold,
+                                                            color = MaterialTheme.colorScheme.onPrimary
+                                                        )
+                                                        Text(
+                                                            text = if (isFa) "تقویم جامع و نجوم" else "Comprehensive Calendar & Astronomy",
+                                                            style = MaterialTheme.typography.bodySmall,
+                                                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }
@@ -573,6 +649,7 @@ class MainActivity : ComponentActivity() {
                     if (showGuideDialog) {
                         AppGuideDialog(
                             isFa = isFa,
+                            fontScalePercent = fontScalePercent,
                             onDismiss = { showGuideDialog = false }
                         )
                     }

@@ -18,16 +18,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.R
 import com.example.ui.theme.AstroGold
 import com.example.ui.theme.HolidayPurple
+import com.example.ui.theme.ScorpioAlert
 
 private data class GuideTopic(
     val titlePersian: String,
@@ -43,6 +49,7 @@ private data class GuideTopic(
 @Composable
 fun AppGuideDialog(
     isFa: Boolean,
+    fontScalePercent: Int = 100,
     onDismiss: () -> Unit
 ) {
     val topics = remember {
@@ -108,20 +115,20 @@ fun AppGuideDialog(
                 )
             ),
             GuideTopic(
-                titlePersian = "۴. قمر در عقرب با رنگ طوسی و اطلاعات نجومی",
-                titleEnglish = "4. Moon in Scorpio (Grey) & Astronomy",
-                descriptionPersian = "رصد و تقویم وضعیت قمر در عقرب با رنگ طوسی اختصاصی، فازهای ماه و بروج فلکی.",
-                descriptionEnglish = "Moon-in-Scorpio tracking in designated elegant grey, lunar phases, and zodiac constellations.",
+                titlePersian = "۴. قمر در عقرب با رنگ قرمز و اطلاعات نجومی",
+                titleEnglish = "4. Moon in Scorpio (Red) & Astronomy",
+                descriptionPersian = "رصد و تقویم وضعیت قمر در عقرب با رنگ قرمز اختصاصی، فازهای ماه و بروج فلکی.",
+                descriptionEnglish = "Moon-in-Scorpio tracking in designated vibrant red, lunar phases, and zodiac constellations.",
                 icon = Icons.Default.Nightlight,
-                iconTint = Color(0xFF64748B),
+                iconTint = ScorpioAlert,
                 tipsPersian = listOf(
-                    "رنگ طوسی نماد قمر در عقرب: نماد اختصاصی عقرب (♏) در جدول تقویم، بنر روزانه، راهنمای پایین جدول و صفحه نجوم با رنگ طوسی (خاکستری) متمایز شده است تا جلوه‌ای شیک، استاندارد و آرامش‌بخش داشته باشد.",
+                    "رنگ قرمز نماد قمر در عقرب: نماد اختصاصی عقرب (♏) در جدول تقویم، بنر روزانه، راهنمای پایین جدول و صفحه نجوم با رنگ قرمز متمایز شده است تا به سرعت و وضوح قابل تشخیص باشد.",
                     "برج و صورت فلکی: تفکیک دقیق قمر در برج عقرب (تروپیکال) و صورت فلکی عقرب (سایدرال) بر اساس محاسبات علمی معتبر.",
                     "فاز زنده ماه: سن ماه، درصد روشنایی و نام هلال تا بدر کامل در بالای صفحه نجوم و جزئیات روز به صورت زنده نمایش می‌یابد.",
                     "حیوان سال و عنصر ماه: حیوان تقویم دوازده‌حیوانی و عنصر چهارگانه ماه جاری در نوار سربرگ بالای تقویم نمایان است."
                 ),
                 tipsEnglish = listOf(
-                    "Distinct Grey Theme for Scorpio: The custom Scorpio symbol (♏) in calendar cells, daily banners, bottom legend, and the Astronomy tab is rendered in sophisticated grey.",
+                    "Distinct Red Theme for Scorpio: The custom Scorpio symbol (♏) in calendar cells, daily banners, bottom legend, and the Astronomy tab is rendered in vibrant red.",
                     "Sign vs Constellation: Clear distinction between Tropical Scorpio sign and Sidereal Scorpio constellation based on rigorous celestial algorithms.",
                     "Live Moon Phase: Illumination percentage, lunar age in days, and astronomical moon phase name.",
                     "Year Animal & Zodiac Element: The 12-animal year sign and the 4-element nature of the current month shown in the header."
@@ -186,25 +193,37 @@ fun AppGuideDialog(
         )
     }
 
+    val currentDensity = LocalDensity.current
+    val dialogDensity = remember(currentDensity, fontScalePercent) {
+        Density(
+            density = currentDensity.density,
+            fontScale = currentDensity.fontScale * (fontScalePercent / 100f)
+        )
+    }
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth(0.92f)
-                .fillMaxHeight(0.85f)
-                .testTag("app_guide_dialog"),
-            shape = RoundedCornerShape(24.dp),
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 6.dp,
-            shadowElevation = 8.dp
+        CompositionLocalProvider(
+            LocalDensity provides dialogDensity,
+            LocalLayoutDirection provides if (isFa) LayoutDirection.Rtl else LayoutDirection.Ltr
         ) {
-            Column(
+            Surface(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(20.dp)
+                    .fillMaxWidth(0.92f)
+                    .fillMaxHeight(0.85f)
+                    .testTag("app_guide_dialog"),
+                shape = RoundedCornerShape(24.dp),
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = 6.dp,
+                shadowElevation = 8.dp
             ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(20.dp)
+                ) {
                 // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -310,6 +329,7 @@ fun AppGuideDialog(
                 }
             }
         }
+        }
     }
 }
 
@@ -361,7 +381,7 @@ private fun GuideTopicCard(
                 text = if (isFa) topic.descriptionPersian else topic.descriptionEnglish,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                lineHeight = 19.sp
+                lineHeight = 1.5.em
             )
 
             val tips = if (isFa) topic.tipsPersian else topic.tipsEnglish
@@ -385,7 +405,7 @@ private fun GuideTopicCard(
                             style = MaterialTheme.typography.bodySmall,
                             fontSize = 11.5.sp,
                             color = MaterialTheme.colorScheme.onSurface,
-                            lineHeight = 17.sp
+                            lineHeight = 1.5.em
                         )
                     }
                 }
