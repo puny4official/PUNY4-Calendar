@@ -71,6 +71,7 @@ fun CalendarGridView(
     appLanguage: AppLanguage = AppLanguage.PERSIAN,
     useEnglishDayNumbers: Boolean = false,
     fontScalePercent: Int = 100,
+    dayNumberScalePercent: Int = 100,
     holidayColor: Color = Color(0xFF8B5CF6L),
     onTodayPositioned: ((LayoutCoordinates) -> Unit)? = null,
     onIndicatorPositioned: ((LayoutCoordinates) -> Unit)? = null,
@@ -298,7 +299,7 @@ fun CalendarGridView(
 
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 8.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant
+                color = if (MaterialTheme.colorScheme.surface.luminance() < 0.5f) Color(0xFF1E1E22) else MaterialTheme.colorScheme.surfaceVariant
             )
 
             // Grid rows
@@ -316,6 +317,7 @@ fun CalendarGridView(
                             showSecondaryDates = showSecondaryDates,
                             isFa = isFa,
                             useEnglishDayNumbers = useEnglishDayNumbers,
+                            dayNumberScalePercent = dayNumberScalePercent,
                             holidayColor = holidayColor,
                             onDateSelected = onDateSelected,
                             onTodayPositioned = onTodayPositioned,
@@ -385,6 +387,7 @@ private fun DayCellView(
     modifier: Modifier = Modifier,
     isFa: Boolean = true,
     useEnglishDayNumbers: Boolean = false,
+    dayNumberScalePercent: Int = 100,
     holidayColor: Color = Color(0xFF8B5CF6L),
     onTodayPositioned: ((LayoutCoordinates) -> Unit)? = null,
     onIndicatorPositioned: ((LayoutCoordinates) -> Unit)? = null
@@ -403,12 +406,13 @@ private fun DayCellView(
     val isToday = cell.isToday
     val isHoliday = cell.hasHoliday
 
-    // داخل نشانگر: هم‌رنگ پس‌زمینه تقویم (بدون پر کردن تیره)
-    // روزهای تعطیل رسمی غیر نشانگر: رنگ تعطیلات به‌صورت ملایم
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+
+    // داخل نشانگر: بدون اینکه داخلش رو رنگی کنی (کاملاً شفاف یا هم‌رنگ پس‌زمینه بدون هیچ رنگ اضافی)
     val targetBackground = when {
-        isSelected -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.28f) // داخل نشانگر به رنگ پس‌زمینه
+        isSelected -> Color.Transparent
         isHoliday -> holidayColor.copy(alpha = 0.50f)
-        else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.28f)
+        else -> if (isDark) Color.Black else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.28f)
     }
     val animatedBackground by animateColorAsState(
         targetValue = targetBackground,
@@ -417,10 +421,10 @@ private fun DayCellView(
     )
 
     val targetBorderColor = when {
-        isSelected -> Color(0xFF06B6D4) // دور نشانگر فیروزه‌ای روشن و شفاف
+        isSelected -> Color(0xFF06B6D4) // فقط دور نشانگر فیروزه‌ای باشه
         isHoliday -> holidayColor.copy(alpha = 0.80f) // کادر شیشه‌ای به رنگ انتخابی کاربر
         isToday -> Color(0xFF06B6D4).copy(alpha = 0.65f)
-        else -> MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)
+        else -> if (isDark) Color(0xFF1E1E24) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)
     }
     val animatedBorderColor by animateColorAsState(
         targetValue = targetBorderColor,
@@ -429,26 +433,22 @@ private fun DayCellView(
     )
     val borderWidth = if (isSelected) 2.5.dp else if (isHoliday) 1.5.dp else if (isToday) 1.5.dp else 1.dp
 
-    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-    val indicatorColor = if (isDark) Color(0xFF22D3EE) else Color(0xFF0891B2)
-
     val textColor = when {
-        isSelected -> if (isHoliday) holidayColor else indicatorColor
+        isSelected -> Color.White // عدد داخل نشانگر رو سفید کن
         isHoliday -> Color.White // نوشته داخل تعطیلات رسمی سفید
         else -> MaterialTheme.colorScheme.onSurface
     }
 
     val secondaryTextColor = when {
-        isSelected -> if (isHoliday) holidayColor.copy(alpha = 0.90f) else indicatorColor.copy(alpha = 0.90f)
+        isSelected -> Color.White.copy(alpha = 0.88f)
         isHoliday -> Color.White.copy(alpha = 0.88f) // نوشته‌های کوچک زیر روزهای تعطیل رسمی نیز سفید
         else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f)
     }
 
     val currentDensity = LocalDensity.current
-    // کنترل مقیاس فونت در کادر یک هفتم تقویم جهت جلوگیری از بیرون زدن و به هم چسبیدن اعداد
-    val safeFontScale = currentDensity.fontScale.coerceIn(0.85f, 1.10f)
-    val safeDensity = remember(currentDensity.density, safeFontScale) {
-        Density(density = currentDensity.density, fontScale = safeFontScale)
+    // عدد داخل روز فقط با dayNumberScalePercent تغییر می‌کنه و فونت کلی متن‌ها بر آن اثر نمی‌ذاره
+    val safeDensity = remember(currentDensity.density) {
+        Density(density = currentDensity.density, fontScale = 1.0f)
     }
 
     Box(
@@ -487,6 +487,10 @@ private fun DayCellView(
                 )
             )
 
+            val dayScale = (dayNumberScalePercent / 100f).coerceIn(0.80f, 1.60f)
+            val baseFontSize = if (showSecondaryDates) 14.5f else 18f
+            val dayFontSize = (baseFontSize * dayScale).sp
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -494,7 +498,7 @@ private fun DayCellView(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                // Main day number (برگرفته از فونت پیش‌فرض خود گوشی و متمرکز در وسط)
+                // Main day number (برگرفته از فونت پیش‌فرض خود گوشی و متمرکز در وسط بدون به هم ریختن)
                 Text(
                     text = DigitFormatter.toSystemDigits(cell.primaryNumber, renderFaDigits),
                     style = MaterialTheme.typography.bodyLarge.copy(
@@ -507,7 +511,7 @@ private fun DayCellView(
                     ),
                     fontWeight = if (isSelected || isToday) FontWeight.ExtraBold else FontWeight.Bold,
                     color = textColor,
-                    fontSize = if (showSecondaryDates) 14.5.sp else 18.sp,
+                    fontSize = dayFontSize,
                     maxLines = 1,
                     softWrap = false,
                     textAlign = TextAlign.Center
@@ -515,7 +519,7 @@ private fun DayCellView(
 
                 // Secondary calendar dates (میلادی و قمری در کنار هم بدون به هم چسبیدن و در وسط کادر)
                 if (showSecondaryDates) {
-                    Spacer(modifier = Modifier.height(1.5.dp))
+                    Spacer(modifier = Modifier.height(if (dayScale > 1.25f) 0.5.dp else 1.5.dp))
 
                     Row(
                         modifier = Modifier.wrapContentWidth(),

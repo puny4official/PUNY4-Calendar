@@ -41,6 +41,7 @@ import com.example.calendar.model.AppLanguage
 import com.example.calendar.ui.components.AppGuideDialog
 import com.example.calendar.ui.components.AppearanceDialog
 import com.example.calendar.ui.components.SeasonalRainOverlay
+import com.example.calendar.ui.components.DigitalLoadingScreen
 import com.example.calendar.ui.screens.AstronomyScreen
 import com.example.calendar.ui.screens.CalendarScreen
 import com.example.calendar.ui.screens.DateConverterScreen
@@ -48,6 +49,7 @@ import com.example.calendar.ui.screens.SettingsScreen
 import com.example.ui.theme.AstroGold
 import com.example.ui.theme.CelestialBlue
 import com.example.ui.theme.MyApplicationTheme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 enum class MainTab(val titlePersian: String, val titleEnglish: String, val icon: ImageVector) {
@@ -71,11 +73,21 @@ class MainActivity : ComponentActivity() {
         userSettings = UserSettings(applicationContext)
 
         setContent {
-            val themeMode by userSettings.themeMode.collectAsState()
-            val appLanguage by userSettings.appLanguage.collectAsState()
-            val fontScalePercent by userSettings.fontScalePercent.collectAsState()
-            val isFa = (appLanguage == AppLanguage.PERSIAN)
-            val layoutDirection = if (isFa) LayoutDirection.Rtl else LayoutDirection.Ltr
+            var isAppInitializing by remember { mutableStateOf(true) }
+
+            LaunchedEffect(Unit) {
+                delay(1800)
+                isAppInitializing = false
+            }
+
+            if (isAppInitializing) {
+                DigitalLoadingScreen()
+            } else {
+                val themeMode by userSettings.themeMode.collectAsState()
+                val appLanguage by userSettings.appLanguage.collectAsState()
+                val fontScalePercent by userSettings.fontScalePercent.collectAsState()
+                val isFa = (appLanguage == AppLanguage.PERSIAN)
+                val layoutDirection = if (isFa) LayoutDirection.Rtl else LayoutDirection.Ltr
 
             val currentDensity = LocalDensity.current
             val customDensity = remember(currentDensity, fontScalePercent) {
@@ -665,4 +677,5 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
 }

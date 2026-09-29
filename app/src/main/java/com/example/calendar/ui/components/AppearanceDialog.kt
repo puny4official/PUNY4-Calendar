@@ -14,11 +14,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Colorize
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.RestartAlt
+import androidx.compose.material.icons.filled.SettingsBrightness
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.calendar.data.UserSettings
+import com.example.ui.theme.ThemeMode
 
 data class PresetHolidayColor(
     val namePersian: String,
@@ -75,8 +81,11 @@ fun AppearanceDialog(
     isFa: Boolean,
     onDismiss: () -> Unit
 ) {
+    val themeMode by userSettings.themeMode.collectAsState()
     val currentHolidayColorLong by userSettings.holidayColorLong.collectAsState()
     val activeColor = remember(currentHolidayColorLong) { Color(currentHolidayColorLong) }
+    val fontScalePercent by userSettings.fontScalePercent.collectAsState()
+    val dayNumberScalePercent by userSettings.dayNumberScalePercent.collectAsState()
 
     var selectedHue by remember {
         val hsv = FloatArray(3)
@@ -103,10 +112,11 @@ fun AppearanceDialog(
                 .fillMaxWidth(0.94f)
                 .fillMaxHeight(0.88f)
                 .clip(RoundedCornerShape(24.dp))
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(24.dp))
                 .testTag("appearance_dialog"),
             shape = RoundedCornerShape(24.dp),
             color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 6.dp
+            tonalElevation = 0.dp
         ) {
             Column(
                 modifier = Modifier
@@ -145,7 +155,7 @@ fun AppearanceDialog(
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = if (isFa) "شخصی‌سازی رنگ تعطیلات رسمی و نمایه" else "Customize official holidays color & style",
+                                text = if (isFa) "شخصی‌سازی حالت پوسته و رنگ تعطیلات" else "Customize theme mode & holiday style",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -172,7 +182,82 @@ fun AppearanceDialog(
                         .weight(1f)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    // 1. LIVE PREVIEW CARD
+                    // 1. THEME MODE SELECTION (حالت روشن / تاریک امولد / سیستم)
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("appearance_theme_mode_card"),
+                        shape = RoundedCornerShape(18.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+                        ),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Text(
+                                text = if (isFa) "حالت پوسته برنامه (روشن / تاریک AMOLED):" else "App Theme Mode (Light / AMOLED Black):",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                val themeOptions = listOf(
+                                    Triple(ThemeMode.LIGHT, Icons.Default.LightMode, if (isFa) "روشن" else "Light"),
+                                    Triple(ThemeMode.DARK, Icons.Default.DarkMode, if (isFa) "تاریک (امولد)" else "Dark (AMOLED)"),
+                                    Triple(ThemeMode.SYSTEM, Icons.Default.SettingsBrightness, if (isFa) "سیستم" else "System")
+                                )
+
+                                themeOptions.forEach { (mode, icon, label) ->
+                                    val isSelected = themeMode == mode
+                                    Surface(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .clickable { userSettings.setThemeMode(mode) }
+                                            .testTag("theme_btn_${mode.name.lowercase()}"),
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = if (isSelected) animatedColor.copy(alpha = 0.22f) else MaterialTheme.colorScheme.surface,
+                                        border = BorderStroke(
+                                            width = if (isSelected) 1.8.dp else 1.dp,
+                                            color = if (isSelected) animatedColor else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
+                                        )
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.padding(vertical = 10.dp, horizontal = 4.dp),
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = icon,
+                                                contentDescription = null,
+                                                tint = if (isSelected) animatedColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text(
+                                                text = label,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                                color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                                                maxLines = 1,
+                                                softWrap = false,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // 2. LIVE PREVIEW CARD
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(18.dp),
@@ -467,6 +552,260 @@ fun AppearanceDialog(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 11.5.sp
                             )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // 4. DAY NUMBERS FONT SIZE (افزایش سایز اعداد فقط و فقط اعداد روز)
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("appearance_day_numbers_size_card"),
+                        shape = RoundedCornerShape(18.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+                        ),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = if (isFa) "سایز اعداد روزهای تقویم (فقط اعداد روز):" else "Calendar Day Numbers Size (Day Numbers Only):",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = if (isFa) "بزرگ کردن اعداد بدون تغییر یا به هم خوردن ظاهر تقویم" else "Enlarge day numbers cleanly without distorting layout",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontSize = 11.5.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+
+                                Surface(
+                                    shape = RoundedCornerShape(10.dp),
+                                    color = animatedColor.copy(alpha = 0.20f)
+                                ) {
+                                    Text(
+                                        text = if (isFa) "$dayNumberScalePercent٪" else "$dayNumberScalePercent%",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = animatedColor,
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            // Stepper Row with Slider
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                FilledTonalIconButton(
+                                    onClick = { userSettings.setDayNumberScalePercent(dayNumberScalePercent - 5) },
+                                    enabled = dayNumberScalePercent > 80,
+                                    modifier = Modifier.size(40.dp)
+                                ) {
+                                    Icon(Icons.Default.Remove, contentDescription = "کاهش سایز اعداد")
+                                }
+
+                                Slider(
+                                    value = dayNumberScalePercent.toFloat(),
+                                    onValueChange = { userSettings.setDayNumberScalePercent(it.toInt()) },
+                                    valueRange = 80f..160f,
+                                    steps = 15,
+                                    modifier = Modifier.weight(1f)
+                                )
+
+                                FilledTonalIconButton(
+                                    onClick = { userSettings.setDayNumberScalePercent(dayNumberScalePercent + 5) },
+                                    enabled = dayNumberScalePercent < 160,
+                                    modifier = Modifier.size(40.dp)
+                                ) {
+                                    Icon(Icons.Default.Add, contentDescription = "افزایش سایز اعداد")
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            // Day Numbers Quick Presets
+                            val dayPresets = listOf(
+                                90 to if (isFa) "۹۰٪ کوچک" else "90%",
+                                100 to if (isFa) "۱۰۰٪ پیش‌فرض" else "100%",
+                                115 to if (isFa) "۱۱۵٪ متوسط" else "115%",
+                                130 to if (isFa) "۱۳۰٪ بزرگ" else "130%",
+                                145 to if (isFa) "۱۴۵٪ خیلی بزرگ" else "145%"
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                dayPresets.forEach { (percent, label) ->
+                                    val isSelected = (dayNumberScalePercent == percent)
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = if (isSelected) animatedColor else MaterialTheme.colorScheme.surface,
+                                        border = BorderStroke(
+                                            1.dp,
+                                            if (isSelected) animatedColor else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                                        ),
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clickable { userSettings.setDayNumberScalePercent(percent) }
+                                    ) {
+                                        Box(
+                                            modifier = Modifier.padding(vertical = 7.dp, horizontal = 2.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = label,
+                                                fontSize = 10.5.sp,
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
+                                                maxLines = 1
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // 5. TEXT FONT SCALE (فقط برای متن‌ها)
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("appearance_text_font_scale_card"),
+                        shape = RoundedCornerShape(18.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+                        ),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = if (isFa) "بزرگی متن‌ها و نوشته‌ها (فقط متن):" else "Text Font Size (Texts Only):",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = if (isFa) "تنظیم اندازه نوشته‌ها و توضیحات بدون تغییر در اعداد روز" else "Scale text descriptions and labels only",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontSize = 11.5.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+
+                                Surface(
+                                    shape = RoundedCornerShape(10.dp),
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.20f)
+                                ) {
+                                    Text(
+                                        text = if (isFa) "$fontScalePercent٪" else "$fontScalePercent%",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            // Stepper Row with Slider
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                FilledTonalIconButton(
+                                    onClick = { userSettings.setFontScalePercent(fontScalePercent - 5) },
+                                    enabled = fontScalePercent > 70,
+                                    modifier = Modifier.size(40.dp)
+                                ) {
+                                    Icon(Icons.Default.Remove, contentDescription = "کاهش اندازه متن")
+                                }
+
+                                Slider(
+                                    value = fontScalePercent.toFloat(),
+                                    onValueChange = { userSettings.setFontScalePercent(it.toInt()) },
+                                    valueRange = 70f..160f,
+                                    steps = 17,
+                                    modifier = Modifier.weight(1f)
+                                )
+
+                                FilledTonalIconButton(
+                                    onClick = { userSettings.setFontScalePercent(fontScalePercent + 5) },
+                                    enabled = fontScalePercent < 160,
+                                    modifier = Modifier.size(40.dp)
+                                ) {
+                                    Icon(Icons.Default.Add, contentDescription = "افزایش اندازه متن")
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            // Text Presets
+                            val textPresets = listOf(
+                                85 to if (isFa) "۸۵٪ کوچک" else "85%",
+                                100 to if (isFa) "۱۰۰٪ پیش‌فرض" else "100%",
+                                115 to if (isFa) "۱۱۵٪ متوسط" else "115%",
+                                130 to if (isFa) "۱۳۰٪ بزرگ" else "130%",
+                                145 to if (isFa) "۱۴۵٪ خیلی بزرگ" else "145%"
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                textPresets.forEach { (percent, label) ->
+                                    val isSelected = (fontScalePercent == percent)
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                                        border = BorderStroke(
+                                            1.dp,
+                                            if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                                        ),
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clickable { userSettings.setFontScalePercent(percent) }
+                                    ) {
+                                        Box(
+                                            modifier = Modifier.padding(vertical = 7.dp, horizontal = 2.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = label,
+                                                fontSize = 10.5.sp,
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
+                                                maxLines = 1
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
 

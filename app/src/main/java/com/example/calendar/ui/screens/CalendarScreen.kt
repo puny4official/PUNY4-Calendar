@@ -24,6 +24,7 @@ import com.example.calendar.model.AppLanguage
 import com.example.calendar.model.CalendarType
 import com.example.calendar.ui.components.CalendarGridView
 import com.example.calendar.ui.components.DayDetailsView
+import com.example.calendar.ui.components.DigitalLoadingScreen
 import com.example.calendar.ui.components.TodaySpotlightOverlay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -42,6 +43,7 @@ fun CalendarScreen(
     val holidayColorLong by userSettings.holidayColorLong.collectAsState()
     val holidayColor = remember(holidayColorLong) { Color(holidayColorLong) }
     val fontScalePercent by userSettings.fontScalePercent.collectAsState()
+    val dayNumberScalePercent by userSettings.dayNumberScalePercent.collectAsState()
 
     var activeCalendarType by remember(defaultCalType) { mutableStateOf(defaultCalType) }
 
@@ -124,29 +126,9 @@ fun CalendarScreen(
     }
 
     if (!isLoaded) {
-        Box(
-            modifier = modifier
-                .fillMaxSize()
-                .testTag("calendar_initial_loading"),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                CircularProgressIndicator(
-                    color = holidayColor,
-                    strokeWidth = 3.dp,
-                    modifier = Modifier.size(38.dp)
-                )
-                Text(
-                    text = if (appLanguage == AppLanguage.PERSIAN) "در حال بارگذاری تقویم..." else "Loading calendar...",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
+        DigitalLoadingScreen(
+            modifier = modifier.testTag("calendar_initial_loading")
+        )
     } else {
         Box(
             modifier = modifier
@@ -155,6 +137,26 @@ fun CalendarScreen(
                 .testTag("calendar_screen_root")
         ) {
             val scrollState = rememberScrollState()
+            var prevScrollValue by remember { mutableIntStateOf(0) }
+            var isScrollingDown by remember { mutableStateOf(false) }
+
+            LaunchedEffect(scrollState.value) {
+                val delta = scrollState.value - prevScrollValue
+                if (scrollState.value <= 5) {
+                    isScrollingDown = false
+                } else if (delta > 0) {
+                    isScrollingDown = true
+                } else if (delta < 0) {
+                    isScrollingDown = false
+                }
+                prevScrollValue = scrollState.value
+            }
+
+            LaunchedEffect(showIntroSpotlight) {
+                if (showIntroSpotlight && scrollState.value <= 5) {
+                    isScrollingDown = false
+                }
+            }
 
             Column(
                 modifier = Modifier
@@ -173,6 +175,7 @@ fun CalendarScreen(
                     showSecondaryDates = showSecondaryDates,
                     useEnglishDayNumbers = useEnglishDayNumbers,
                     fontScalePercent = fontScalePercent,
+                    dayNumberScalePercent = dayNumberScalePercent,
                     onDateSelected = { jdn ->
                         selectedJdn = jdn
                         userNote = userSettings.getNote(jdn)
@@ -227,9 +230,11 @@ fun CalendarScreen(
                                 localPos.x + cellCoords.size.width / 2f,
                                 localPos.y + cellCoords.size.height / 2f
                             )
-                            if (todayCenterOffset == null || (todayCenterOffset!! - newOffset).getDistance() > 1f) {
-                                todayCenterOffset = newOffset
-                                todayCellRadius = cellCoords.size.width / 2f
+                            if (!isScrollingDown || scrollState.value <= 5) {
+                                if (todayCenterOffset == null || (todayCenterOffset!! - newOffset).getDistance() > 1f) {
+                                    todayCenterOffset = newOffset
+                                    todayCellRadius = cellCoords.size.width / 2f
+                                }
                             }
                         }
                     } else null,
@@ -241,9 +246,11 @@ fun CalendarScreen(
                                 localPos.x + cellCoords.size.width / 2f,
                                 localPos.y + cellCoords.size.height / 2f
                             )
-                            if (indicatorCenterOffset == null || (indicatorCenterOffset!! - newOffset).getDistance() > 1f) {
-                                indicatorCenterOffset = newOffset
-                                indicatorCellRadius = cellCoords.size.width / 2f
+                            if (!isScrollingDown || scrollState.value <= 5) {
+                                if (indicatorCenterOffset == null || (indicatorCenterOffset!! - newOffset).getDistance() > 1f) {
+                                    indicatorCenterOffset = newOffset
+                                    indicatorCellRadius = cellCoords.size.width / 2f
+                                }
                             }
                         }
                     } else null,
@@ -280,6 +287,7 @@ fun CalendarScreen(
                 visible = showIntroSpotlight,
                 isFa = (appLanguage == AppLanguage.PERSIAN),
                 holidayColor = holidayColor,
+                showDashedLines = !isScrollingDown,
                 onDismiss = { showIntroSpotlight = false }
             )
         }

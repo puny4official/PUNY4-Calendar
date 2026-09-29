@@ -31,7 +31,6 @@ import com.example.calendar.model.CalendarType
 import com.example.calendar.model.CityLocation
 import com.example.calendar.ui.components.AppearanceDialog
 import com.example.ui.theme.HolidayPurple
-import com.example.ui.theme.ThemeMode
 
 @Composable
 fun SettingsScreen(
@@ -39,7 +38,6 @@ fun SettingsScreen(
     modifier: Modifier = Modifier
 ) {
     val appLanguage by userSettings.appLanguage.collectAsState()
-    val themeMode by userSettings.themeMode.collectAsState()
     val calendarType by userSettings.calendarType.collectAsState()
     val selectedCity by userSettings.selectedCity.collectAsState()
     val showSecondaryDates by userSettings.showSecondaryDates.collectAsState()
@@ -98,56 +96,15 @@ fun SettingsScreen(
         }
 
         // ----------------------------------------------------
-        // 2. THEME & APPEARANCE (بخش حالت نمایش و پوسته)
-        // ----------------------------------------------------
-        item {
-            SettingsCategoryCard(
-                icon = Icons.Default.Palette,
-                iconTint = MaterialTheme.colorScheme.tertiary,
-                iconContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                title = if (isFa) "حالت نمایش و پوسته" else "Theme & Appearance",
-                subtitle = if (isFa) "انتخاب حالت روشن، تاریک یا خودکار سیستم" else "Choose light, dark, or system default mode",
-                cardTag = "settings_card_theme"
-            ) {
-                SelectableOptionRow(
-                    title = if (isFa) "حالت روشن (Light Mode)" else "Light Mode",
-                    subtitle = if (isFa) "مناسب برای محیط‌های روشن و روز" else "Optimal for daytime and well-lit environments",
-                    icon = Icons.Default.LightMode,
-                    isSelected = themeMode == ThemeMode.LIGHT,
-                    onClick = { userSettings.setThemeMode(ThemeMode.LIGHT) },
-                    testTag = "theme_option_light"
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                SelectableOptionRow(
-                    title = if (isFa) "حالت تاریک (Dark Mode)" else "Dark Mode",
-                    subtitle = if (isFa) "مناسب برای شب و کاهش مصرف باتری" else "Comfortable for night viewing and battery saving",
-                    icon = Icons.Default.DarkMode,
-                    isSelected = themeMode == ThemeMode.DARK,
-                    onClick = { userSettings.setThemeMode(ThemeMode.DARK) },
-                    testTag = "theme_option_dark"
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                SelectableOptionRow(
-                    title = if (isFa) "پیروی از تنظیمات سیستم (Auto / System)" else "System Default",
-                    subtitle = if (isFa) "هماهنگی خودکار با حالت تاریک دستگاه" else "Automatically matches device system theme",
-                    icon = Icons.Default.SettingsBrightness,
-                    isSelected = themeMode == ThemeMode.SYSTEM,
-                    onClick = { userSettings.setThemeMode(ThemeMode.SYSTEM) },
-                    testTag = "theme_option_system"
-                )
-            }
-        }
-
-        // ----------------------------------------------------
-        // 3. FONT & TEXT SCALE (بخش نوشتاری درصدی برای بزرگی متن‌های کل تقویم)
+        // 2. FONT & TEXT SCALE (بخش نوشتاری درصدی برای بزرگی متن‌های کل تقویم)
         // ----------------------------------------------------
         item {
             SettingsCategoryCard(
                 icon = Icons.Default.FormatSize,
                 iconTint = MaterialTheme.colorScheme.primary,
                 iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                title = if (isFa) "بزرگی متن‌ها و قلم تقویم (درصدی)" else "Calendar Text Size (Percentage)",
-                subtitle = if (isFa) "تنظیم درصد بزرگی نوشته‌های کل تقویم بدون کوچک‌ترین جابه‌جایی یا تغییر در شکل برنامه" else "Scale all calendar text sizes cleanly without moving any layout elements",
+                title = if (isFa) "بزرگی متن‌ها و نوشته‌ها (فقط متن)" else "Text Font Size (Texts Only)",
+                subtitle = if (isFa) "تنظیم درصد بزرگی نوشته‌ها و متون کل برنامه بدون تغییر در اعداد روزهای تقویم" else "Scale text descriptions and labels only without affecting calendar day numbers",
                 cardTag = "settings_card_font_scale"
             ) {
                 // Header with current percentage value and scale label badge

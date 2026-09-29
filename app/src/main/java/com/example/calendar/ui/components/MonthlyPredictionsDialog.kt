@@ -62,7 +62,7 @@ fun MonthlyPredictionsDialog(
                     .testTag("monthly_predictions_dialog"),
                 shape = RoundedCornerShape(24.dp),
                 color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 6.dp,
+                tonalElevation = 0.dp,
                 border = BorderStroke(1.dp, HolidayPurple.copy(alpha = 0.25f))
             ) {
             Column(

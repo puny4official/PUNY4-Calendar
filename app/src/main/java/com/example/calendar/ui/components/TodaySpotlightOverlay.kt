@@ -75,11 +75,12 @@ fun TodaySpotlightOverlay(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     isFa: Boolean = true,
-    holidayColor: Color = Color(0xFF8B5CF6L)
+    holidayColor: Color = Color(0xFF8B5CF6L),
+    showDashedLines: Boolean = true
 ) {
     var progress by remember { mutableFloatStateOf(0f) }
     var isHolding by remember { mutableStateOf(false) }
-    val totalDurationMs = 6000L
+    val totalDurationMs = 2000L
 
     // Reset progress whenever becoming visible
     LaunchedEffect(visible) {
@@ -89,7 +90,7 @@ fun TodaySpotlightOverlay(
         }
     }
 
-    // Instagram story auto-dismiss progress ticker (6 seconds)
+    // Instagram story auto-dismiss progress ticker (2 seconds)
     // Pauses immediately when user holds finger (isHolding)
     LaunchedEffect(visible, isHolding) {
         if (visible && !isHolding) {
@@ -150,107 +151,113 @@ fun TodaySpotlightOverlay(
             // -----------------------------------------------------------
             // CANVAS: Pulsing Dashed Circle + Dashed Line to Indicated Day
             // -----------------------------------------------------------
-            if (targetCenter != null && targetRadius > 0f) {
+            val dashedLinesAlpha by animateFloatAsState(
+                targetValue = if (showDashedLines) 1f else 0f,
+                animationSpec = tween(durationMillis = 150),
+                label = "dashed_lines_alpha"
+            )
+
+            if (targetCenter != null && targetRadius > 0f && dashedLinesAlpha > 0.01f) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val isCellVisible = targetCenter.y in -30f..(size.height + 30f)
                     if (isCellVisible) {
                         val radius = targetRadius + 4.dp.toPx() + pulseOffset
 
-                    // 1. Highlight circle around the indicated day cell (داخل نشانگر بدون رنگ / هم‌رنگ پس‌زمینه و دور آن فیروزه‌ای)
-                    val turquoise = Color(0xFF06B6D4)
+                        // 1. Highlight circle around the indicated day cell
+                        val turquoise = Color(0xFF06B6D4)
 
-                    drawCircle(
-                        color = turquoise,
-                        center = targetCenter,
-                        radius = radius,
-                        style = Stroke(
-                            width = 2.4.dp.toPx(),
-                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 7f), dashPhase)
-                        )
-                    )
-
-                    // Secondary subtle turquoise aura around the indicator
-                    drawCircle(
-                        color = turquoise.copy(alpha = 0.4f),
-                        center = targetCenter,
-                        radius = radius + 3.dp.toPx(),
-                        style = Stroke(
-                            width = 1.2.dp.toPx(),
-                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), -dashPhase)
-                        )
-                    )
-
-                    // 2. Dashed Line: Attached directly to the indicated day (start) and to the times card (end)
-                    val cardPos = cardPositionInOverlay
-                    if (cardPos != null && cardHeightPx > 0f) {
-                        val isCardAbove = cardPos.y < targetCenter.y
-
-                        // Attachment point on the times card (انتهای خط چین بچسبه به بخش اوقات)
-                        val cardAttachX = targetCenter.x.coerceIn(cardPos.x + 36f, cardPos.x + cardWidthPx - 36f)
-                        val cardAttachY = if (isCardAbove) cardPos.y + cardHeightPx else cardPos.y
-                        val end = Offset(cardAttachX, cardAttachY)
-
-                        // Attachment point on the indicated day circle (ابتدای خط چین بچسبه به روزی که نشانگر روشه)
-                        val angleToCard = atan2((end.y - targetCenter.y).toDouble(), (end.x - targetCenter.x).toDouble())
-                        val startX = (targetCenter.x + radius * cos(angleToCard)).toFloat()
-                        val startY = (targetCenter.y + radius * sin(angleToCard)).toFloat()
-                        val start = Offset(startX, startY)
-
-                        val dx = end.x - start.x
-                        val dy = end.y - start.y
-
-                        val control1 = Offset(start.x + dx * 0.12f, start.y + dy * 0.60f)
-                        val control2 = Offset(start.x + dx * 0.88f, start.y + dy * 0.40f)
-
-                        val dashedPath = Path().apply {
-                            moveTo(start.x, start.y)
-                            cubicTo(control1.x, control1.y, control2.x, control2.y, end.x, end.y)
-                        }
-
-                        // Connecting dashed line
-                        drawPath(
-                            path = dashedPath,
-                            color = turquoise.copy(alpha = 0.95f),
+                        drawCircle(
+                            color = turquoise.copy(alpha = dashedLinesAlpha),
+                            center = targetCenter,
+                            radius = radius,
                             style = Stroke(
                                 width = 2.4.dp.toPx(),
                                 pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 7f), dashPhase)
                             )
                         )
 
-                        // Solid anchor dot at the start (on the day circle)
+                        // Secondary subtle turquoise aura around the indicator
                         drawCircle(
-                            color = turquoise,
-                            radius = 3.5.dp.toPx(),
-                            center = start
+                            color = turquoise.copy(alpha = 0.4f * dashedLinesAlpha),
+                            center = targetCenter,
+                            radius = radius + 3.dp.toPx(),
+                            style = Stroke(
+                                width = 1.2.dp.toPx(),
+                                pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), -dashPhase)
+                            )
                         )
 
-                        // Arrowhead at the end (pointing directly into the times card)
-                        val endAngle = atan2((end.y - control2.y).toDouble(), (end.x - control2.x).toDouble())
-                        val arrowLength = 20f
-                        val arrowAngle = Math.PI / 6.0
+                        // 2. Dashed Line: Attached directly to the indicated day (start) and to the times card (end)
+                        val cardPos = cardPositionInOverlay
+                        if (cardPos != null && cardHeightPx > 0f) {
+                            val isCardAbove = cardPos.y < targetCenter.y
 
-                        val p1 = Offset(
-                            (end.x - arrowLength * cos(endAngle - arrowAngle)).toFloat(),
-                            (end.y - arrowLength * sin(endAngle - arrowAngle)).toFloat()
-                        )
-                        val p2 = Offset(
-                            (end.x - arrowLength * cos(endAngle + arrowAngle)).toFloat(),
-                            (end.y - arrowLength * sin(endAngle + arrowAngle)).toFloat()
-                        )
+                            // Attachment point on the times card (انتهای خط چین بچسبه به بخش اوقات)
+                            val cardAttachX = targetCenter.x.coerceIn(cardPos.x + 36f, cardPos.x + cardWidthPx - 36f)
+                            val cardAttachY = if (isCardAbove) cardPos.y + cardHeightPx else cardPos.y
+                            val end = Offset(cardAttachX, cardAttachY)
 
-                        val headPath = Path().apply {
-                            moveTo(end.x, end.y)
-                            lineTo(p1.x, p1.y)
-                            lineTo(p2.x, p2.y)
-                            close()
+                            // Attachment point on the indicated day circle (ابتدای خط چین بچسبه به روزی که نشانگر روشه)
+                            val angleToCard = atan2((end.y - targetCenter.y).toDouble(), (end.x - targetCenter.x).toDouble())
+                            val startX = (targetCenter.x + radius * cos(angleToCard)).toFloat()
+                            val startY = (targetCenter.y + radius * sin(angleToCard)).toFloat()
+                            val start = Offset(startX, startY)
+
+                            val dx = end.x - start.x
+                            val dy = end.y - start.y
+
+                            val control1 = Offset(start.x + dx * 0.12f, start.y + dy * 0.60f)
+                            val control2 = Offset(start.x + dx * 0.88f, start.y + dy * 0.40f)
+
+                            val dashedPath = Path().apply {
+                                moveTo(start.x, start.y)
+                                cubicTo(control1.x, control1.y, control2.x, control2.y, end.x, end.y)
+                            }
+
+                            // Connecting dashed line
+                            drawPath(
+                                path = dashedPath,
+                                color = turquoise.copy(alpha = 0.95f * dashedLinesAlpha),
+                                style = Stroke(
+                                    width = 2.4.dp.toPx(),
+                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 7f), dashPhase)
+                                )
+                            )
+
+                            // Solid anchor dot at the start (on the day circle)
+                            drawCircle(
+                                color = turquoise.copy(alpha = dashedLinesAlpha),
+                                radius = 3.5.dp.toPx(),
+                                center = start
+                            )
+
+                            // Arrowhead at the end (pointing directly into the times card)
+                            val endAngle = atan2((end.y - control2.y).toDouble(), (end.x - control2.x).toDouble())
+                            val arrowLength = 20f
+                            val arrowAngle = Math.PI / 6.0
+
+                            val p1 = Offset(
+                                (end.x - arrowLength * cos(endAngle - arrowAngle)).toFloat(),
+                                (end.y - arrowLength * sin(endAngle - arrowAngle)).toFloat()
+                            )
+                            val p2 = Offset(
+                                (end.x - arrowLength * cos(endAngle + arrowAngle)).toFloat(),
+                                (end.y - arrowLength * sin(endAngle + arrowAngle)).toFloat()
+                            )
+
+                            val headPath = Path().apply {
+                                moveTo(end.x, end.y)
+                                lineTo(p1.x, p1.y)
+                                lineTo(p2.x, p2.y)
+                                close()
+                            }
+
+                            drawPath(
+                                path = headPath,
+                                color = turquoise.copy(alpha = dashedLinesAlpha),
+                                style = Fill
+                            )
                         }
-
-                        drawPath(
-                            path = headPath,
-                            color = turquoise,
-                            style = Fill
-                        )
-                    }
                     }
                 }
             }
@@ -291,6 +298,7 @@ fun TodaySpotlightOverlay(
                         }
                         .testTag("spotlight_info_card"),
                     shape = RoundedCornerShape(18.dp),
+                    border = BorderStroke(1.dp, Color(0xFF06B6D4).copy(alpha = 0.5f)),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surface
                     )
@@ -457,7 +465,7 @@ fun TodaySpotlightOverlay(
                         // -----------------------------------------------------------
                         // 4. BOTTOM STATUS ROW: PURE INSTAGRAM STORY MECHANISM
                         // -----------------------------------------------------------
-                        val remainingSec = ((1f - progress) * 3f + 0.95f).toInt().coerceIn(1, 3)
+                        val remainingSec = ((1f - progress) * 2f + 0.95f).toInt().coerceIn(1, 2)
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
