@@ -56,6 +56,24 @@ import com.example.ui.theme.HolidayPurpleLight
 import com.example.ui.theme.OnHolidayPurpleContainer
 import com.example.ui.theme.ScorpioAlert
 
+private val DayNumberBaseStyle = TextStyle(
+    fontFamily = FontFamily.Default,
+    platformStyle = PlatformTextStyle(includeFontPadding = false),
+    lineHeightStyle = LineHeightStyle(
+        alignment = LineHeightStyle.Alignment.Center,
+        trim = LineHeightStyle.Trim.Both
+    )
+)
+
+private val SecondaryDateCompactStyle = TextStyle(
+    fontFamily = FontFamily.Default,
+    platformStyle = PlatformTextStyle(includeFontPadding = false),
+    lineHeightStyle = LineHeightStyle(
+        alignment = LineHeightStyle.Alignment.Center,
+        trim = LineHeightStyle.Trim.Both
+    )
+)
+
 @Composable
 fun CalendarGridView(
     calendarType: CalendarType,
@@ -115,7 +133,8 @@ fun CalendarGridView(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
@@ -445,69 +464,34 @@ private fun DayCellView(
         else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f)
     }
 
-    val currentDensity = LocalDensity.current
-    val safeDensity = remember(currentDensity.density) {
-        Density(density = currentDensity.density, fontScale = 1.0f)
-    }
-
     Box(
         modifier = modifier
             .aspectRatio(1f)
             .padding(2.dp)
             .clip(RoundedCornerShape(12.dp))
-            .then(
-                if (isSelected && onIndicatorPositioned != null) {
-                    Modifier.onGloballyPositioned { coords ->
-                        onIndicatorPositioned(coords)
-                        if (isToday && onTodayPositioned != null) {
-                            onTodayPositioned(coords)
-                        }
-                    }
-                } else if (isToday && onTodayPositioned != null) {
-                    Modifier.onGloballyPositioned { coords ->
-                        onTodayPositioned(coords)
-                    }
-                } else Modifier
-            )
             .border(borderWidth, targetBorderColor, RoundedCornerShape(12.dp))
             .background(targetBackground)
             .clickable { onDateSelected(cell.jdn) }
             .testTag("day_cell_${cell.primaryNumber}"),
         contentAlignment = Alignment.Center
     ) {
-        CompositionLocalProvider(LocalDensity provides safeDensity) {
-            val renderFaDigits = isFa && !useEnglishDayNumbers
+        val renderFaDigits = isFa && !useEnglishDayNumbers
 
-            val compactStyle = TextStyle(
-                platformStyle = PlatformTextStyle(includeFontPadding = false),
-                lineHeightStyle = LineHeightStyle(
-                    alignment = LineHeightStyle.Alignment.Center,
-                    trim = LineHeightStyle.Trim.Both
-                )
-            )
+        val dayScale = (dayNumberScalePercent / 100f).coerceIn(0.80f, 1.60f)
+        val baseFontSize = if (showSecondaryDates) 14.5f else 18f
+        val dayFontSize = (baseFontSize * dayScale).sp
 
-            val dayScale = (dayNumberScalePercent / 100f).coerceIn(0.80f, 1.60f)
-            val baseFontSize = if (showSecondaryDates) 14.5f else 18f
-            val dayFontSize = (baseFontSize * dayScale).sp
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 2.dp, vertical = 2.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 2.dp, vertical = 2.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
                 // Main day number (برگرفته از فونت پیش‌فرض خود گوشی و متمرکز در وسط بدون به هم ریختن)
                 Text(
                     text = DigitFormatter.toSystemDigits(cell.primaryNumber, renderFaDigits),
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontFamily = FontFamily.Default,
-                        platformStyle = PlatformTextStyle(includeFontPadding = false),
-                        lineHeightStyle = LineHeightStyle(
-                            alignment = LineHeightStyle.Alignment.Center,
-                            trim = LineHeightStyle.Trim.Both
-                        )
-                    ),
+                    style = DayNumberBaseStyle,
                     fontWeight = if (isSelected || isToday) FontWeight.ExtraBold else FontWeight.Bold,
                     color = textColor,
                     fontSize = dayFontSize,
@@ -527,8 +511,7 @@ private fun DayCellView(
                     ) {
                         Text(
                             text = DigitFormatter.toSystemDigits(cell.secondaryText1, renderFaDigits),
-                            style = compactStyle,
-                            fontFamily = FontFamily.Default,
+                            style = SecondaryDateCompactStyle,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 8.8.sp,
                             color = secondaryTextColor,
@@ -546,8 +529,7 @@ private fun DayCellView(
 
                         Text(
                             text = DigitFormatter.toSystemDigits(cell.secondaryText2, renderFaDigits),
-                            style = compactStyle,
-                            fontFamily = FontFamily.Default,
+                            style = SecondaryDateCompactStyle,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 8.8.sp,
                             color = secondaryTextColor,
@@ -557,7 +539,6 @@ private fun DayCellView(
                     }
                 }
             }
-        }
 
         // Qamar Dar Aqrab symbol (نماد قمر در عقرب وکتوری به رنگ قرمز بدون دایره فیروزه‌ای)
         if (cell.isQamarDarAqrab) {

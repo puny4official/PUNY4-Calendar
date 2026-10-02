@@ -1,5 +1,6 @@
 package com.example.calendar.core
 
+import androidx.compose.runtime.Immutable
 import com.example.calendar.model.*
 import java.time.LocalDate
 
@@ -107,6 +108,7 @@ object CalendarManager {
         return getFullDayInfo(jdn, city)
     }
 
+    @Immutable
     data class CalendarGridCell(
         val jdn: Long,
         val isCurrentMonth: Boolean,

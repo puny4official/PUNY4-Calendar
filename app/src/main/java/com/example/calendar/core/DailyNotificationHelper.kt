@@ -29,34 +29,34 @@ object DailyNotificationHelper {
     const val NOTIFICATION_ID = 1001
 
     private fun createDayNumberBitmap(dayNumberStr: String): Bitmap {
-        val size = 96
+        val size = 128
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
         val center = size / 2f
 
-        // Draw clean circular ring border around the number
-        val circlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        // Draw large circular ring extending almost to the outer boundary
+        val circlePaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.DITHER_FLAG).apply {
             color = Color.WHITE
             style = Paint.Style.STROKE
-            strokeWidth = 6.5f
+            strokeWidth = 9f
         }
-        val radius = center - (circlePaint.strokeWidth / 2f + 2f)
+        val radius = center - (circlePaint.strokeWidth / 2f + 1.5f)
         canvas.drawCircle(center, center, radius, circlePaint)
 
-        // Draw day number text centered inside the circle
-        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        // Draw day number text bold, prominent, and highly legible
+        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.SUBPIXEL_TEXT_FLAG).apply {
             color = Color.WHITE
             textAlign = Paint.Align.CENTER
-            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-            textSize = if (dayNumberStr.length >= 2) 48f else 56f
+            typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
+            textSize = if (dayNumberStr.length >= 2) 74f else 86f
         }
 
-        // Auto-scale to ensure text fits with comfortable breathing room inside the circle
-        val maxInnerWidth = (radius * 2f) * 0.74f
+        // Allow text to fill the circular area comfortably with high legibility
+        val maxInnerWidth = (radius * 2f) * 0.86f
         var textWidth = textPaint.measureText(dayNumberStr)
-        while (textWidth > maxInnerWidth && textPaint.textSize > 24f) {
-            textPaint.textSize -= 1.5f
+        while (textWidth > maxInnerWidth && textPaint.textSize > 28f) {
+            textPaint.textSize -= 2f
             textWidth = textPaint.measureText(dayNumberStr)
         }
 
