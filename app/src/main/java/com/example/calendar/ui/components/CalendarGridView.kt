@@ -424,11 +424,6 @@ private fun DayCellView(
         isHoliday -> holidayColor.copy(alpha = 0.50f)
         else -> if (isDark) Color.Black else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.28f)
     }
-    val animatedBackground by animateColorAsState(
-        targetValue = targetBackground,
-        animationSpec = tween(durationMillis = 200),
-        label = "cellBg"
-    )
 
     val targetBorderColor = when {
         isSelected -> Color(0xFF06B6D4) // فقط دور نشانگر فیروزه‌ای باشه
@@ -436,27 +431,21 @@ private fun DayCellView(
         isToday -> Color(0xFF06B6D4).copy(alpha = 0.65f)
         else -> if (isDark) Color(0xFF1E1E24) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)
     }
-    val animatedBorderColor by animateColorAsState(
-        targetValue = targetBorderColor,
-        animationSpec = tween(durationMillis = 200),
-        label = "cellBorder"
-    )
     val borderWidth = if (isSelected) 2.5.dp else if (isHoliday) 1.5.dp else if (isToday) 1.5.dp else 1.dp
 
     val textColor = when {
-        isSelected -> Color.White // عدد داخل نشانگر رو سفید کن
+        isSelected -> if (isDark) Color.White else Color.Black // وقتی در مود لایت است عدد نشانگر سیاه، و در دارک مود سفید
         isHoliday -> Color.White // نوشته داخل تعطیلات رسمی سفید
         else -> MaterialTheme.colorScheme.onSurface
     }
 
     val secondaryTextColor = when {
-        isSelected -> Color.White.copy(alpha = 0.88f)
+        isSelected -> if (isDark) Color.White.copy(alpha = 0.88f) else Color.Black.copy(alpha = 0.85f)
         isHoliday -> Color.White.copy(alpha = 0.88f) // نوشته‌های کوچک زیر روزهای تعطیل رسمی نیز سفید
         else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f)
     }
 
     val currentDensity = LocalDensity.current
-    // عدد داخل روز فقط با dayNumberScalePercent تغییر می‌کنه و فونت کلی متن‌ها بر آن اثر نمی‌ذاره
     val safeDensity = remember(currentDensity.density) {
         Density(density = currentDensity.density, fontScale = 1.0f)
     }
@@ -480,8 +469,8 @@ private fun DayCellView(
                     }
                 } else Modifier
             )
-            .border(borderWidth, animatedBorderColor, RoundedCornerShape(12.dp))
-            .background(animatedBackground)
+            .border(borderWidth, targetBorderColor, RoundedCornerShape(12.dp))
+            .background(targetBackground)
             .clickable { onDateSelected(cell.jdn) }
             .testTag("day_cell_${cell.primaryNumber}"),
         contentAlignment = Alignment.Center

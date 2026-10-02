@@ -5,8 +5,14 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Typeface
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.core.graphics.drawable.IconCompat
 import com.example.MainActivity
 import com.example.R
 import com.example.calendar.model.AppLanguage
@@ -15,11 +21,51 @@ import com.example.calendar.model.CityLocation
 /**
  * Manages the persistent, pinned daily calendar notification in the Android status bar.
  * Displays today's solar date, gregorian date, lunar date, and events.
+ * The small icon in the status bar dynamically shows today's day number.
  */
 object DailyNotificationHelper {
 
     const val CHANNEL_ID = "puny4_daily_calendar_channel"
     const val NOTIFICATION_ID = 1001
+
+    private fun createDayNumberBitmap(dayNumberStr: String): Bitmap {
+        val size = 96
+        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        val center = size / 2f
+
+        // Draw clean circular ring border around the number
+        val circlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            style = Paint.Style.STROKE
+            strokeWidth = 6.5f
+        }
+        val radius = center - (circlePaint.strokeWidth / 2f + 2f)
+        canvas.drawCircle(center, center, radius, circlePaint)
+
+        // Draw day number text centered inside the circle
+        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            textAlign = Paint.Align.CENTER
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            textSize = if (dayNumberStr.length >= 2) 48f else 56f
+        }
+
+        // Auto-scale to ensure text fits with comfortable breathing room inside the circle
+        val maxInnerWidth = (radius * 2f) * 0.74f
+        var textWidth = textPaint.measureText(dayNumberStr)
+        while (textWidth > maxInnerWidth && textPaint.textSize > 24f) {
+            textPaint.textSize -= 1.5f
+            textWidth = textPaint.measureText(dayNumberStr)
+        }
+
+        val fontMetrics = textPaint.fontMetrics
+        val y = center - (fontMetrics.ascent + fontMetrics.descent) / 2f
+        canvas.drawText(dayNumberStr, center, y, textPaint)
+
+        return bitmap
+    }
 
     fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -68,10 +114,13 @@ object DailyNotificationHelper {
         val weekdayName = dayInfo.dayOfWeekPersian
         val renderFaDigits = isFa && !useEnglishDigits
 
+        val dayNumberStr = DigitFormatter.toSystemDigits(j.day, renderFaDigits)
+        val dayIconBitmap = createDayNumberBitmap(dayNumberStr)
+        val dayIconCompat = IconCompat.createWithBitmap(dayIconBitmap)
+
         val title = if (isFa) {
-            val dayStr = DigitFormatter.toSystemDigits(j.day, renderFaDigits)
             val yearStr = DigitFormatter.toSystemDigits(j.year, renderFaDigits)
-            "$weekdayName $dayStr $jalaliMonthName $yearStr"
+            "$weekdayName $dayNumberStr $jalaliMonthName $yearStr"
         } else {
             "${dayInfo.dayOfWeekEnglish}, ${j.day} $jalaliMonthName ${j.year}"
         }
@@ -104,7 +153,8 @@ object DailyNotificationHelper {
         val bigText = "$title\n$secDateStr\n$holidayOrEvent"
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_calendar_notification)
+            .setSmallIcon(dayIconCompat)
+            .setLargeIcon(dayIconBitmap)
             .setContentTitle(title)
             .setContentText(secDateStr)
             .setStyle(NotificationCompat.BigTextStyle().bigText(bigText))

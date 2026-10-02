@@ -126,17 +126,19 @@ class MainActivity : ComponentActivity() {
                     val useEnglishDayNumbers by userSettings.useEnglishDayNumbers.collectAsState()
                     val context = LocalContext.current
 
-                    // Sync pinned daily notification state with user preference and updates
+                    // Sync pinned daily notification state with user preference and updates on background dispatcher
                     LaunchedEffect(showPinnedNotification, appLanguage, useEnglishDayNumbers, selectedCity) {
-                        if (showPinnedNotification) {
-                            DailyNotificationHelper.showPinnedDailyNotification(
-                                context = context,
-                                appLanguage = appLanguage,
-                                useEnglishDigits = useEnglishDayNumbers,
-                                city = selectedCity
-                            )
-                        } else {
-                            DailyNotificationHelper.cancelDailyNotification(context)
+                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+                            if (showPinnedNotification) {
+                                DailyNotificationHelper.showPinnedDailyNotification(
+                                    context = context,
+                                    appLanguage = appLanguage,
+                                    useEnglishDigits = useEnglishDayNumbers,
+                                    city = selectedCity
+                                )
+                            } else {
+                                DailyNotificationHelper.cancelDailyNotification(context)
+                            }
                         }
                     }
 
@@ -635,7 +637,7 @@ class MainActivity : ComponentActivity() {
                                             modifier = Modifier
                                                 .matchParentSize()
                                                 .clipToBounds(),
-                                            particleCount = 22
+                                            particleCount = 10
                                         )
                                     }
                                 }

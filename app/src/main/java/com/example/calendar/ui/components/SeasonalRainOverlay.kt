@@ -11,8 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import kotlin.math.PI
 import kotlin.math.sin
@@ -37,19 +39,17 @@ private class SeasonalParticle(
 
 /**
  * High-performance, hardware-accelerated seasonal emoji rain overlay.
- * Uses pre-rasterized bitmap textures and Compose DrawScope transforms
+ * Uses pre-rasterized bitmap textures and pure DrawScope blitting
  * for silky-smooth, zero-lag 60fps/120fps animation.
  */
 @Composable
 fun SeasonalRainOverlay(
     season: String,
     modifier: Modifier = Modifier,
-    particleCount: Int = 18
+    particleCount: Int = 10
 ) {
     val density = LocalDensity.current
 
-    // Select emoji pool matching the season as requested:
-    // بهار: 🌸💐🌺 | تابستان: 🌼🌻☀️ | پاییز: 🍁🍂 | زمستان: ❄️☃️
     val emojiList = remember(season) {
         when (season) {
             "بهار" -> listOf("🌸", "💐", "🌺")
@@ -60,10 +60,8 @@ fun SeasonalRainOverlay(
         }
     }
 
-    // Pre-rasterize emojis to GPU textures once.
-    // This completely eliminates font engine & Skia glyph layout overhead during drawing frames!
     val emojiBitmaps: List<ImageBitmap> = remember(season, density) {
-        val targetSizePx = with(density) { 28.dp.roundToPx() }.coerceAtLeast(16)
+        val targetSizePx = with(density) { 26.dp.roundToPx() }.coerceAtLeast(16)
         val textPaint = AndroidPaint().apply {
             isAntiAlias = true
             textAlign = AndroidPaint.Align.CENTER
@@ -78,22 +76,20 @@ fun SeasonalRainOverlay(
         }
     }
 
-    // Pre-generate particles covering every section across the entire header width
     val particles = remember(season, particleCount, emojiBitmaps.size) {
         val random = Random(season.hashCode() + 42)
         val segmentWidth = 1.0f / particleCount.coerceAtLeast(1).toFloat()
         Array(particleCount) { index ->
             val bitmapIndex = index % emojiBitmaps.size
-            // Jittered grid ensures uniform spatial coverage with natural variation
             val xPercent = ((index.toFloat() + random.nextFloat() * 0.96f) * segmentWidth).coerceIn(0.01f, 0.99f)
             val initialOffsetMs = (random.nextFloat() * 6000f).toLong()
-            val durationMs = 3200L + (random.nextFloat() * 2200L).toLong() // 3.2s to 5.4s gentle glide
-            val swayAmplitudePx = with(density) { (8f + random.nextFloat() * 16f).dp.toPx() }
+            val durationMs = 3400L + (random.nextFloat() * 2000L).toLong()
+            val swayAmplitudePx = with(density) { (6f + random.nextFloat() * 12f).dp.toPx() }
             val swayFrequency = 0.8f + random.nextFloat() * 1.4f
             val swayPhase = (random.nextFloat() * 2f * PI).toFloat()
-            val baseAlpha = 0.65f + random.nextFloat() * 0.32f
-            val rotationFactor = (random.nextFloat() * 2f - 1f) * 120f
-            val scaleFactor = 0.75f + random.nextFloat() * 0.35f
+            val baseAlpha = 0.65f + random.nextFloat() * 0.30f
+            val rotationFactor = (random.nextFloat() * 2f - 1f) * 90f
+            val scaleFactor = 0.75f + random.nextFloat() * 0.30f
 
             SeasonalParticle(
                 bitmapIndex = bitmapIndex,
@@ -110,9 +106,10 @@ fun SeasonalRainOverlay(
         }
     }
 
-    // Choreographer-synced continuous timeline via Compose's infinite animation system
+    // Keep animation progress in a State object.
+    // Reading animState.value exclusively inside Canvas draws avoids recomposing the Composable!
     val infiniteTransition = rememberInfiniteTransition(label = "SeasonalRainTransition")
-    val globalTimeMs by infiniteTransition.animateFloat(
+    val animProgress = infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 120_000f,
         animationSpec = infiniteRepeatable(
@@ -128,7 +125,8 @@ fun SeasonalRainOverlay(
 
         if (width <= 0f || height <= 0f || emojiBitmaps.isEmpty()) return@Canvas
 
-        val currentTime = globalTimeMs.toLong()
+        // Read animProgress here so ONLY the draw phase runs per-frame!
+        val currentTime = animProgress.value.toLong()
 
         for (i in particles.indices) {
             val particle = particles[i]
@@ -136,21 +134,19 @@ fun SeasonalRainOverlay(
             val totalTime = currentTime + particle.initialOffsetMs
             val cycleProgress = ((totalTime % particle.durationMs).toFloat()) / particle.durationMs.toFloat()
 
-            // Vertical trajectory with margin for smooth entry and exit
-            val halfBmpH = (bitmap.height / 2f) * particle.scaleFactor
-            val startY = -halfBmpH
-            val endY = height + halfBmpH
+            val scaledW = (bitmap.width * particle.scaleFactor).toInt().coerceAtLeast(1)
+            val scaledH = (bitmap.height * particle.scaleFactor).toInt().coerceAtLeast(1)
+
+            val startY = -scaledH.toFloat()
+            val endY = height + scaledH.toFloat()
             val currentY = startY + cycleProgress * (endY - startY)
 
-            // Graceful sinusoidal wind sway
             val angle = cycleProgress * 2f * PI.toFloat() * particle.swayFrequency + particle.swayPhase
             val sway = sin(angle) * particle.swayAmplitudePx
             val currentX = (particle.xPercent * width + sway).coerceIn(0f, width)
 
-            // Gentle rotational drift
             val currentRotation = cycleProgress * particle.rotationFactor
 
-            // Seamless alpha fade at edges: no sudden pop-in or pop-out
             val edgeFade = when {
                 cycleProgress < 0.16f -> cycleProgress / 0.16f
                 cycleProgress > 0.84f -> (1f - cycleProgress) / 0.16f
@@ -158,15 +154,11 @@ fun SeasonalRainOverlay(
             }
             val finalAlpha = (particle.baseAlpha * edgeFade).coerceIn(0f, 1f)
 
-            // Hardware-accelerated GPU quad rendering with matrix transform
-            withTransform({
-                translate(currentX, currentY)
-                rotate(currentRotation, Offset.Zero)
-                scale(particle.scaleFactor, particle.scaleFactor, Offset.Zero)
-            }) {
+            rotate(currentRotation, pivot = Offset(currentX, currentY)) {
                 drawImage(
                     image = bitmap,
-                    topLeft = Offset(-bitmap.width / 2f, -bitmap.height / 2f),
+                    dstOffset = IntOffset((currentX - scaledW / 2f).toInt(), (currentY - scaledH / 2f).toInt()),
+                    dstSize = IntSize(scaledW, scaledH),
                     alpha = finalAlpha
                 )
             }

@@ -116,7 +116,7 @@ fun CalendarScreen(
     var todayCellRadius by remember { mutableFloatStateOf(0f) }
     var indicatorCenterOffset by remember { mutableStateOf<Offset?>(null) }
     var indicatorCellRadius by remember { mutableFloatStateOf(0f) }
-    var showIntroSpotlight by remember { mutableStateOf(true) }
+    var showIntroSpotlight by remember { mutableStateOf(false) }
 
     val handleGoToToday = {
         selectedJdn = todayJdn
@@ -278,15 +278,17 @@ fun CalendarScreen(
             }
 
             // Ephemeral launch spotlight overlay (momentary circle + dashed arrow + rich paragraph, then fades out)
-            TodaySpotlightOverlay(
-                dayInfo = if (selectedJdn == todayJdn) todayDayInfo else selectedDayInfo,
-                targetCenter = indicatorCenterOffset ?: todayCenterOffset,
-                targetRadius = if (indicatorCellRadius > 0f) indicatorCellRadius else todayCellRadius,
-                visible = showIntroSpotlight,
-                isFa = (appLanguage == AppLanguage.PERSIAN),
-                holidayColor = holidayColor,
-                showDashedLines = scrollState.value <= 5,
-                onDismiss = { showIntroSpotlight = false }
-            )
+            if (showIntroSpotlight) {
+                TodaySpotlightOverlay(
+                    dayInfo = if (selectedJdn == todayJdn) todayDayInfo else selectedDayInfo,
+                    targetCenter = indicatorCenterOffset ?: todayCenterOffset,
+                    targetRadius = if (indicatorCellRadius > 0f) indicatorCellRadius else todayCellRadius,
+                    visible = showIntroSpotlight,
+                    isFa = (appLanguage == AppLanguage.PERSIAN),
+                    holidayColor = holidayColor,
+                    showDashedLines = scrollState.value <= 5,
+                    onDismiss = { showIntroSpotlight = false }
+                )
+            }
         }
 }
