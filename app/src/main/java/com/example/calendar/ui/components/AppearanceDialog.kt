@@ -54,6 +54,10 @@ val PRESET_HOLIDAY_COLORS = listOf(
     PresetHolidayColor("یاقوتی درباری", "Royal Ruby", 0xFFE11D48L),
     PresetHolidayColor("زرشکی اصیل", "Crimson Red", 0xFFBE123CL),
     PresetHolidayColor("قرمز شعله‌ای", "Flame Red", 0xFFEF4444L),
+    PresetHolidayColor("صورتی دلنشین", "Lovely Pink", 0xFFEC4899L),
+    PresetHolidayColor("صورتی پاستلی", "Pastel Pink", 0xFFF472B6L),
+    PresetHolidayColor("رز فانتزی", "Rose Pink", 0xFFFB7185L),
+    PresetHolidayColor("سرخابی فانتزی", "Fuchsia Pink", 0xFFD946EFL),
     PresetHolidayColor("نارنجی مرجانی", "Coral Orange", 0xFFF97316L),
     PresetHolidayColor("کهربایی طلایی", "Amber Gold", 0xFFD97706L),
     PresetHolidayColor("یشمی ایرانی", "Persian Jade", 0xFF059669L),
@@ -64,7 +68,7 @@ val PRESET_HOLIDAY_COLORS = listOf(
     PresetHolidayColor("لاجوردی ایرانی", "Persian Azure", 0xFF2563EBL),
     PresetHolidayColor("آبی کاربنی", "Cobalt Navy", 0xFF1D4ED8L),
     PresetHolidayColor("نیلی شب", "Midnight Indigo", 0xFF6366F1L),
-    PresetHolidayColor("سرخابی فانتزی", "Fuchsia Pink", 0xFFD946EFL),
+    PresetHolidayColor("ارغوانی عمیق", "Deep Violet", 0xFF7C3AEDL),
     PresetHolidayColor("شرابی کلاسیک", "Plum Wine", 0xFF881337L)
 )
 

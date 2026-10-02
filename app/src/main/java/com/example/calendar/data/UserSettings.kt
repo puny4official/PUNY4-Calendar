@@ -29,8 +29,11 @@ class UserSettings(context: Context) {
     private val _showSecondaryDates = MutableStateFlow(prefs.getBoolean("show_sec_dates_v2", false))
     val showSecondaryDates: StateFlow<Boolean> = _showSecondaryDates.asStateFlow()
 
-    private val _showSeasonalRain = MutableStateFlow(prefs.getBoolean("show_seasonal_rain", true))
+    private val _showSeasonalRain = MutableStateFlow(prefs.getBoolean("show_seasonal_rain", false))
     val showSeasonalRain: StateFlow<Boolean> = _showSeasonalRain.asStateFlow()
+
+    private val _showPinnedNotification = MutableStateFlow(prefs.getBoolean("show_pinned_notification", false))
+    val showPinnedNotification: StateFlow<Boolean> = _showPinnedNotification.asStateFlow()
 
     private val _fontScalePercent = MutableStateFlow(prefs.getInt("font_scale_percent", 100))
     val fontScalePercent: StateFlow<Int> = _fontScalePercent.asStateFlow()
@@ -38,7 +41,7 @@ class UserSettings(context: Context) {
     private val _dayNumberScalePercent = MutableStateFlow(prefs.getInt("day_number_scale_percent", 100))
     val dayNumberScalePercent: StateFlow<Int> = _dayNumberScalePercent.asStateFlow()
 
-    private val _useEnglishDayNumbers = MutableStateFlow(prefs.getBoolean("use_english_day_numbers", false))
+    private val _useEnglishDayNumbers = MutableStateFlow(prefs.getBoolean("use_english_day_numbers", true))
     val useEnglishDayNumbers: StateFlow<Boolean> = _useEnglishDayNumbers.asStateFlow()
 
     private val _holidayColorLong = MutableStateFlow(prefs.getLong("holiday_color_long", 0xFF8B5CF6L))
@@ -104,6 +107,11 @@ class UserSettings(context: Context) {
     fun setShowSeasonalRain(show: Boolean) {
         prefs.edit().putBoolean("show_seasonal_rain", show).apply()
         _showSeasonalRain.value = show
+    }
+
+    fun setShowPinnedNotification(show: Boolean) {
+        prefs.edit().putBoolean("show_pinned_notification", show).apply()
+        _showPinnedNotification.value = show
     }
 
     fun setFontScalePercent(percent: Int) {

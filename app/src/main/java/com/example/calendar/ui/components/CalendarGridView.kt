@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
@@ -34,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calendar.core.AstronomicalCalculator
@@ -89,8 +91,9 @@ fun CalendarGridView(
         CalendarManager.buildMonthGrid(calendarType, currentYear, currentMonth, selectedJdn)
     }
 
-    val monthTitle = remember(calendarType, currentYear, currentMonth, appLanguage) {
-        val yearStr = DigitFormatter.toSystemDigits(currentYear, isFa)
+    val renderFaDigits = isFa && !useEnglishDayNumbers
+    val monthTitle = remember(calendarType, currentYear, currentMonth, appLanguage, useEnglishDayNumbers) {
+        val yearStr = DigitFormatter.toSystemDigits(currentYear, renderFaDigits)
         when (calendarType) {
             CalendarType.SOLAR_HIJRI -> "${JalaliCalendar.MONTH_NAMES_PERSIAN[currentMonth - 1]} $yearStr"
             CalendarType.GREGORIAN -> {
@@ -229,16 +232,18 @@ fun CalendarGridView(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // In Persian RTL: Next button (Arrow right in LTR or forward in RTL)
+                // Month navigation: Next month arrow points to the right (→)
                 IconButton(
                     onClick = onNextMonth,
                     modifier = Modifier.testTag("next_month_button")
                 ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = "ماه بعد",
-                        tint = HolidayPurple
-                    )
+                    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = "ماه بعد",
+                            tint = HolidayPurple
+                        )
+                    }
                 }
 
                 Row(
@@ -264,15 +269,18 @@ fun CalendarGridView(
                     )
                 }
 
+                // Month navigation: Previous month arrow points to the left (←)
                 IconButton(
                     onClick = onPreviousMonth,
                     modifier = Modifier.testTag("prev_month_button")
                 ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "ماه قبل",
-                        tint = HolidayPurple
-                    )
+                    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "ماه قبل",
+                            tint = HolidayPurple
+                        )
+                    }
                 }
             }
 
@@ -361,6 +369,8 @@ fun CalendarGridView(
             calendarType = calendarType,
             currentYear = currentYear,
             currentMonth = currentMonth,
+            useEnglishDayNumbers = useEnglishDayNumbers,
+            isFa = isFa,
             onDismiss = { showDatePickerDialog = false },
             onConfirm = { year, month ->
                 onSelectYearMonth(year, month)
@@ -592,9 +602,12 @@ fun YearMonthPickerDialog(
     calendarType: CalendarType,
     currentYear: Int,
     currentMonth: Int,
+    useEnglishDayNumbers: Boolean = true,
+    isFa: Boolean = true,
     onDismiss: () -> Unit,
     onConfirm: (Int, Int) -> Unit
 ) {
+    val renderFaDigits = isFa && !useEnglishDayNumbers
     var selectedYear by remember { mutableStateOf(currentYear) }
     var selectedMonth by remember { mutableStateOf(currentMonth) }
 
@@ -623,18 +636,20 @@ fun YearMonthPickerDialog(
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                // Year selector with animal
+                // Year selector with animal (Right: Next Year →, Left: Prev Year ←)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = { selectedYear-- }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "سال قبل")
+                    IconButton(onClick = { selectedYear++ }) {
+                        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "سال بعد")
+                        }
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = DigitFormatter.toSystemDigits(selectedYear, true),
+                            text = DigitFormatter.toSystemDigits(selectedYear, renderFaDigits),
                             style = MaterialTheme.typography.headlineSmall.copy(
                                 fontFamily = FontFamily.Default
                             ),
@@ -650,8 +665,10 @@ fun YearMonthPickerDialog(
                             )
                         }
                     }
-                    IconButton(onClick = { selectedYear++ }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "سال بعد")
+                    IconButton(onClick = { selectedYear-- }) {
+                        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "سال قبل")
+                        }
                     }
                 }
 

@@ -146,3 +146,23 @@ data class FullDayInfo(
     val yearAnimal: YearAnimal? = null,
     val monthElement: ZodiacElement? = null
 )
+
+enum class CalendarCategory(val titleFa: String, val titleEn: String) {
+    ALL("همه", "All"),
+    HOLIDAYS("تعطیلات", "Holidays"),
+    SOLAR("شمسی", "Solar"),
+    ISLAMIC("قمری / مذهبی", "Islamic"),
+    GLOBAL("بین‌المللی", "Global"),
+    ASTRONOMICAL("نجومی", "Astronomical")
+}
+
+data class SearchableCalendarEvent(
+    val title: String,
+    val isHoliday: Boolean,
+    val eventType: EventType,
+    val calendarCategory: CalendarCategory,
+    val month: Int,
+    val day: Int,
+    val formattedDate: String
+)
+

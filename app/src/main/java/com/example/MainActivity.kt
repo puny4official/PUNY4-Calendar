@@ -5,6 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
@@ -35,11 +41,13 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calendar.core.CalendarManager
+import com.example.calendar.core.DailyNotificationHelper
 import com.example.calendar.core.JalaliCalendar
 import com.example.calendar.data.UserSettings
 import com.example.calendar.model.AppLanguage
 import com.example.calendar.ui.components.AppGuideDialog
 import com.example.calendar.ui.components.AppearanceDialog
+import com.example.calendar.ui.components.EventSearchDialog
 import com.example.calendar.ui.components.SeasonalRainOverlay
 import com.example.calendar.ui.components.DigitalLoadingScreen
 import com.example.calendar.ui.screens.AstronomyScreen
@@ -75,19 +83,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             var isAppInitializing by remember { mutableStateOf(true) }
 
-            LaunchedEffect(Unit) {
-                delay(1800)
-                isAppInitializing = false
-            }
-
-            if (isAppInitializing) {
-                DigitalLoadingScreen()
-            } else {
-                val themeMode by userSettings.themeMode.collectAsState()
-                val appLanguage by userSettings.appLanguage.collectAsState()
-                val fontScalePercent by userSettings.fontScalePercent.collectAsState()
-                val isFa = (appLanguage == AppLanguage.PERSIAN)
-                val layoutDirection = if (isFa) LayoutDirection.Rtl else LayoutDirection.Ltr
+            val themeMode by userSettings.themeMode.collectAsState()
+            val appLanguage by userSettings.appLanguage.collectAsState()
+            val fontScalePercent by userSettings.fontScalePercent.collectAsState()
+            val isFa = (appLanguage == AppLanguage.PERSIAN)
+            val layoutDirection = if (isFa) LayoutDirection.Rtl else LayoutDirection.Ltr
 
             val currentDensity = LocalDensity.current
             val customDensity = remember(currentDensity, fontScalePercent) {
@@ -103,11 +103,14 @@ class MainActivity : ComponentActivity() {
                     LocalLayoutDirection provides layoutDirection,
                     LocalDensity provides customDensity
                 ) {
-                    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                     val coroutineScope = rememberCoroutineScope()
                     var selectedTab by remember { mutableStateOf(MainTab.CALENDAR) }
                     var showGuideDialog by remember { mutableStateOf(false) }
                     var showAppearanceDialog by remember { mutableStateOf(false) }
+                    var showEventSearchDialog by remember { mutableStateOf(false) }
+                    var targetJdnFromSearch by remember { mutableStateOf<Long?>(null) }
 
                     // Current season for app header rain effect
                     val todayG = remember { CalendarManager.getTodayGregorian() }
@@ -118,6 +121,24 @@ class MainActivity : ComponentActivity() {
                     val isAutumn = remember(todayJalali.month) { todayJalali.month in 7..9 || currentSeason == "پاییز" }
                     val isWinter = remember(todayJalali.month) { todayJalali.month in 10..12 || currentSeason == "زمستان" }
                     val showSeasonalRain by userSettings.showSeasonalRain.collectAsState()
+                    val showPinnedNotification by userSettings.showPinnedNotification.collectAsState()
+                    val selectedCity by userSettings.selectedCity.collectAsState()
+                    val useEnglishDayNumbers by userSettings.useEnglishDayNumbers.collectAsState()
+                    val context = LocalContext.current
+
+                    // Sync pinned daily notification state with user preference and updates
+                    LaunchedEffect(showPinnedNotification, appLanguage, useEnglishDayNumbers, selectedCity) {
+                        if (showPinnedNotification) {
+                            DailyNotificationHelper.showPinnedDailyNotification(
+                                context = context,
+                                appLanguage = appLanguage,
+                                useEnglishDigits = useEnglishDayNumbers,
+                                city = selectedCity
+                            )
+                        } else {
+                            DailyNotificationHelper.cancelDailyNotification(context)
+                        }
+                    }
 
                     // Handle back press: close drawer if open, otherwise return to calendar
                     BackHandler(enabled = drawerState.isOpen || selectedTab != MainTab.CALENDAR) {
@@ -247,7 +268,7 @@ class MainActivity : ComponentActivity() {
                                                             modifier = Modifier
                                                                 .fillMaxSize()
                                                                 .clip(RoundedCornerShape(12.dp)),
-                                                            contentScale = ContentScale.Crop
+                                                            contentScale = ContentScale.Fit
                                                         )
                                                     }
 
@@ -481,36 +502,23 @@ class MainActivity : ComponentActivity() {
                                                         modifier = Modifier
                                                             .fillMaxSize()
                                                             .clip(RoundedCornerShape(8.dp)),
-                                                        contentScale = ContentScale.Crop
+                                                        contentScale = ContentScale.Fit
                                                     )
                                                 }
-                                                Column {
-                                                    Text(
-                                                        text = "PUNY4 Calendar",
-                                                        style = MaterialTheme.typography.labelMedium,
-                                                        fontWeight = FontWeight.Bold,
-                                                        color = MaterialTheme.colorScheme.onSurface
-                                                    )
-                                                    Text(
-                                                        text = if (isFa) "نسخه ۱.۰.۰" else "Version 1.0.0",
-                                                        style = MaterialTheme.typography.labelSmall,
-                                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                                    )
-                                                }
-                                            }
-
-                                            Surface(
-                                                shape = RoundedCornerShape(6.dp),
-                                                color = MaterialTheme.colorScheme.primaryContainer
-                                            ) {
                                                 Text(
-                                                    text = "v1.0.0",
-                                                    fontSize = 11.sp,
+                                                    text = "PUNY4 Calendar",
+                                                    style = MaterialTheme.typography.labelMedium,
                                                     fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                                    color = MaterialTheme.colorScheme.onSurface
                                                 )
                                             }
+
+                                            Text(
+                                                text = "v 1.0.0",
+                                                fontSize = 14.5.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
                                         }
                                     }
                                 }
@@ -528,49 +536,21 @@ class MainActivity : ComponentActivity() {
                                         .background(MaterialTheme.colorScheme.surface)
                                         .clipToBounds()
                                 ) {
-                                    // Seasonal falling emoji rain in top header where app name is written
-                                    if (showSeasonalRain && selectedTab == MainTab.CALENDAR) {
-                                        SeasonalRainOverlay(
-                                            season = currentSeason,
-                                            modifier = Modifier
-                                                .matchParentSize()
-                                                .clipToBounds(),
-                                            particleCount = 14
-                                        )
-                                    }
-
                                     TopAppBar(
                                         title = {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(10.dp)
-                                            ) {
-                                                Surface(
-                                                    shape = RoundedCornerShape(8.dp),
-                                                    color = Color.Black,
-                                                    modifier = Modifier.size(32.dp),
-                                                    shadowElevation = 2.dp
-                                                ) {
-                                                    Image(
-                                                        painter = painterResource(id = R.drawable.calendar_astro_icon),
-                                                        contentDescription = "PUNY4 Logo",
-                                                        modifier = Modifier
-                                                            .fillMaxSize()
-                                                            .clip(RoundedCornerShape(8.dp)),
-                                                        contentScale = ContentScale.Crop
-                                                    )
-                                                }
-                                                Text(
-                                                    text = when (selectedTab) {
-                                                        MainTab.CALENDAR -> "PUNY4 Calendar"
-                                                        MainTab.ASTRONOMY -> if (isFa) "اطلاعات نجومی و رصد" else "Astronomy & Sky"
-                                                        MainTab.CONVERTER -> if (isFa) "تبدیل تاریخ تقویم‌ها" else "Calendar Converter"
-                                                        MainTab.SETTINGS -> if (isFa) "تنظیمات برنامه" else "App Settings"
-                                                    },
-                                                    fontWeight = FontWeight.Bold,
-                                                    style = MaterialTheme.typography.titleLarge
-                                                )
-                                            }
+                                            Text(
+                                                text = when (selectedTab) {
+                                                    MainTab.CALENDAR -> "PUNY4 Calendar"
+                                                    MainTab.ASTRONOMY -> if (isFa) "اطلاعات نجومی و رصد" else "Astronomy & Sky"
+                                                    MainTab.CONVERTER -> if (isFa) "تبدیل تاریخ تقویم‌ها" else "Calendar Converter"
+                                                    MainTab.SETTINGS -> if (isFa) "تنظیمات برنامه" else "App Settings"
+                                                },
+                                                fontSize = 15.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                maxLines = 1,
+                                                softWrap = false,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
                                         },
                                         navigationIcon = {
                                             IconButton(
@@ -590,22 +570,42 @@ class MainActivity : ComponentActivity() {
                                         actions = {
                                             if (selectedTab == MainTab.CALENDAR) {
                                                 IconButton(
+                                                    onClick = { showEventSearchDialog = true },
+                                                    modifier = Modifier.testTag("top_bar_search_events_button")
+                                                ) {
+                                                    Surface(
+                                                        shape = CircleShape,
+                                                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                                                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)),
+                                                        modifier = Modifier.size(30.dp)
+                                                    ) {
+                                                        Box(contentAlignment = Alignment.Center) {
+                                                            Icon(
+                                                                imageVector = Icons.Default.Search,
+                                                                contentDescription = if (isFa) "جستجوی مناسبت‌ها" else "Search Events",
+                                                                tint = MaterialTheme.colorScheme.primary,
+                                                                modifier = Modifier.size(18.dp)
+                                                            )
+                                                        }
+                                                    }
+                                                }
+
+                                                IconButton(
                                                     onClick = { showGuideDialog = true },
                                                     modifier = Modifier.testTag("top_bar_guide_button")
                                                 ) {
                                                     Surface(
                                                         shape = CircleShape,
-                                                        color = Color(0xFF9333EA),
-                                                        border = BorderStroke(1.5.dp, Color(0xFFE879F9)),
-                                                        shadowElevation = 3.dp,
-                                                        modifier = Modifier.size(28.dp)
+                                                        color = Color.Transparent,
+                                                        border = BorderStroke(1.2.dp, Color(0xFF9333EA).copy(alpha = 0.65f)),
+                                                        modifier = Modifier.size(20.dp)
                                                     ) {
                                                         Box(contentAlignment = Alignment.Center) {
                                                             Text(
                                                                 text = "!",
-                                                                fontWeight = FontWeight.Black,
-                                                                fontSize = 15.sp,
-                                                                color = Color.White
+                                                                fontWeight = FontWeight.ExtraBold,
+                                                                fontSize = 12.sp,
+                                                                color = Color(0xFF9333EA)
                                                             )
                                                         }
                                                     }
@@ -627,6 +627,17 @@ class MainActivity : ComponentActivity() {
                                             containerColor = Color.Transparent
                                         )
                                     )
+
+                                    // Seasonal falling emoji rain overlay across every point of the top header
+                                    if (showSeasonalRain && selectedTab == MainTab.CALENDAR) {
+                                        SeasonalRainOverlay(
+                                            season = currentSeason,
+                                            modifier = Modifier
+                                                .matchParentSize()
+                                                .clipToBounds(),
+                                            particleCount = 22
+                                        )
+                                    }
                                 }
                             }
                             // Note: bottomBar is intentionally completely omitted as requested:
@@ -640,6 +651,8 @@ class MainActivity : ComponentActivity() {
                                 when (selectedTab) {
                                     MainTab.CALENDAR -> CalendarScreen(
                                         userSettings = userSettings,
+                                        targetJdn = targetJdnFromSearch,
+                                        onTargetJdnConsumed = { targetJdnFromSearch = null },
                                         modifier = Modifier.fillMaxSize()
                                     )
                                     MainTab.ASTRONOMY -> AstronomyScreen(
@@ -658,6 +671,20 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
+                    if (showEventSearchDialog) {
+                        EventSearchDialog(
+                            todayJdn = todayG.let { JalaliCalendar.gregorianToJdn(it.year, it.month, it.day) },
+                            isFa = isFa,
+                            fontScalePercent = fontScalePercent,
+                            onDismiss = { showEventSearchDialog = false },
+                            onSelectDate = { jdn ->
+                                selectedTab = MainTab.CALENDAR
+                                targetJdnFromSearch = jdn
+                                showEventSearchDialog = false
+                            }
+                        )
+                    }
+
                     if (showGuideDialog) {
                         AppGuideDialog(
                             isFa = isFa,
@@ -671,6 +698,21 @@ class MainActivity : ComponentActivity() {
                             userSettings = userSettings,
                             isFa = isFa,
                             onDismiss = { showAppearanceDialog = false }
+                        )
+                    }
+
+                    // Pure black digital loading splash overlay displayed while initializing
+                    AnimatedVisibility(
+                        visible = isAppInitializing,
+                        enter = EnterTransition.None,
+                        exit = fadeOut(
+                            animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing)
+                        )
+                    ) {
+                        DigitalLoadingScreen(
+                            onFinished = {
+                                isAppInitializing = false
+                            }
                         )
                     }
                 }

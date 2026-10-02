@@ -3,17 +3,13 @@ package com.example.calendar.ui.components
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
@@ -25,66 +21,29 @@ import androidx.compose.ui.unit.sp
 import com.example.R
 
 /**
- * Pure black digital loading screen displayed at app startup:
+ * Pure black digital loading screen displayed exclusively at app startup:
  * - 100% black background ("فقط و فقط یک صفحه سیاه")
- * - Center: App logo image with subtle digital pulse aura
- * - Bottom: Digital animation loading bar + "Loading ..." text
+ * - Center: App cover image
+ * - Bottom: Digital animation loading bar that smoothly fills 0 -> 100%, then transitions immediately
  */
 @Composable
 fun DigitalLoadingScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onFinished: (() -> Unit)? = null
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "digital_loading_anim")
+    val progress = remember { Animatable(0f) }
 
-    // Pulsing aura around the logo
-    val logoPulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.35f,
-        targetValue = 0.85f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1400, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "logo_pulse_alpha"
-    )
-
-    val logoPulseScale by infiniteTransition.animateFloat(
-        initialValue = 0.98f,
-        targetValue = 1.02f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1400, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "logo_pulse_scale"
-    )
-
-    // Digital segmented progress animation (0 to 1 looping)
-    val digitalProgress by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1600, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "digital_progress"
-    )
-
-    // Animated dots for "Loading ..." (cycling: "Loading", "Loading .", "Loading ..", "Loading ...")
-    val dotCycle by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 4f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "loading_dots"
-    )
-
-    val dotsText = when (dotCycle.toInt() % 4) {
-        1 -> " ."
-        2 -> " .."
-        3 -> " ..."
-        else -> ""
+    LaunchedEffect(Unit) {
+        // Smooth progressive filling from 0 to 100%
+        progress.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 1500, easing = LinearEasing)
+        )
+        // Immediately when filled 100%, enter app seamlessly
+        onFinished?.invoke()
     }
+
+    val digitalProgress = progress.value
 
     Box(
         modifier = modifier
@@ -93,60 +52,17 @@ fun DigitalLoadingScreen(
             .testTag("digital_loading_screen")
     ) {
         // -------------------------------------------------------------
-        // CENTER: APP LOGO WITH DIGITAL AURA (ENLARGED)
+        // CENTER: APP COVER
         // -------------------------------------------------------------
-        Box(
+        Image(
+            painter = painterResource(id = R.drawable.calendar_astro_icon),
+            contentDescription = "App Cover",
             modifier = Modifier
                 .align(Alignment.Center)
-                .testTag("digital_loading_logo_container"),
-            contentAlignment = Alignment.Center
-        ) {
-            // Ambient digital purple/violet glow behind logo
-            Box(
-                modifier = Modifier
-                    .size(200.dp)
-                    .clip(RoundedCornerShape(44.dp))
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(
-                                Color(0xFFA855F7).copy(alpha = 0.45f * logoPulseAlpha),
-                                Color(0xFF6366F1).copy(alpha = 0.20f * logoPulseAlpha),
-                                Color.Transparent
-                            )
-                        )
-                    )
-            )
-
-            // Logo image container with modern rounded corners and cyber border (enlarged)
-            Box(
-                modifier = Modifier
-                    .size(160.dp)
-                    .shadow(elevation = 20.dp, shape = RoundedCornerShape(32.dp), spotColor = Color(0xFFA855F7))
-                    .clip(RoundedCornerShape(32.dp))
-                    .background(Color.Black)
-                    .border(
-                        width = 1.8.dp,
-                        brush = Brush.linearGradient(
-                            listOf(
-                                Color(0xFFA855F7).copy(alpha = logoPulseAlpha),
-                                Color(0xFF8B5CF6).copy(alpha = 0.6f),
-                                Color(0xFF06B6D4).copy(alpha = 0.35f)
-                            )
-                        ),
-                        shape = RoundedCornerShape(32.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.calendar_astro_icon),
-                    contentDescription = "App Logo",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(32.dp)),
-                    contentScale = ContentScale.Crop
-                )
-            }
-        }
+                .size(240.dp)
+                .testTag("digital_loading_cover"),
+            contentScale = ContentScale.Fit
+        )
 
         // -------------------------------------------------------------
         // BOTTOM: DIGITAL ANIMATION LOADING + "Loading ..."
@@ -179,7 +95,7 @@ fun DigitalLoadingScreen(
 
                     val glowAlpha = when {
                         isLead -> 1f
-                        isActive -> 0.75f
+                        isActive -> 0.85f
                         else -> 0.25f
                     }
 

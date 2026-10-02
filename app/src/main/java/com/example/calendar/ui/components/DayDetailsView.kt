@@ -42,11 +42,13 @@ fun DayDetailsView(
     userNote: String,
     onSaveNote: (String) -> Unit,
     modifier: Modifier = Modifier,
+    useEnglishDayNumbers: Boolean = true,
     isFa: Boolean = true,
     holidayColor: Color = Color(0xFF8B5CF6L),
     onJumpToToday: (() -> Unit)? = null,
     onSelectCity: ((CityLocation) -> Unit)? = null
 ) {
+    val renderFaDigits = isFa && !useEnglishDayNumbers
     var isEditingNote by remember(dayInfo.jalaliDate) { mutableStateOf(false) }
     var noteText by remember(dayInfo.jalaliDate, userNote) { mutableStateOf(userNote) }
     var showCityPicker by remember { mutableStateOf(false) }
@@ -168,7 +170,7 @@ fun DayDetailsView(
                     icon = Icons.Default.WbSunny,
                     iconTint = AstroGold,
                     calendarName = "هجری شمسی",
-                    dateString = "${DigitFormatter.toSystemDigits(dayInfo.jalaliDate.day, isFa)} ${JalaliCalendar.MONTH_NAMES_PERSIAN[dayInfo.jalaliDate.month - 1]} ${DigitFormatter.toSystemDigits(dayInfo.jalaliDate.year, isFa)}",
+                    dateString = "${DigitFormatter.toSystemDigits(dayInfo.jalaliDate.day, renderFaDigits)} ${JalaliCalendar.MONTH_NAMES_PERSIAN[dayInfo.jalaliDate.month - 1]} ${DigitFormatter.toSystemDigits(dayInfo.jalaliDate.year, renderFaDigits)}",
                     subtitle = "فصل ${dayInfo.seasonPersian} ${dayInfo.seasonEmoji}"
                 )
 
@@ -178,8 +180,8 @@ fun DayDetailsView(
                     icon = Icons.Default.Public,
                     iconTint = PrimaryLight,
                     calendarName = "میلادی",
-                    dateString = "${DigitFormatter.toSystemDigits(dayInfo.gregorianDate.day, isFa)} ${dayInfo.gregorianDate.month} ${DigitFormatter.toSystemDigits(dayInfo.gregorianDate.year, isFa)}",
-                    subtitle = "${dayInfo.gregorianDate} (${dayInfo.dayOfWeekEnglish})"
+                    dateString = "${DigitFormatter.toSystemDigits(dayInfo.gregorianDate.day, renderFaDigits)} ${CalendarManager.GREGORIAN_MONTH_NAMES_PERSIAN[dayInfo.gregorianDate.month - 1]} ${DigitFormatter.toSystemDigits(dayInfo.gregorianDate.year, renderFaDigits)}",
+                    subtitle = "${dayInfo.gregorianDate.year}-${String.format(java.util.Locale.US, "%02d", dayInfo.gregorianDate.month)}-${String.format(java.util.Locale.US, "%02d", dayInfo.gregorianDate.day)} (${dayInfo.dayOfWeekEnglish})"
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -188,7 +190,7 @@ fun DayDetailsView(
                     icon = Icons.Default.Nightlight,
                     iconTint = MoonPaleYellow,
                     calendarName = "هجری قمری",
-                    dateString = "${DigitFormatter.toSystemDigits(dayInfo.islamicDate.day, isFa)} ${com.example.calendar.core.IslamicCalendar.MONTH_NAMES_ARABIC[dayInfo.islamicDate.month - 1]} ${DigitFormatter.toSystemDigits(dayInfo.islamicDate.year, isFa)}",
+                    dateString = "${DigitFormatter.toSystemDigits(dayInfo.islamicDate.day, renderFaDigits)} ${com.example.calendar.core.IslamicCalendar.MONTH_NAMES_ARABIC[dayInfo.islamicDate.month - 1]} ${DigitFormatter.toSystemDigits(dayInfo.islamicDate.year, renderFaDigits)}",
                     subtitle = "یوم ${dayInfo.dayOfWeekArabic}"
                 )
 
@@ -196,7 +198,7 @@ fun DayDetailsView(
 
                 // Time Statistics Badges
                 val jalaliCentury = ((dayInfo.jalaliDate.year - 1) / 100) + 1
-                val centuryNumberFa = DigitFormatter.toSystemDigits(jalaliCentury, isFa)
+                val centuryNumberFa = DigitFormatter.toSystemDigits(jalaliCentury, renderFaDigits)
                 val centuryText = when (jalaliCentury) {
                     14 -> if (isFa) "قرن ۱۴ (چهاردهم)" else "14th Century"
                     15 -> if (isFa) "قرن ۱۵ (پانزدهم)" else "15th Century"
@@ -216,12 +218,12 @@ fun DayDetailsView(
                 val relativeDaysText = when {
                     dayDifference == 0 -> if (isFa) "امروز" else "Today"
                     dayDifference > 0 -> {
-                        val diffFa = DigitFormatter.toSystemDigits(dayDifference, isFa)
+                        val diffFa = DigitFormatter.toSystemDigits(dayDifference, renderFaDigits)
                         if (isFa) "$diffFa روز مانده" else "$dayDifference ${if (dayDifference == 1) "day left" else "days left"}"
                     }
                     else -> {
                         val absDiff = kotlin.math.abs(dayDifference)
-                        val diffFa = DigitFormatter.toSystemDigits(absDiff, isFa)
+                        val diffFa = DigitFormatter.toSystemDigits(absDiff, renderFaDigits)
                         if (isFa) "$diffFa روز گذشته" else "$absDiff ${if (absDiff == 1) "day ago" else "days ago"}"
                     }
                 }
@@ -241,12 +243,12 @@ fun DayDetailsView(
                     ) {
                         StatisticPill(
                             label = if (isFa) "روز سال" else "Day of Year",
-                            value = "${DigitFormatter.toSystemDigits(dayInfo.dayOfYearJalali, isFa)} از ${DigitFormatter.toSystemDigits(JalaliCalendar.getTotalDaysInYear(dayInfo.jalaliDate.year), isFa)}",
+                            value = "${DigitFormatter.toSystemDigits(dayInfo.dayOfYearJalali, renderFaDigits)} از ${DigitFormatter.toSystemDigits(JalaliCalendar.getTotalDaysInYear(dayInfo.jalaliDate.year), renderFaDigits)}",
                             modifier = Modifier.weight(1f)
                         )
                         StatisticPill(
                             label = if (isFa) "مانده تا عید" else "Until Nowruz",
-                            value = "${DigitFormatter.toSystemDigits(dayInfo.daysRemainingJalali, isFa)} ${if (isFa) "روز" else "days"}",
+                            value = "${DigitFormatter.toSystemDigits(dayInfo.daysRemainingJalali, renderFaDigits)} ${if (isFa) "روز" else "days"}",
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -256,7 +258,7 @@ fun DayDetailsView(
                     ) {
                         StatisticPill(
                             label = if (isFa) "شماره هفته" else "Week Number",
-                            value = "${if (isFa) "هفته" else "Week"} ${DigitFormatter.toSystemDigits(dayInfo.weekOfYearJalali, isFa)}",
+                            value = "${if (isFa) "هفته" else "Week"} ${DigitFormatter.toSystemDigits(dayInfo.weekOfYearJalali, renderFaDigits)}",
                             modifier = Modifier.weight(1f)
                         )
                         StatisticPill(
@@ -362,12 +364,12 @@ fun DayDetailsView(
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "${dayInfo.moonInfo.phaseType.titleEnglish} • سن: ${DigitFormatter.toSystemDigits(dayInfo.moonInfo.ageDays, isFa)} روز",
+                                text = "${dayInfo.moonInfo.phaseType.titleEnglish} • سن: ${DigitFormatter.toSystemDigits(dayInfo.moonInfo.ageDays, renderFaDigits)} روز",
                                 style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Default),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                text = "موقعیت در آسمان: برج ${dayInfo.moonInfo.moonZodiacName} (${DigitFormatter.toSystemDigits(dayInfo.moonInfo.moonZodiacDegree, isFa)}°)",
+                                text = "موقعیت در آسمان: برج ${dayInfo.moonInfo.moonZodiacName} (${DigitFormatter.toSystemDigits(dayInfo.moonInfo.moonZodiacDegree, renderFaDigits)}°)",
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, fontFamily = FontFamily.Default),
                                 color = MaterialTheme.colorScheme.primary
                             )
@@ -379,7 +381,7 @@ fun DayDetailsView(
                         color = MaterialTheme.colorScheme.primaryContainer
                     ) {
                         Text(
-                            text = "${DigitFormatter.toSystemDigits(dayInfo.moonInfo.illuminationPercent, isFa)}%",
+                            text = "${DigitFormatter.toSystemDigits(dayInfo.moonInfo.illuminationPercent, renderFaDigits)}%",
                             fontWeight = FontWeight.Bold,
                             fontFamily = FontFamily.Default,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -481,7 +483,7 @@ fun DayDetailsView(
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text(
-                                text = "حیوان نماد سال ${DigitFormatter.toSystemDigits(dayInfo.jalaliDate.year, isFa)}",
+                                text = "حیوان نماد سال ${DigitFormatter.toSystemDigits(dayInfo.jalaliDate.year, renderFaDigits)}",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -615,10 +617,10 @@ fun DayDetailsView(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
-                    SolarTimeItem("طلوع آفتاب", DigitFormatter.toSystemDigits(dayInfo.solarTimes.sunrise, isFa), Icons.Default.WbSunny)
-                    SolarTimeItem("ظهر خورشیدی", DigitFormatter.toSystemDigits(dayInfo.solarTimes.noon, isFa), Icons.Default.LightMode)
-                    SolarTimeItem("غروب آفتاب", DigitFormatter.toSystemDigits(dayInfo.solarTimes.sunset, isFa), Icons.Default.Bedtime)
-                    SolarTimeItem("نیمه‌شب خورشیدی", DigitFormatter.toSystemDigits(dayInfo.solarTimes.midnight, isFa), Icons.Default.NightsStay)
+                    SolarTimeItem("طلوع آفتاب", DigitFormatter.toSystemDigits(dayInfo.solarTimes.sunrise, renderFaDigits), Icons.Default.WbSunny)
+                    SolarTimeItem("ظهر خورشیدی", DigitFormatter.toSystemDigits(dayInfo.solarTimes.noon, renderFaDigits), Icons.Default.LightMode)
+                    SolarTimeItem("غروب آفتاب", DigitFormatter.toSystemDigits(dayInfo.solarTimes.sunset, renderFaDigits), Icons.Default.Bedtime)
+                    SolarTimeItem("نیمه‌شب خورشیدی", DigitFormatter.toSystemDigits(dayInfo.solarTimes.midnight, renderFaDigits), Icons.Default.NightsStay)
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -628,13 +630,13 @@ fun DayDetailsView(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "طول روز: ${DigitFormatter.toSystemDigits(dayInfo.solarTimes.dayLengthFormatted, isFa)}",
+                        text = "طول روز: ${DigitFormatter.toSystemDigits(dayInfo.solarTimes.dayLengthFormatted, renderFaDigits)}",
                         style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Default),
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "طول شب: ${DigitFormatter.toSystemDigits(dayInfo.solarTimes.nightLengthFormatted, isFa)}",
+                        text = "طول شب: ${DigitFormatter.toSystemDigits(dayInfo.solarTimes.nightLengthFormatted, renderFaDigits)}",
                         style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Default),
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -728,19 +730,19 @@ fun DayDetailsView(
                 ) {
                     AzanTimeCard(
                         title = if (isFa) "اذان صبح" else "Fajr",
-                        time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.dawn, isFa),
+                        time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.dawn, renderFaDigits),
                         icon = Icons.Default.Bedtime,
                         modifier = Modifier.weight(1f)
                     )
                     AzanTimeCard(
                         title = if (isFa) "طلوع آفتاب" else "Sunrise",
-                        time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.sunrise, isFa),
+                        time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.sunrise, renderFaDigits),
                         icon = Icons.Default.WbSunny,
                         modifier = Modifier.weight(1f)
                     )
                     AzanTimeCard(
                         title = if (isFa) "اذان ظهر" else "Dhuhr",
-                        time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.noon, isFa),
+                        time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.noon, renderFaDigits),
                         icon = Icons.Default.LightMode,
                         modifier = Modifier.weight(1f)
                     )
@@ -754,19 +756,19 @@ fun DayDetailsView(
                 ) {
                     AzanTimeCard(
                         title = if (isFa) "غروب آفتاب" else "Sunset",
-                        time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.sunset, isFa),
+                        time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.sunset, renderFaDigits),
                         icon = Icons.Default.WbTwilight,
                         modifier = Modifier.weight(1f)
                     )
                     AzanTimeCard(
                         title = if (isFa) "اذان مغرب" else "Maghrib",
-                        time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.maghrib, isFa),
+                        time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.maghrib, renderFaDigits),
                         icon = Icons.Default.NightsStay,
                         modifier = Modifier.weight(1f)
                     )
                     AzanTimeCard(
                         title = if (isFa) "نیمه‌شب" else "Midnight",
-                        time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.midnight, isFa),
+                        time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.midnight, renderFaDigits),
                         icon = Icons.Default.Brightness3,
                         modifier = Modifier.weight(1f)
                     )

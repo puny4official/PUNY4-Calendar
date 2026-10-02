@@ -33,6 +33,8 @@ import kotlinx.coroutines.withContext
 @Composable
 fun CalendarScreen(
     userSettings: UserSettings,
+    targetJdn: Long? = null,
+    onTargetJdnConsumed: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val defaultCalType by userSettings.calendarType.collectAsState()
@@ -71,16 +73,33 @@ fun CalendarScreen(
         )
     }
 
-    // Initial pre-load when entering the calendar screen
-    var isLoaded by remember { mutableStateOf(false) }
+    var userNote by remember(selectedJdn) {
+        mutableStateOf(userSettings.getNote(selectedJdn))
+    }
 
-    LaunchedEffect(Unit) {
-        withContext(Dispatchers.Default) {
-            CalendarManager.buildMonthGrid(activeCalendarType, currentYear, currentMonth, selectedJdn)
-            CalendarManager.getFullDayInfo(selectedJdn, currentCity)
+    LaunchedEffect(targetJdn) {
+        targetJdn?.let { target ->
+            selectedJdn = target
+            userNote = userSettings.getNote(target)
+            when (activeCalendarType) {
+                CalendarType.SOLAR_HIJRI -> {
+                    val j = JalaliCalendar.jdnToJalali(target)
+                    currentYear = j.year
+                    currentMonth = j.month
+                }
+                CalendarType.GREGORIAN -> {
+                    val g = JalaliCalendar.jdnToGregorian(target)
+                    currentYear = g.year
+                    currentMonth = g.month
+                }
+                CalendarType.LUNAR_HIJRI -> {
+                    val i = IslamicCalendar.jdnToIslamic(target)
+                    currentYear = i.year
+                    currentMonth = i.month
+                }
+            }
+            onTargetJdnConsumed()
         }
-        delay(120)
-        isLoaded = true
     }
 
     val selectedDayInfo = remember(selectedJdn, currentCity) {
@@ -89,10 +108,6 @@ fun CalendarScreen(
 
     val todayDayInfo = remember(todayJdn, currentCity) {
         CalendarManager.getFullDayInfo(todayJdn, currentCity)
-    }
-
-    var userNote by remember(selectedJdn) {
-        mutableStateOf(userSettings.getNote(selectedJdn))
     }
 
     // Coordinates tracking for today's cell & launch spotlight
@@ -125,47 +140,29 @@ fun CalendarScreen(
         }
     }
 
-    if (!isLoaded) {
-        DigitalLoadingScreen(
-            modifier = modifier.testTag("calendar_initial_loading")
-        )
-    } else {
-        Box(
-            modifier = modifier
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .onGloballyPositioned { rootLayoutCoordinates = it }
+            .testTag("calendar_screen_root")
+    ) {
+        val scrollState = rememberScrollState()
+
+        // When scrolling starts, immediately dismiss the intro spotlight to guarantee silky smooth scrolling
+        LaunchedEffect(scrollState.isScrollInProgress) {
+            if (scrollState.isScrollInProgress && showIntroSpotlight) {
+                showIntroSpotlight = false
+            }
+        }
+
+        Column(
+            modifier = Modifier
                 .fillMaxSize()
-                .onGloballyPositioned { rootLayoutCoordinates = it }
-                .testTag("calendar_screen_root")
+                .verticalScroll(scrollState)
+                .padding(16.dp)
+                .testTag("calendar_screen_scroll"),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            val scrollState = rememberScrollState()
-            var prevScrollValue by remember { mutableIntStateOf(0) }
-            var isScrollingDown by remember { mutableStateOf(false) }
-
-            LaunchedEffect(scrollState.value) {
-                val delta = scrollState.value - prevScrollValue
-                if (scrollState.value <= 5) {
-                    isScrollingDown = false
-                } else if (delta > 0) {
-                    isScrollingDown = true
-                } else if (delta < 0) {
-                    isScrollingDown = false
-                }
-                prevScrollValue = scrollState.value
-            }
-
-            LaunchedEffect(showIntroSpotlight) {
-                if (showIntroSpotlight && scrollState.value <= 5) {
-                    isScrollingDown = false
-                }
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-                    .padding(16.dp)
-                    .testTag("calendar_screen_scroll"),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
                 // Upper part: Calendar Grid
                 CalendarGridView(
                     calendarType = activeCalendarType,
@@ -230,7 +227,7 @@ fun CalendarScreen(
                                 localPos.x + cellCoords.size.width / 2f,
                                 localPos.y + cellCoords.size.height / 2f
                             )
-                            if (!isScrollingDown || scrollState.value <= 5) {
+                            if (scrollState.value <= 5) {
                                 if (todayCenterOffset == null || (todayCenterOffset!! - newOffset).getDistance() > 1f) {
                                     todayCenterOffset = newOffset
                                     todayCellRadius = cellCoords.size.width / 2f
@@ -246,7 +243,7 @@ fun CalendarScreen(
                                 localPos.x + cellCoords.size.width / 2f,
                                 localPos.y + cellCoords.size.height / 2f
                             )
-                            if (!isScrollingDown || scrollState.value <= 5) {
+                            if (scrollState.value <= 5) {
                                 if (indicatorCenterOffset == null || (indicatorCenterOffset!! - newOffset).getDistance() > 1f) {
                                     indicatorCenterOffset = newOffset
                                     indicatorCellRadius = cellCoords.size.width / 2f
@@ -266,6 +263,7 @@ fun CalendarScreen(
                     dayInfo = selectedDayInfo,
                     currentCity = currentCity,
                     userNote = userNote,
+                    useEnglishDayNumbers = useEnglishDayNumbers,
                     isFa = (appLanguage == AppLanguage.PERSIAN),
                     holidayColor = holidayColor,
                     onSaveNote = { newNote ->
@@ -287,9 +285,8 @@ fun CalendarScreen(
                 visible = showIntroSpotlight,
                 isFa = (appLanguage == AppLanguage.PERSIAN),
                 holidayColor = holidayColor,
-                showDashedLines = !isScrollingDown,
+                showDashedLines = scrollState.value <= 5,
                 onDismiss = { showIntroSpotlight = false }
             )
         }
-    }
 }

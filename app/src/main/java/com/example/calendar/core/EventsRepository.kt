@@ -1,10 +1,12 @@
 package com.example.calendar.core
 
+import com.example.calendar.model.CalendarCategory
 import com.example.calendar.model.CalendarEvent
 import com.example.calendar.model.EventType
 import com.example.calendar.model.GregorianDate
 import com.example.calendar.model.IslamicDate
 import com.example.calendar.model.JalaliDate
+import com.example.calendar.model.SearchableCalendarEvent
 
 object EventsRepository {
 
@@ -40,6 +42,123 @@ object EventsRepository {
         }
 
         return list
+    }
+
+    fun getAllSearchableEvents(): List<SearchableCalendarEvent> {
+        val list = mutableListOf<SearchableCalendarEvent>()
+
+        SOLAR_EVENTS.forEach { (key, events) ->
+            val (month, day) = key
+            val monthName = JalaliCalendar.MONTH_NAMES_PERSIAN.getOrElse(month - 1) { "" }
+            events.forEach { ev ->
+                list.add(
+                    SearchableCalendarEvent(
+                        title = ev.title,
+                        isHoliday = ev.isHoliday,
+                        eventType = ev.type,
+                        calendarCategory = CalendarCategory.SOLAR,
+                        month = month,
+                        day = day,
+                        formattedDate = "$day $monthName (شمسی)"
+                    )
+                )
+            }
+        }
+
+        ISLAMIC_EVENTS.forEach { (key, events) ->
+            val (month, day) = key
+            val monthName = IslamicCalendar.MONTH_NAMES_ARABIC.getOrElse(month - 1) { "" }
+            events.forEach { ev ->
+                list.add(
+                    SearchableCalendarEvent(
+                        title = ev.title,
+                        isHoliday = ev.isHoliday,
+                        eventType = ev.type,
+                        calendarCategory = CalendarCategory.ISLAMIC,
+                        month = month,
+                        day = day,
+                        formattedDate = "$day $monthName (قمری)"
+                    )
+                )
+            }
+        }
+
+        GLOBAL_EVENTS.forEach { (key, events) ->
+            val (month, day) = key
+            val monthName = CalendarManager.GREGORIAN_MONTH_NAMES_PERSIAN.getOrElse(month - 1) { "" }
+            events.forEach { ev ->
+                list.add(
+                    SearchableCalendarEvent(
+                        title = ev.title,
+                        isHoliday = ev.isHoliday,
+                        eventType = ev.type,
+                        calendarCategory = CalendarCategory.GLOBAL,
+                        month = month,
+                        day = day,
+                        formattedDate = "$day $monthName (میلادی)"
+                    )
+                )
+            }
+        }
+
+        ASTRONOMICAL_EVENTS.forEach { (key, ev) ->
+            val (month, day) = key
+            val monthName = JalaliCalendar.MONTH_NAMES_PERSIAN.getOrElse(month - 1) { "" }
+            list.add(
+                SearchableCalendarEvent(
+                    title = ev.title,
+                    isHoliday = ev.isHoliday,
+                    eventType = ev.type,
+                    calendarCategory = CalendarCategory.ASTRONOMICAL,
+                    month = month,
+                    day = day,
+                    formattedDate = "$day $monthName (نجومی)"
+                )
+            )
+        }
+
+        return list
+    }
+
+    fun searchEvents(query: String, category: CalendarCategory = CalendarCategory.ALL): List<SearchableCalendarEvent> {
+        val trimmed = query.trim()
+        val all = getAllSearchableEvents()
+        return all.filter { item ->
+            val matchesCategory = when (category) {
+                CalendarCategory.ALL -> true
+                CalendarCategory.HOLIDAYS -> item.isHoliday
+                CalendarCategory.SOLAR -> item.calendarCategory == CalendarCategory.SOLAR
+                CalendarCategory.ISLAMIC -> item.calendarCategory == CalendarCategory.ISLAMIC
+                CalendarCategory.GLOBAL -> item.calendarCategory == CalendarCategory.GLOBAL
+                CalendarCategory.ASTRONOMICAL -> item.calendarCategory == CalendarCategory.ASTRONOMICAL
+            }
+            val matchesQuery = if (trimmed.isEmpty()) {
+                true
+            } else {
+                item.title.contains(trimmed, ignoreCase = true) ||
+                item.formattedDate.contains(trimmed, ignoreCase = true)
+            }
+            matchesCategory && matchesQuery
+        }
+    }
+
+    fun calculateJdnForEvent(event: SearchableCalendarEvent, todayJdn: Long): Long {
+        val todayJalali = JalaliCalendar.jdnToJalali(todayJdn)
+        val todayIslamic = IslamicCalendar.jdnToIslamic(todayJdn)
+        val todayGregorian = JalaliCalendar.jdnToGregorian(todayJdn)
+
+        return when (event.calendarCategory) {
+            CalendarCategory.SOLAR, CalendarCategory.ASTRONOMICAL -> {
+                JalaliCalendar.jalaliToJdn(todayJalali.year, event.month, event.day)
+            }
+            CalendarCategory.ISLAMIC -> {
+                IslamicCalendar.islamicToJdn(todayIslamic.year, event.month, event.day)
+            }
+            CalendarCategory.GLOBAL -> {
+                JalaliCalendar.gregorianToJdn(todayGregorian.year, event.month, event.day)
+            }
+            else -> todayJdn
+        }
     }
 
     // --------------------------------------------------------------------

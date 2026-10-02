@@ -8,8 +8,8 @@ package com.example.calendar.core
 object DigitFormatter {
     private val PERSIAN_DIGITS = charArrayOf('۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹')
 
-    fun toSystemDigits(input: String, isFa: Boolean = true): String {
-        if (!isFa) return input
+    fun toSystemDigits(input: String, toPersian: Boolean = false): String {
+        if (!toPersian) return input
         val sb = StringBuilder(input.length)
         for (c in input) {
             if (c in '0'..'9') {
@@ -21,28 +21,28 @@ object DigitFormatter {
         return sb.toString()
     }
 
-    fun toSystemDigits(number: Int, isFa: Boolean = true): String {
-        return toSystemDigits(number.toString(), isFa)
+    fun toSystemDigits(number: Int, toPersian: Boolean = false): String {
+        return toSystemDigits(number.toString(), toPersian)
     }
 
-    fun toSystemDigits(number: Long, isFa: Boolean = true): String {
-        return toSystemDigits(number.toString(), isFa)
+    fun toSystemDigits(number: Long, toPersian: Boolean = false): String {
+        return toSystemDigits(number.toString(), toPersian)
     }
 
-    fun toSystemDigits(number: Double, isFa: Boolean = true): String {
+    fun toSystemDigits(number: Double, toPersian: Boolean = false): String {
         val str = if (number % 1.0 == 0.0) {
             number.toLong().toString()
         } else {
             String.format(java.util.Locale.US, "%.1f", number)
         }
-        return toSystemDigits(str, isFa)
+        return toSystemDigits(str, toPersian)
     }
 
-    fun toSystemDigits(number: Float, isFa: Boolean = true): String {
-        return toSystemDigits(number.toDouble(), isFa)
+    fun toSystemDigits(number: Float, toPersian: Boolean = false): String {
+        return toSystemDigits(number.toDouble(), toPersian)
     }
 
-    fun toSystemDigits(number: Number, isFa: Boolean = true): String {
-        return toSystemDigits(number.toString(), isFa)
+    fun toSystemDigits(number: Number, toPersian: Boolean = false): String {
+        return toSystemDigits(number.toString(), toPersian)
     }
 }
