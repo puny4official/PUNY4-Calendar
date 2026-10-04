@@ -1,167 +1,167 @@
 package com.example.calendar.ui.components
 
-import android.graphics.Bitmap
-import android.graphics.Canvas as AndroidCanvas
-import android.graphics.Paint as AndroidPaint
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.Canvas
+import android.annotation.SuppressLint
+import android.content.Context
+import android.graphics.Color as AndroidColor
+import android.view.MotionEvent
+import android.view.View
+import android.webkit.WebSettings
+import android.webkit.WebView
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
-import kotlin.math.PI
-import kotlin.math.sin
-import kotlin.random.Random
+import androidx.compose.ui.viewinterop.AndroidView
 
 /**
- * Data representation of a single falling seasonal emoji particle.
- * Parameters are pre-calculated to ensure ZERO per-frame allocations.
+ * High-performance Seasonal Particle Animation Engine.
+ *
+ * Implemented using pure HTML5, CSS3 GPU Keyframe Transforms, and JavaScript.
+ * Runs 100% on the Chromium GPU Compositor thread (written in C++),
+ * completely offloading all animation calculations from the Android Kotlin UI thread.
+ *
+ * This ensures the main calendar scrolling stays at 120 FPS / 60 FPS without any frame drops.
  */
-private class SeasonalParticle(
-    val bitmapIndex: Int,
-    val xPercent: Float,
-    val initialOffsetMs: Long,
-    val durationMs: Long,
-    val swayAmplitudePx: Float,
-    val swayFrequency: Float,
-    val swayPhase: Float,
-    val baseAlpha: Float,
-    val rotationFactor: Float,
-    val scaleFactor: Float
-)
-
-/**
- * High-performance, hardware-accelerated seasonal emoji rain overlay.
- * Uses pre-rasterized bitmap textures and pure DrawScope blitting
- * for silky-smooth, zero-lag 60fps/120fps animation.
- */
+@SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun SeasonalRainOverlay(
     season: String,
     modifier: Modifier = Modifier,
     particleCount: Int = 10
 ) {
-    val density = LocalDensity.current
-
-    val emojiList = remember(season) {
-        when (season) {
-            "بهار" -> listOf("🌸", "💐", "🌺")
-            "تابستان" -> listOf("🌼", "🌻", "☀️")
-            "پاییز" -> listOf("🍁", "🍂")
-            "زمستان" -> listOf("❄️", "☃️")
-            else -> listOf("🍁", "🍂")
+    val emojisJson = remember(season) {
+        val emojis = when (season) {
+            "بهار" -> listOf("🌸", "💐", "🌺", "🍃")
+            "تابستان" -> listOf("🌼", "🌻", "☀️", "🍉")
+            "پاییز" -> listOf("🍁", "🍂", "🍃", "🌾")
+            "زمستان" -> listOf("❄️", "☃️", "✨")
+            else -> listOf("🍁", "🍂", "🍃")
         }
+        emojis.joinToString(prefix = "[\"", separator = "\",\"", postfix = "\"]")
     }
 
-    val emojiBitmaps: List<ImageBitmap> = remember(season, density) {
-        val targetSizePx = with(density) { 26.dp.roundToPx() }.coerceAtLeast(16)
-        val textPaint = AndroidPaint().apply {
-            isAntiAlias = true
-            textAlign = AndroidPaint.Align.CENTER
-            textSize = targetSizePx * 0.72f
-        }
-        emojiList.map { emoji ->
-            val bmp = Bitmap.createBitmap(targetSizePx, targetSizePx, Bitmap.Config.ARGB_8888)
-            val cvs = AndroidCanvas(bmp)
-            val yOffset = (targetSizePx / 2f) - ((textPaint.descent() + textPaint.ascent()) / 2f)
-            cvs.drawText(emoji, targetSizePx / 2f, yOffset, textPaint)
-            bmp.asImageBitmap()
-        }
+    val htmlContent = remember(emojisJson, particleCount) {
+        """
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+          }
+          html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: transparent !important;
+            pointer-events: none !important;
+            user-select: none;
+            -webkit-user-select: none;
+          }
+          .particle {
+            position: absolute;
+            top: -30px;
+            pointer-events: none;
+            will-change: transform, opacity;
+            animation-name: seasonalFall;
+            animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1.0);
+            animation-iteration-count: infinite;
+          }
+          @keyframes seasonalFall {
+            0% {
+              transform: translate3d(0, 0, 0) rotate(0deg);
+              opacity: 0;
+            }
+            15% {
+              opacity: 0.9;
+            }
+            85% {
+              opacity: 0.9;
+            }
+            100% {
+              transform: translate3d(var(--drift), 140px, 0) rotate(var(--rot));
+              opacity: 0;
+            }
+          }
+        </style>
+        </head>
+        <body>
+        <div id="stage"></div>
+        <script>
+          (function() {
+            const emojis = $emojisJson;
+            const stage = document.getElementById('stage');
+            const count = $particleCount;
+            for (let i = 0; i < count; i++) {
+              const p = document.createElement('div');
+              p.className = 'particle';
+              p.textContent = emojis[i % emojis.length];
+              const left = (i / count * 90) + (Math.random() * 8);
+              const duration = 2.4 + (Math.random() * 2.2);
+              const delay = (i * 0.4) + (Math.random() * 0.5);
+              const drift = (Math.random() - 0.5) * 50;
+              const rot = (Math.random() - 0.5) * 240;
+              const size = 15 + Math.floor(Math.random() * 8);
+
+              p.style.left = left + '%';
+              p.style.fontSize = size + 'px';
+              p.style.setProperty('--drift', drift + 'px');
+              p.style.setProperty('--rot', rot + 'deg');
+              p.style.animationDuration = duration + 's';
+              p.style.animationDelay = delay + 's';
+
+              stage.appendChild(p);
+            }
+          })();
+        </script>
+        </body>
+        </html>
+        """.trimIndent()
     }
 
-    val particles = remember(season, particleCount, emojiBitmaps.size) {
-        val random = Random(season.hashCode() + 42)
-        val segmentWidth = 1.0f / particleCount.coerceAtLeast(1).toFloat()
-        Array(particleCount) { index ->
-            val bitmapIndex = index % emojiBitmaps.size
-            val xPercent = ((index.toFloat() + random.nextFloat() * 0.96f) * segmentWidth).coerceIn(0.01f, 0.99f)
-            val initialOffsetMs = (random.nextFloat() * 6000f).toLong()
-            val durationMs = 3400L + (random.nextFloat() * 2000L).toLong()
-            val swayAmplitudePx = with(density) { (6f + random.nextFloat() * 12f).dp.toPx() }
-            val swayFrequency = 0.8f + random.nextFloat() * 1.4f
-            val swayPhase = (random.nextFloat() * 2f * PI).toFloat()
-            val baseAlpha = 0.65f + random.nextFloat() * 0.30f
-            val rotationFactor = (random.nextFloat() * 2f - 1f) * 90f
-            val scaleFactor = 0.75f + random.nextFloat() * 0.30f
-
-            SeasonalParticle(
-                bitmapIndex = bitmapIndex,
-                xPercent = xPercent,
-                initialOffsetMs = initialOffsetMs,
-                durationMs = durationMs,
-                swayAmplitudePx = swayAmplitudePx,
-                swayFrequency = swayFrequency,
-                swayPhase = swayPhase,
-                baseAlpha = baseAlpha,
-                rotationFactor = rotationFactor,
-                scaleFactor = scaleFactor
-            )
+    AndroidView(
+        modifier = modifier.fillMaxSize(),
+        factory = { context ->
+            PassthroughWebView(context).apply {
+                loadDataWithBaseURL("https://local.app", htmlContent, "text/html", "UTF-8", null)
+            }
+        },
+        update = { webView ->
+            webView.loadDataWithBaseURL("https://local.app", htmlContent, "text/html", "UTF-8", null)
         }
-    }
-
-    // Keep animation progress in a State object.
-    // Reading animState.value exclusively inside Canvas draws avoids recomposing the Composable!
-    val infiniteTransition = rememberInfiniteTransition(label = "SeasonalRainTransition")
-    val animProgress = infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 120_000f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 120_000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "SeasonalRainProgress"
     )
+}
 
-    Canvas(modifier = modifier.fillMaxSize()) {
-        val width = size.width
-        val height = size.height
+/**
+ * A custom WebView that guarantees 100% touch event pass-through.
+ * It never intercepts, consumes, or interferes with touches, allowing
+ * all clicks, drags, and gestures to pass immediately to the calendar controls beneath it.
+ */
+private class PassthroughWebView(context: Context) : WebView(context) {
+    init {
+        setBackgroundColor(AndroidColor.TRANSPARENT)
+        setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        isVerticalScrollBarEnabled = false
+        isHorizontalScrollBarEnabled = false
+        isClickable = false
+        isFocusable = false
+        isFocusableInTouchMode = false
 
-        if (width <= 0f || height <= 0f || emojiBitmaps.isEmpty()) return@Canvas
-
-        // Read animProgress here so ONLY the draw phase runs per-frame!
-        val currentTime = animProgress.value.toLong()
-
-        for (i in particles.indices) {
-            val particle = particles[i]
-            val bitmap = emojiBitmaps[particle.bitmapIndex]
-            val totalTime = currentTime + particle.initialOffsetMs
-            val cycleProgress = ((totalTime % particle.durationMs).toFloat()) / particle.durationMs.toFloat()
-
-            val scaledW = (bitmap.width * particle.scaleFactor).toInt().coerceAtLeast(1)
-            val scaledH = (bitmap.height * particle.scaleFactor).toInt().coerceAtLeast(1)
-
-            val startY = -scaledH.toFloat()
-            val endY = height + scaledH.toFloat()
-            val currentY = startY + cycleProgress * (endY - startY)
-
-            val angle = cycleProgress * 2f * PI.toFloat() * particle.swayFrequency + particle.swayPhase
-            val sway = sin(angle) * particle.swayAmplitudePx
-            val currentX = (particle.xPercent * width + sway).coerceIn(0f, width)
-
-            val currentRotation = cycleProgress * particle.rotationFactor
-
-            val edgeFade = when {
-                cycleProgress < 0.16f -> cycleProgress / 0.16f
-                cycleProgress > 0.84f -> (1f - cycleProgress) / 0.16f
-                else -> 1f
-            }
-            val finalAlpha = (particle.baseAlpha * edgeFade).coerceIn(0f, 1f)
-
-            rotate(currentRotation, pivot = Offset(currentX, currentY)) {
-                drawImage(
-                    image = bitmap,
-                    dstOffset = IntOffset((currentX - scaledW / 2f).toInt(), (currentY - scaledH / 2f).toInt()),
-                    dstSize = IntSize(scaledW, scaledH),
-                    alpha = finalAlpha
-                )
-            }
+        settings.apply {
+            javaScriptEnabled = true
+            domStorageEnabled = false
+            cacheMode = WebSettings.LOAD_NO_CACHE
+            allowFileAccess = false
+            allowContentAccess = false
         }
     }
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean = false
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean = false
+    override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean = false
 }

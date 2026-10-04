@@ -56,6 +56,8 @@ import com.example.ui.theme.HolidayPurpleLight
 import com.example.ui.theme.OnHolidayPurpleContainer
 import com.example.ui.theme.ScorpioAlert
 
+private val CellCornerShape = RoundedCornerShape(12.dp)
+
 private val DayNumberBaseStyle = TextStyle(
     fontFamily = FontFamily.Default,
     platformStyle = PlatformTextStyle(includeFontPadding = false),
@@ -330,7 +332,7 @@ fun CalendarGridView(
             )
 
             // Grid rows
-            val rows = cells.chunked(7)
+            val rows = remember(cells) { cells.chunked(7) }
             rows.forEach { rowCells ->
                 Row(
                     modifier = Modifier
@@ -468,8 +470,8 @@ private fun DayCellView(
         modifier = modifier
             .aspectRatio(1f)
             .padding(2.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .border(borderWidth, targetBorderColor, RoundedCornerShape(12.dp))
+            .clip(CellCornerShape)
+            .border(borderWidth, targetBorderColor, CellCornerShape)
             .background(targetBackground)
             .clickable { onDateSelected(cell.jdn) }
             .testTag("day_cell_${cell.primaryNumber}"),

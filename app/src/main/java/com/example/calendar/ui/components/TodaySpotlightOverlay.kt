@@ -90,46 +90,19 @@ fun TodaySpotlightOverlay(
         }
     }
 
-    // Instagram story auto-dismiss progress ticker (2 seconds)
-    // Pauses immediately when user holds finger (isHolding)
+    // Auto-dismiss after 2.5 seconds without spinning a 16ms recomposition loop
     LaunchedEffect(visible, isHolding) {
         if (visible && !isHolding) {
-            val intervalMs = 16L
-            val increment = intervalMs.toFloat() / totalDurationMs.toFloat()
-            while (progress < 1f && !isHolding) {
-                delay(intervalMs)
-                if (!isHolding) {
-                    progress = (progress + increment).coerceAtMost(1f)
-                }
-            }
-            if (!isHolding && progress >= 1f) {
+            delay(2500L)
+            if (!isHolding) {
                 onDismiss()
             }
         }
     }
 
-    // Pulsing circle animation
-    val infiniteTransition = rememberInfiniteTransition(label = "spotlight_pulse")
-    val pulseOffset by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 5f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "pulse_radius"
-    )
-
-    // Animated dashed line phase (flowing dash effect)
-    val dashPhase by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 28f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1400, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "dash_phase"
-    )
+    // Static crisp offsets with zero CPU/GPU overhead
+    val pulseOffset = 0f
+    val dashPhase = 0f
 
     var overlayLayoutCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     var cardPositionInOverlay by remember { mutableStateOf<Offset?>(null) }
@@ -138,8 +111,8 @@ fun TodaySpotlightOverlay(
 
     AnimatedVisibility(
         visible = visible,
-        enter = fadeIn(tween(300)) + scaleIn(tween(300), initialScale = 0.96f),
-        exit = fadeOut(tween(400)) + scaleOut(tween(400), targetScale = 0.96f),
+        enter = fadeIn(tween(150)),
+        exit = fadeOut(tween(150)),
         modifier = modifier
     ) {
         Box(
@@ -148,14 +121,8 @@ fun TodaySpotlightOverlay(
                 .onGloballyPositioned { overlayLayoutCoordinates = it }
                 .testTag("today_spotlight_overlay")
         ) {
-            // -----------------------------------------------------------
-            // CANVAS: Pulsing Dashed Circle + Dashed Line to Indicated Day
-            // -----------------------------------------------------------
-            val dashedLinesAlpha by animateFloatAsState(
-                targetValue = if (showDashedLines) 1f else 0f,
-                animationSpec = tween(durationMillis = 150),
-                label = "dashed_lines_alpha"
-            )
+            // Static dashed line indicator
+            val dashedLinesAlpha = if (showDashedLines) 1f else 0f
 
             if (targetCenter != null && targetRadius > 0f && dashedLinesAlpha > 0.01f) {
                 Canvas(modifier = Modifier.fillMaxSize()) {

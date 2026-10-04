@@ -81,7 +81,7 @@ class MainActivity : ComponentActivity() {
         userSettings = UserSettings(applicationContext)
 
         setContent {
-            var isAppInitializing by remember { mutableStateOf(true) }
+            var isAppInitializing by remember { mutableStateOf(false) }
 
             val themeMode by userSettings.themeMode.collectAsState()
             val appLanguage by userSettings.appLanguage.collectAsState()

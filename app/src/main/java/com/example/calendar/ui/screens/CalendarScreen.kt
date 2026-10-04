@@ -19,9 +19,8 @@ import com.example.calendar.core.JalaliCalendar
 import com.example.calendar.data.UserSettings
 import com.example.calendar.model.AppLanguage
 import com.example.calendar.model.CalendarType
-import com.example.calendar.ui.components.CalendarGridView
-import com.example.calendar.ui.components.DayDetailsView
-import com.example.calendar.ui.components.TodaySpotlightOverlay
+import com.example.calendar.model.EventType
+import com.example.calendar.ui.components.*
 
 @Composable
 fun CalendarScreen(
@@ -41,6 +40,7 @@ fun CalendarScreen(
     val dayNumberScalePercent by userSettings.dayNumberScalePercent.collectAsState()
 
     var activeCalendarType by remember(defaultCalType) { mutableStateOf(defaultCalType) }
+    var showCityPicker by remember { mutableStateOf(false) }
 
     val todayG = remember { CalendarManager.getTodayGregorian() }
     val todayJdn = remember { JalaliCalendar.gregorianToJdn(todayG.year, todayG.month, todayG.day) }
@@ -217,24 +217,84 @@ fun CalendarScreen(
                 )
             }
 
-            item(key = "day_details_item") {
-                DayDetailsView(
+            // Section 1: All Calendars Card
+            item(key = "all_calendars_card") {
+                AllCalendarsCard(
+                    dayInfo = selectedDayInfo,
+                    renderFaDigits = (appLanguage == AppLanguage.PERSIAN && !useEnglishDayNumbers),
+                    onJumpToToday = handleGoToToday
+                )
+            }
+
+            // Section 2: Astronomy & Prayer Times Card
+            item(key = "astronomy_card") {
+                AstronomyCard(
                     dayInfo = selectedDayInfo,
                     currentCity = currentCity,
-                    userNote = userNote,
-                    useEnglishDayNumbers = useEnglishDayNumbers,
+                    renderFaDigits = (appLanguage == AppLanguage.PERSIAN && !useEnglishDayNumbers),
                     isFa = (appLanguage == AppLanguage.PERSIAN),
-                    holidayColor = holidayColor,
+                    onOpenCityPicker = { showCityPicker = true }
+                )
+            }
+
+            // Section 3: Official Holidays Card (rendered if holiday or Friday)
+            val officialHolidays = selectedDayInfo.events.filter { it.isHoliday }
+            val isFriday = (selectedDayInfo.dayOfWeekPersian == "جمعه")
+            if (officialHolidays.isNotEmpty() || isFriday) {
+                item(key = "official_holidays_card") {
+                    OfficialHolidaysCard(
+                        dayInfo = selectedDayInfo,
+                        holidayColor = holidayColor
+                    )
+                }
+            }
+
+            // Section 4: Global Events Card
+            val globalEvents = selectedDayInfo.events.filter { it.type == EventType.INTERNATIONAL }
+            if (globalEvents.isNotEmpty()) {
+                item(key = "global_events_card") {
+                    GlobalEventsCard(
+                        dayInfo = selectedDayInfo
+                    )
+                }
+            }
+
+            // Section 5: National Occasions Card
+            val nationalAndAstroEvents = selectedDayInfo.events.filter { !it.isHoliday && it.type != EventType.INTERNATIONAL }
+            if (nationalAndAstroEvents.isNotEmpty()) {
+                item(key = "national_occasions_card") {
+                    NationalOccasionsCard(
+                        dayInfo = selectedDayInfo
+                    )
+                }
+            }
+
+            // Section 6: Personal Notes Card
+            item(key = "notes_card") {
+                NotesCard(
+                    userNote = userNote,
+                    dayInfo = selectedDayInfo,
+                    isFa = (appLanguage == AppLanguage.PERSIAN),
                     onSaveNote = { newNote ->
                         userSettings.saveNote(selectedJdn, newNote)
                         userNote = newNote
-                    },
-                    onJumpToToday = handleGoToToday,
-                    onSelectCity = { city ->
-                        userSettings.setCity(city)
                     }
                 )
             }
+        }
+
+        // Dedicated City Picker Dialog
+        if (showCityPicker) {
+            CityPickerDialog(
+                visible = showCityPicker,
+                currentCity = currentCity,
+                isFa = (appLanguage == AppLanguage.PERSIAN),
+                onSelectCity = { city ->
+                    userSettings.setCity(city)
+                    showCityPicker = false
+                },
+                onDismiss = { showCityPicker = false }
+            )
         }
 
         if (showIntroSpotlight) {

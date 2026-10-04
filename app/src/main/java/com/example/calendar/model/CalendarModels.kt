@@ -1,5 +1,7 @@
 package com.example.calendar.model
 
+import androidx.compose.runtime.Immutable
+
 enum class AppLanguage(val code: String, val titlePersian: String, val titleEnglish: String, val flagEmoji: String) {
     PERSIAN("fa", "فارسی", "Persian", "🇮🇷"),
     ENGLISH("en", "انگلیسی", "English", "🇺🇸");
@@ -16,14 +18,17 @@ enum class CalendarType(val titlePersian: String, val titleEnglish: String) {
     LUNAR_HIJRI("هجری قمری", "Lunar Hijri")
 }
 
+@Immutable
 data class JalaliDate(val year: Int, val month: Int, val day: Int) {
     override fun toString(): String = String.format("%04d/%02d/%02d", year, month, day)
 }
 
+@Immutable
 data class GregorianDate(val year: Int, val month: Int, val day: Int) {
     override fun toString(): String = String.format("%04d-%02d-%02d", year, month, day)
 }
 
+@Immutable
 data class IslamicDate(val year: Int, val month: Int, val day: Int) {
     override fun toString(): String = String.format("%04d/%02d/%02d", year, month, day)
 }
@@ -39,6 +44,7 @@ enum class MoonPhaseType(val titlePersian: String, val titleEnglish: String, val
     WANING_CRESCENT("هلال کاهنده", "Waning Crescent", "🌘")
 }
 
+@Immutable
 data class MoonInfo(
     val phaseType: MoonPhaseType,
     val illuminationPercent: Int,
@@ -55,6 +61,7 @@ enum class ZodiacElement(val titlePersian: String, val emoji: String, val nature
     WATER("آب", "💧", "طبع سرد و تر - احساس، شهود و آرامش")
 }
 
+@Immutable
 data class YearAnimal(
     val namePersian: String,
     val nameAlternative: String,
@@ -62,6 +69,7 @@ data class YearAnimal(
     val characteristics: String
 )
 
+@Immutable
 data class ZodiacSign(
     val namePersian: String,
     val nameArabic: String,
@@ -72,6 +80,7 @@ data class ZodiacSign(
     val description: String
 )
 
+@Immutable
 data class QamarDarAqrabStatus(
     val isInTropicalScorpio: Boolean,  // برج عقرب
     val isInSiderealScorpio: Boolean,  // صورت فلکی عقرب
@@ -80,6 +89,7 @@ data class QamarDarAqrabStatus(
     val detailedAdvice: String
 )
 
+@Immutable
 data class PlanetaryRuler(
     val dayOfWeekPersian: String,
     val planetNamePersian: String,
@@ -87,6 +97,7 @@ data class PlanetaryRuler(
     val nature: String
 )
 
+@Immutable
 data class SolarTimes(
     val dawn: String,
     val sunrise: String,
@@ -106,6 +117,7 @@ enum class EventType {
     PERSONAL
 }
 
+@Immutable
 data class CalendarEvent(
     val title: String,
     val isHoliday: Boolean = false,
@@ -113,6 +125,7 @@ data class CalendarEvent(
     val description: String = ""
 )
 
+@Immutable
 data class CityLocation(
     val id: String,
     val namePersian: String,
@@ -124,6 +137,7 @@ data class CityLocation(
     fun name(lang: AppLanguage): String = if (lang == AppLanguage.PERSIAN) namePersian else nameEnglish
 }
 
+@Immutable
 data class FullDayInfo(
     val gregorianDate: GregorianDate,
     val jalaliDate: JalaliDate,

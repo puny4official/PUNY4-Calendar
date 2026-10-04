@@ -49,10 +49,7 @@ fun DayDetailsView(
     onSelectCity: ((CityLocation) -> Unit)? = null
 ) {
     val renderFaDigits = isFa && !useEnglishDayNumbers
-    var isEditingNote by remember(dayInfo.jalaliDate) { mutableStateOf(false) }
-    var noteText by remember(dayInfo.jalaliDate, userNote) { mutableStateOf(userNote) }
     var showCityPicker by remember { mutableStateOf(false) }
-    var citySearchQuery by remember { mutableStateOf("") }
 
     Column(
         modifier = modifier
@@ -60,13 +57,51 @@ fun DayDetailsView(
             .testTag("day_details_container"),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // ----------------------------------------------------
-        // SECTION 1: ALL CALENDARS DATES CARD (همه تاریخ‌ها)
-        // ----------------------------------------------------
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("all_calendars_card"),
+        AllCalendarsCard(dayInfo, renderFaDigits, onJumpToToday)
+        AstronomyCard(dayInfo, currentCity, renderFaDigits, isFa, onOpenCityPicker = { showCityPicker = true })
+        val officialHolidays = dayInfo.events.filter { it.isHoliday }
+        val isFriday = (dayInfo.dayOfWeekPersian == "جمعه")
+        if (officialHolidays.isNotEmpty() || isFriday) {
+            OfficialHolidaysCard(dayInfo, holidayColor)
+        }
+        val globalEvents = dayInfo.events.filter { it.type == EventType.INTERNATIONAL }
+        if (globalEvents.isNotEmpty()) {
+            GlobalEventsCard(dayInfo)
+        }
+        NationalOccasionsCard(dayInfo)
+        NotesCard(userNote, dayInfo, isFa, onSaveNote)
+    }
+
+    if (showCityPicker) {
+        CityPickerDialog(
+            visible = showCityPicker,
+            currentCity = currentCity,
+            isFa = isFa,
+            onSelectCity = {
+                onSelectCity?.invoke(it)
+                showCityPicker = false
+            },
+            onDismiss = { showCityPicker = false }
+        )
+    }
+}
+
+// ----------------------------------------------------
+// SECTION 1: ALL CALENDARS DATES CARD (همه تاریخ‌ها)
+// ----------------------------------------------------
+@Composable
+fun AllCalendarsCard(
+    dayInfo: FullDayInfo,
+    renderFaDigits: Boolean,
+    onJumpToToday: (() -> Unit)? = null,
+    isFa: Boolean = true,
+    holidayColor: Color = Color(0xFF8B5CF6L),
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("all_calendars_card"),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
@@ -291,14 +326,24 @@ fun DayDetailsView(
                 }
             }
         }
+}
 
-        // ----------------------------------------------------
-        // SECTION 2: ASTRONOMICAL INFORMATION (اطلاعات نجومی روز)
-        // ----------------------------------------------------
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("astronomy_info_card"),
+// ----------------------------------------------------
+// SECTION 2: ASTRONOMICAL INFORMATION (اطلاعات نجومی روز)
+// ----------------------------------------------------
+@Composable
+fun AstronomyCard(
+    dayInfo: FullDayInfo,
+    currentCity: CityLocation,
+    renderFaDigits: Boolean,
+    isFa: Boolean,
+    onOpenCityPicker: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("astronomy_info_card"),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
@@ -699,7 +744,7 @@ fun DayDetailsView(
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)),
                         modifier = Modifier
                             .clip(RoundedCornerShape(10.dp))
-                            .clickable { showCityPicker = true }
+                            .clickable { onOpenCityPicker() }
                             .testTag("change_city_azan_button")
                     ) {
                         Row(
@@ -777,18 +822,25 @@ fun DayDetailsView(
                 }
             }
         }
+}
 
-        // ----------------------------------------------------
-        // SECTION 3: تعطیلات رسمی ایران (با رنگ بنفش و متن بولد شده)
-        // ----------------------------------------------------
-        val officialHolidays = dayInfo.events.filter { it.isHoliday }
-        val isFriday = (dayInfo.dayOfWeekPersian == "جمعه")
-        val hasOfficialHoliday = officialHolidays.isNotEmpty() || isFriday
+// ----------------------------------------------------
+// SECTION 3: تعطیلات رسمی ایران (با رنگ بنفش و متن بولد شده)
+// ----------------------------------------------------
+@Composable
+fun OfficialHolidaysCard(
+    dayInfo: FullDayInfo,
+    holidayColor: Color,
+    modifier: Modifier = Modifier
+) {
+    val officialHolidays = dayInfo.events.filter { it.isHoliday }
+    val isFriday = (dayInfo.dayOfWeekPersian == "جمعه")
+    val hasOfficialHoliday = officialHolidays.isNotEmpty() || isFriday
 
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("iran_official_holidays_card"),
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("iran_official_holidays_card"),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(
                 containerColor = if (hasOfficialHoliday) holidayColor.copy(alpha = 0.50f) else MaterialTheme.colorScheme.surface
@@ -924,16 +976,22 @@ fun DayDetailsView(
                 }
             }
         }
+}
 
-        // ----------------------------------------------------
-        // SECTION 4: مناسبت‌های جهانی و بین‌المللی (متن بولد شده با رنگ طبیعی)
-        // ----------------------------------------------------
-        val globalEvents = dayInfo.events.filter { it.type == EventType.INTERNATIONAL }
+// ----------------------------------------------------
+// SECTION 4: مناسبت‌های جهانی و بین‌المللی (متن بولد شده با رنگ طبیعی)
+// ----------------------------------------------------
+@Composable
+fun GlobalEventsCard(
+    dayInfo: FullDayInfo,
+    modifier: Modifier = Modifier
+) {
+    val globalEvents = dayInfo.events.filter { it.type == EventType.INTERNATIONAL }
 
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("global_events_card"),
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("global_events_card"),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
@@ -1028,17 +1086,23 @@ fun DayDetailsView(
                 }
             }
         }
+}
 
-        // ----------------------------------------------------
-        // SECTION 5: سایر مناسبت‌های ملی و مذهبی (متن بولد شده با رنگ طبیعی)
-        // ----------------------------------------------------
-        val nationalAndAstroEvents = dayInfo.events.filter { !it.isHoliday && it.type != EventType.INTERNATIONAL }
+// ----------------------------------------------------
+// SECTION 5: سایر مناسبت‌های ملی و مذهبی (متن بولد شده با رنگ طبیعی)
+// ----------------------------------------------------
+@Composable
+fun NationalOccasionsCard(
+    dayInfo: FullDayInfo,
+    modifier: Modifier = Modifier
+) {
+    val nationalAndAstroEvents = dayInfo.events.filter { !it.isHoliday && it.type != EventType.INTERNATIONAL }
 
-        if (nationalAndAstroEvents.isNotEmpty()) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("national_occasions_card"),
+    if (nationalAndAstroEvents.isNotEmpty()) {
+        Card(
+            modifier = modifier
+                .fillMaxWidth()
+                .testTag("national_occasions_card"),
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surface
@@ -1127,14 +1191,26 @@ fun DayDetailsView(
                 }
             }
         }
+    }
 
-        // ----------------------------------------------------
-        // SECTION 4: USER PERSONAL NOTE CARD (یادداشت این روز)
-        // ----------------------------------------------------
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("notes_card"),
+// ----------------------------------------------------
+// SECTION 6: USER PERSONAL NOTE CARD (یادداشت این روز)
+// ----------------------------------------------------
+@Composable
+fun NotesCard(
+    userNote: String,
+    dayInfo: FullDayInfo,
+    isFa: Boolean,
+    onSaveNote: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var isEditingNote by remember(dayInfo.jalaliDate) { mutableStateOf(false) }
+    var noteText by remember(dayInfo.jalaliDate, userNote) { mutableStateOf(userNote) }
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("notes_card"),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
@@ -1231,25 +1307,32 @@ fun DayDetailsView(
                 }
             }
         }
+}
 
-        // دیالوگ انتخاب شهر برای اوقات شرعی و اذان‌ها
-        if (showCityPicker) {
-            val filteredCities = remember(citySearchQuery) {
-                if (citySearchQuery.isBlank()) {
-                    AstronomicalCalculator.CITIES
-                } else {
-                    val q = citySearchQuery.trim().lowercase()
-                    AstronomicalCalculator.CITIES.filter {
-                        it.namePersian.contains(q) || it.nameEnglish.lowercase().contains(q)
-                    }
-                }
+// دیالوگ انتخاب شهر برای اوقات شرعی و اذان‌ها
+@Composable
+fun CityPickerDialog(
+    visible: Boolean,
+    currentCity: CityLocation,
+    isFa: Boolean,
+    onSelectCity: (CityLocation) -> Unit,
+    onDismiss: () -> Unit
+) {
+    if (!visible) return
+    var citySearchQuery by remember { mutableStateOf("") }
+    val filteredCities = remember(citySearchQuery) {
+        if (citySearchQuery.isBlank()) {
+            AstronomicalCalculator.CITIES
+        } else {
+            val q = citySearchQuery.trim().lowercase()
+            AstronomicalCalculator.CITIES.filter {
+                it.namePersian.contains(q) || it.nameEnglish.lowercase().contains(q)
             }
+        }
+    }
 
-            AlertDialog(
-                onDismissRequest = {
-                    showCityPicker = false
-                    citySearchQuery = ""
-                },
+    AlertDialog(
+        onDismissRequest = onDismiss,
                 title = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -1310,9 +1393,7 @@ fun DayDetailsView(
                                             else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
                                         )
                                         .clickable {
-                                            onSelectCity?.invoke(city)
-                                            showCityPicker = false
-                                            citySearchQuery = ""
+                                            onSelectCity(city)
                                         }
                                         .padding(horizontal = 14.dp, vertical = 10.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -1333,9 +1414,7 @@ fun DayDetailsView(
                                     RadioButton(
                                         selected = isChosen,
                                         onClick = {
-                                            onSelectCity?.invoke(city)
-                                            showCityPicker = false
-                                            citySearchQuery = ""
+                                            onSelectCity(city)
                                         }
                                     )
                                 }
@@ -1344,16 +1423,11 @@ fun DayDetailsView(
                     }
                 },
                 confirmButton = {
-                    TextButton(onClick = {
-                        showCityPicker = false
-                        citySearchQuery = ""
-                    }) {
+                    TextButton(onClick = onDismiss) {
                         Text(if (isFa) "بستن" else "Close")
                     }
                 }
             )
-        }
-    }
 }
 
 @Composable
