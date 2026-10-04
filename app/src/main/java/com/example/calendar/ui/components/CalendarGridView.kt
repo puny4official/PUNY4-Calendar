@@ -470,9 +470,8 @@ private fun DayCellView(
         modifier = modifier
             .aspectRatio(1f)
             .padding(2.dp)
-            .clip(CellCornerShape)
+            .background(targetBackground, CellCornerShape)
             .border(borderWidth, targetBorderColor, CellCornerShape)
-            .background(targetBackground)
             .clickable { onDateSelected(cell.jdn) }
             .testTag("day_cell_${cell.primaryNumber}"),
         contentAlignment = Alignment.Center

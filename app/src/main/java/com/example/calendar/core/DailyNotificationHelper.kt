@@ -14,20 +14,24 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.graphics.drawable.IconCompat
 import com.example.MainActivity
-import com.example.R
 import com.example.calendar.model.AppLanguage
 import com.example.calendar.model.CityLocation
 
 /**
  * Manages the persistent, pinned daily calendar notification in the Android status bar.
  * Displays today's solar date, gregorian date, lunar date, and events.
- * The small icon in the status bar dynamically shows today's day number.
+ * The small icon in the status bar dynamically shows today's day number extra large, bold,
+ * and without any surrounding circle, pinned persistently at the top.
  */
 object DailyNotificationHelper {
 
-    const val CHANNEL_ID = "puny4_daily_calendar_channel"
+    const val CHANNEL_ID = "puny4_daily_calendar_channel_v3"
     const val NOTIFICATION_ID = 1001
 
+    /**
+     * Generates a freestanding, extra-large, extra-bold day number bitmap for the status bar icon.
+     * Completely eliminates any outer circular ring as requested ("اون رو درشت کن عددش رو و از دایره خارج کن").
+     */
     private fun createDayNumberBitmap(dayNumberStr: String): Bitmap {
         val size = 128
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
@@ -35,32 +39,25 @@ object DailyNotificationHelper {
 
         val center = size / 2f
 
-        // Draw large circular ring extending almost to the outer boundary
-        val circlePaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.DITHER_FLAG).apply {
-            color = Color.WHITE
-            style = Paint.Style.STROKE
-            strokeWidth = 9f
-        }
-        val radius = center - (circlePaint.strokeWidth / 2f + 1.5f)
-        canvas.drawCircle(center, center, radius, circlePaint)
-
-        // Draw day number text bold, prominent, and highly legible
+        // Draw day number text extra bold and significantly enlarged, completely filling the icon area
         val textPaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.SUBPIXEL_TEXT_FLAG).apply {
             color = Color.WHITE
             textAlign = Paint.Align.CENTER
             typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-            textSize = if (dayNumberStr.length >= 2) 74f else 86f
+            // Extra large font size now that the bounding circle is eliminated
+            textSize = if (dayNumberStr.length >= 2) 104f else 122f
         }
 
-        // Allow text to fill the circular area comfortably with high legibility
-        val maxInnerWidth = (radius * 2f) * 0.86f
+        // Allow text to occupy the full icon canvas safely
+        val maxInnerWidth = size * 0.96f
         var textWidth = textPaint.measureText(dayNumberStr)
-        while (textWidth > maxInnerWidth && textPaint.textSize > 28f) {
+        while (textWidth > maxInnerWidth && textPaint.textSize > 32f) {
             textPaint.textSize -= 2f
             textWidth = textPaint.measureText(dayNumberStr)
         }
 
         val fontMetrics = textPaint.fontMetrics
+        // Precise mathematical vertical centering
         val y = center - (fontMetrics.ascent + fontMetrics.descent) / 2f
         canvas.drawText(dayNumberStr, center, y, textPaint)
 
@@ -71,10 +68,12 @@ object DailyNotificationHelper {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channelName = "گاه‌شمار و تقویم امروز"
             val channelDesc = "نمایش پین‌شده و دائمی تاریخ روز در نوار اعلان"
-            val importance = NotificationManager.IMPORTANCE_LOW
+            // Use IMPORTANCE_DEFAULT with sound/vibration disabled so it stays pinned and visible
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel(CHANNEL_ID, channelName, importance).apply {
                 description = channelDesc
                 setShowBadge(false)
+                setSound(null, null)
                 enableVibration(false)
                 enableLights(false)
             }
@@ -159,11 +158,13 @@ object DailyNotificationHelper {
             .setContentText(secDateStr)
             .setStyle(NotificationCompat.BigTextStyle().bigText(bigText))
             .setContentIntent(pendingIntent)
-            .setOngoing(true) // Pinned in status bar
+            .setOngoing(true) // Pinned and persistent (cannot be swiped away)
             .setAutoCancel(false)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setPriority(NotificationCompat.PRIORITY_MAX) // High priority so it stays visible even when other notifications arrive
             .setCategory(NotificationCompat.CATEGORY_STATUS)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setSilent(true) // Silent so it does not disturb or make notification sounds
+            .setSortKey("00_pinned_calendar")
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.notify(NOTIFICATION_ID, builder.build())

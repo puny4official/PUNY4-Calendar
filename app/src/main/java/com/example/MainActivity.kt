@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calendar.core.CalendarManager
 import com.example.calendar.core.DailyNotificationHelper
+import com.example.calendar.core.DigitFormatter
 import com.example.calendar.core.JalaliCalendar
 import com.example.calendar.data.UserSettings
 import com.example.calendar.model.AppLanguage
@@ -81,7 +82,7 @@ class MainActivity : ComponentActivity() {
         userSettings = UserSettings(applicationContext)
 
         setContent {
-            var isAppInitializing by remember { mutableStateOf(false) }
+            var isAppInitializing by remember { mutableStateOf(true) }
 
             val themeMode by userSettings.themeMode.collectAsState()
             val appLanguage by userSettings.appLanguage.collectAsState()
@@ -636,8 +637,7 @@ class MainActivity : ComponentActivity() {
                                             season = currentSeason,
                                             modifier = Modifier
                                                 .matchParentSize()
-                                                .clipToBounds(),
-                                            particleCount = 10
+                                                .clipToBounds()
                                         )
                                     }
                                 }
