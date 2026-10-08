@@ -2,67 +2,74 @@ package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Celestial Material 3 Theme Palette
-// Primary: Deep Celestial Blue & Royal Indigo
+// Cosmic Dark Theme Palette
+
+// Primary — Neon Purple
 val PrimaryDark = Color(0xFF8B5CFF)
 val OnPrimaryDark = Color(0xFFFFFFFF)
 val PrimaryContainerDark = Color(0xFF35146E)
 val OnPrimaryContainerDark = Color(0xFFE9DDFF)
 
-val PrimaryLight = Color(0xFF1565C0)
+val PrimaryLight = Color(0xFF7B4DFF)
 val OnPrimaryLight = Color(0xFFFFFFFF)
-val PrimaryContainerLight = Color(0xFFD1E4FF)
-val OnPrimaryContainerLight = Color(0xFF001D36)
+val PrimaryContainerLight = Color(0xFFE9DDFF)
+val OnPrimaryContainerLight = Color(0xFF24104A)
 
-// Secondary: Golden Solar & Starlight
-val SecondaryDark = Color(0xFFFFD54F)
-val OnSecondaryDark = Color(0xFF3F2E00)
-val SecondaryContainerDark = Color(0xFF5B4300)
-val OnSecondaryContainerDark = Color(0xFFFFE082)
+// Secondary — Electric Blue
+val SecondaryDark = Color(0xFF4D8DFF)
+val OnSecondaryDark = Color(0xFFFFFFFF)
+val SecondaryContainerDark = Color(0xFF18356B)
+val OnSecondaryContainerDark = Color(0xFFDCE8FF)
 
-val SecondaryLight = Color(0xFFB78103)
+val SecondaryLight = Color(0xFF356FE0)
 val OnSecondaryLight = Color(0xFFFFFFFF)
-val SecondaryContainerLight = Color(0xFFFFE082)
-val OnSecondaryContainerLight = Color(0xFF241A00)
+val SecondaryContainerLight = Color(0xFFDCE8FF)
+val OnSecondaryContainerLight = Color(0xFF102653)
 
-// Tertiary: Cosmic Violet
-val TertiaryDark = Color(0xFFCE93D8)
-val OnTertiaryDark = Color(0xFF4A148C)
-val TertiaryContainerDark = Color(0xFF6A1B9A)
-val OnTertiaryContainerDark = Color(0xFFF3E5F5)
+// Tertiary — Cosmic Violet
+val TertiaryDark = Color(0xFFB58CFF)
+val OnTertiaryDark = Color(0xFF241044)
+val TertiaryContainerDark = Color(0xFF4A287A)
+val OnTertiaryContainerDark = Color(0xFFEBDDFF)
 
-val TertiaryLight = Color(0xFF7B1FA2)
+val TertiaryLight = Color(0xFF7045C5)
 val OnTertiaryLight = Color(0xFFFFFFFF)
-val TertiaryContainerLight = Color(0xFFF3E5F5)
-val OnTertiaryContainerLight = Color(0xFF38006B)
+val TertiaryContainerLight = Color(0xFFEBDDFF)
+val OnTertiaryContainerLight = Color(0xFF27134A)
 
-// Background & Surface (Pure AMOLED Black)
-val BackgroundDark = Color(0xFF000000)
-val SurfaceDark = Color(0xFF000000)
-val SurfaceVariantDark = Color(0xFF000000)
-val OnBackgroundDark = Color(0xFFFFFFFF)
-val OnSurfaceDark = Color(0xFFFFFFFF)
-val OnSurfaceVariantDark = Color(0xFFA1A1AA)
+// Background & Surface — Cosmic Black
+val BackgroundDark = Color(0xFF05030D)
+val SurfaceDark = Color(0xFF0D0820)
+val SurfaceVariantDark = Color(0xFF130A2B)
+val OnBackgroundDark = Color(0xFFF8F5FF)
+val OnSurfaceDark = Color(0xFFF8F5FF)
+val OnSurfaceVariantDark = Color(0xFFB8AEC9)
 
-val BackgroundLight = Color(0xFFF8FAFC)
+// Light theme
+val BackgroundLight = Color(0xFFF8F5FF)
 val SurfaceLight = Color(0xFFFFFFFF)
-val SurfaceVariantLight = Color(0xFFEDF2F7)
-val OnBackgroundLight = Color(0xFF0F172A)
-val OnSurfaceLight = Color(0xFF0F172A)
-val OnSurfaceVariantLight = Color(0xFF475569)
+val SurfaceVariantLight = Color(0xFFEDE7F7)
+val OnBackgroundLight = Color(0xFF17121F)
+val OnSurfaceLight = Color(0xFF17121F)
+val OnSurfaceVariantLight = Color(0xFF625A6D)
 
-// Accent & Status
-val CelestialBlue = Color(0xFF1E3A8A)
-val HolidayPurple = Color(0xFF9333EA)
-val HolidayPurpleLight = Color(0xFFA855F7)
-val HolidayPurpleContainer = Color(0xFFF3E8FF)
-val OnHolidayPurpleContainer = Color(0xFF581C87)
+// PUNY4 Cosmic Colors
+val CelestialBlue = Color(0xFF4D8DFF)
+
+val HolidayPurple = Color(0xFF8B5CFF)
+val HolidayPurpleLight = Color(0xFFA980FF)
+val HolidayPurpleContainer = Color(0xFF35146E)
+val OnHolidayPurpleContainer = Color(0xFFE9DDFF)
+
 val HolidayPink = Color(0xFFEC4899)
 val HolidayPinkLight = Color(0xFFF472B6)
+
 val HolidayRed = Color(0xFFEF4444)
-val HolidayRedContainer = Color(0xFFFEE2E2)
-val AstroGold = Color(0xFFF59E0B)
-val MoonPaleYellow = Color(0xFFF9E29C) // کد رنگی ماه #F9E29C
+val HolidayRedContainer = Color(0xFF4A1118)
+
+val AstroGold = Color(0xFFF5B942)
+val MoonPaleYellow = Color(0xFFF9E29C)
 val MoonSilver = MoonPaleYellow
-val ScorpioAlert = Color(0xFFDC2626) // رنگ قرمز اختصاصی و درخشان برای نماد قمر در عقرب (Vibrant Red)
+
+val ScorpioAlert = Color(0xFFDC2626)
 val SuccessGreen = Color(0xFF10B981)
