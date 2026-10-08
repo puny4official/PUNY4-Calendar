@@ -161,26 +161,30 @@ Box(
                         CalendarType.LUNAR_HIJRI -> if (isFa) "قمری" else "Lunar"
                     }
                     Box(
-                        shape = RoundedCornerShape(8.dp),
-                        color = if (isSelected) {
-    Color(0xFF8B5CFF)
-} else {
-    Color(0xFF0D0820)
-},
-                        border = BorderStroke(
-    1.dp,
-    if (isSelected) {
-        Color(0xFF8B5CFF)
-    } else {
-        Color(0xFF2A1B4A)
-    }
-),
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(30.dp)
-                            .clickable { onCalendarTypeChanged(type) }
-                            .testTag("calendar_chip_${type.name.lowercase()}")
-                    ) {
+    contentAlignment = Alignment.Center,
+    modifier = Modifier
+        .weight(1f)
+        .height(30.dp)
+        .clip(RoundedCornerShape(8.dp))
+        .background(
+            if (isSelected) {
+                Color(0xFF8B5CFF)
+            } else {
+                Color(0xFF0D0820)
+            },
+            RoundedCornerShape(8.dp)
+        )
+        .border(
+            1.dp,
+            if (isSelected) {
+                Color(0xFF8B5CFF)
+            } else {
+                Color(0xFF2A1B4A)
+            },
+            RoundedCornerShape(8.dp)
+        )
+                       .clickable { onCalendarTypeChanged(type) }
+.testTag("calendar_chip_${type.name.lowercase()}") {
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier.fillMaxSize()
@@ -189,7 +193,7 @@ Box(
                                 text = label,
                                 fontSize = 12.5.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
+                                color = if (isSelected) Color.White else Color(0xFFB8AEC9),
                                 maxLines = 1,
                                 textAlign = TextAlign.Center
                             )
@@ -288,7 +292,7 @@ Box(
                         style = MaterialTheme.typography.titleLarge,
                         fontSize = 18.5.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = Color(0xFFF8F5FF)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
@@ -328,7 +332,7 @@ Box(
                         text = name,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isFriday) HolidayPurple else MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = if (isFriday) HolidayPurple else Color(0xFFB8AEC9),
                         textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f)
                     )
@@ -337,7 +341,7 @@ Box(
 
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 8.dp),
-                color = if (MaterialTheme.colorScheme.surface.luminance() < 0.5f) Color(0xFF1E1E22) else MaterialTheme.colorScheme.surfaceVariant
+                color = Color(0xFF2A1B4A)
             )
 
             // Grid rows
@@ -452,27 +456,27 @@ private fun DayCellView(
     val targetBackground = when {
         isSelected -> Color.Transparent
         isHoliday -> holidayColor.copy(alpha = 0.50f)
-        else -> if (isDark) Color.Black else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.28f)
+        else -> Color(0xFF0D0820)
     }
 
     val targetBorderColor = when {
         isSelected -> Color(0xFF06B6D4) // فقط دور نشانگر فیروزه‌ای باشه
         isHoliday -> holidayColor.copy(alpha = 0.80f) // کادر شیشه‌ای به رنگ انتخابی کاربر
         isToday -> Color(0xFF06B6D4).copy(alpha = 0.65f)
-        else -> if (isDark) Color(0xFF1E1E24) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)
+        else -> Color(0xFF1A1035)
     }
     val borderWidth = if (isSelected) 2.5.dp else if (isHoliday) 1.5.dp else if (isToday) 1.5.dp else 1.dp
 
     val textColor = when {
         isSelected -> if (isDark) Color.White else Color.Black // وقتی در مود لایت است عدد نشانگر سیاه، و در دارک مود سفید
         isHoliday -> Color.White // نوشته داخل تعطیلات رسمی سفید
-        else -> MaterialTheme.colorScheme.onSurface
+        else -> Color(0xFFF8F5FF)
     }
 
     val secondaryTextColor = when {
         isSelected -> if (isDark) Color.White.copy(alpha = 0.88f) else Color.Black.copy(alpha = 0.85f)
         isHoliday -> Color.White.copy(alpha = 0.88f) // نوشته‌های کوچک زیر روزهای تعطیل رسمی نیز سفید
-        else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f)
+        else -> Color(0xFFB8AEC9).copy(alpha = 0.72f)
     }
 
     Box(
@@ -641,7 +645,7 @@ fun YearMonthPickerDialog(
                                 text = "سال ${dialogYearAnimal.namePersian} ${dialogYearAnimal.emoji}",
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = Color(0xFFB8AEC9)
                             )
                         }
                     }
@@ -675,7 +679,7 @@ fun YearMonthPickerDialog(
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
                                     .clickable { selectedMonth = mNum },
-                                color = if (isChosen) HolidayPurple else MaterialTheme.colorScheme.surfaceVariant,
+                                color = if (isChosen) HolidayPurple else Color(0xFF130A2B),
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Column(
@@ -687,14 +691,14 @@ fun YearMonthPickerDialog(
                                         textAlign = TextAlign.Center,
                                         fontSize = 11.5.sp,
                                         fontWeight = if (isChosen) FontWeight.Bold else FontWeight.Normal,
-                                        color = if (isChosen) Color.White else MaterialTheme.colorScheme.onSurface
+                                        color = if (isChosen) Color.White else Color(0xFFF8F5FF)
                                     )
                                     if (element != null) {
                                         Text(
                                             text = "${element.titlePersian} ${element.emoji}",
                                             fontSize = 9.sp,
                                             color = if (isChosen) Color.White.copy(alpha = 0.85f)
-                                                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f)
+                                                    else Color(0xFFB8AEC9).copy(alpha = 0.75f)
                                         )
                                     }
                                 }
