@@ -137,11 +137,11 @@ fun CalendarScreen(
         }
     }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .testTag("calendar_screen_root")
-    ) {
+    CosmicBackground(
+    modifier = modifier
+        .fillMaxSize()
+        .testTag("calendar_screen_root")
+) {
         val scrollState = rememberScrollState()
 
         Column(
