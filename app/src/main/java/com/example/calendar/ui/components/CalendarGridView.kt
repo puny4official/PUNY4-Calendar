@@ -127,17 +127,18 @@ fun CalendarGridView(
         }
     }
 
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .testTag("calendar_grid_card"),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
+Box(
+    modifier = modifier
+        .fillMaxWidth()
+        .clip(RoundedCornerShape(24.dp))
+        .background(Color(0xFF0D0820))
+        .border(
+            width = 1.dp,
+            color = Color(0xFF8B5CFF).copy(alpha = 0.35f),
+            shape = RoundedCornerShape(24.dp)
+        )
+        .testTag("calendar_grid_card")
+) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
