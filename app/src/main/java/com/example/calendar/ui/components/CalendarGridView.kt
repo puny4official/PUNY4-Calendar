@@ -160,13 +160,21 @@ Box(
                         CalendarType.GREGORIAN -> if (isFa) "میلادی" else "Gregorian"
                         CalendarType.LUNAR_HIJRI -> if (isFa) "قمری" else "Lunar"
                     }
-                    Surface(
+                    Box(
                         shape = RoundedCornerShape(8.dp),
-                        color = if (isSelected) HolidayPurple else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                        color = if (isSelected) {
+    Color(0xFF8B5CFF)
+} else {
+    Color(0xFF0D0820)
+},
                         border = BorderStroke(
-                            1.dp,
-                            if (isSelected) HolidayPurple else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
-                        ),
+    1.dp,
+    if (isSelected) {
+        Color(0xFF8B5CFF)
+    } else {
+        Color(0xFF2A1B4A)
+    }
+),
                         modifier = Modifier
                             .weight(1f)
                             .height(30.dp)
