@@ -4,10 +4,10 @@ import androidx.compose.ui.graphics.Color
 
 // Celestial Material 3 Theme Palette
 // Primary: Deep Celestial Blue & Royal Indigo
-val PrimaryDark = Color(0xFF90CAF9)
-val OnPrimaryDark = Color(0xFF003258)
-val PrimaryContainerDark = Color(0xFF0D47A1)
-val OnPrimaryContainerDark = Color(0xFFD1E4FF)
+val PrimaryDark = Color(0xFF8B5CFF)
+val OnPrimaryDark = Color(0xFFFFFFFF)
+val PrimaryContainerDark = Color(0xFF35146E)
+val OnPrimaryContainerDark = Color(0xFFE9DDFF)
 
 val PrimaryLight = Color(0xFF1565C0)
 val OnPrimaryLight = Color(0xFFFFFFFF)
