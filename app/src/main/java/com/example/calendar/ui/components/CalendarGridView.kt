@@ -450,7 +450,7 @@ private fun DayCellView(
     val isToday = cell.isToday
     val isHoliday = cell.hasHoliday
 
-    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+
 
     // داخل نشانگر: بدون اینکه داخلش رو رنگی کنی (کاملاً شفاف یا هم‌رنگ پس‌زمینه بدون هیچ رنگ اضافی)
     val targetBackground = when {
@@ -468,13 +468,13 @@ private fun DayCellView(
     val borderWidth = if (isSelected) 2.5.dp else if (isHoliday) 1.5.dp else if (isToday) 1.5.dp else 1.dp
 
     val textColor = when {
-        isSelected -> if (isDark) Color.White else Color.Black // وقتی در مود لایت است عدد نشانگر سیاه، و در دارک مود سفید
+        isSelected -> Color.White
         isHoliday -> Color.White // نوشته داخل تعطیلات رسمی سفید
         else -> Color(0xFFF8F5FF)
     }
 
     val secondaryTextColor = when {
-        isSelected -> if (isDark) Color.White.copy(alpha = 0.88f) else Color.Black.copy(alpha = 0.85f)
+        isSelected -> Color.White.copy(alpha = 0.88f)
         isHoliday -> Color.White.copy(alpha = 0.88f) // نوشته‌های کوچک زیر روزهای تعطیل رسمی نیز سفید
         else -> Color(0xFFB8AEC9).copy(alpha = 0.72f)
     }
