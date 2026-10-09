@@ -184,7 +184,8 @@ Box(
             RoundedCornerShape(8.dp)
         )
                        .clickable { onCalendarTypeChanged(type) }
-.testTag("calendar_chip_${type.name.lowercase()}") {
+.testTag("calendar_chip_${type.name.lowercase()}")
+) {
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier.fillMaxSize()
