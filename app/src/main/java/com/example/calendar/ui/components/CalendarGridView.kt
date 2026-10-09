@@ -24,7 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
@@ -483,6 +483,13 @@ private fun DayCellView(
         modifier = modifier
             .aspectRatio(1f)
             .padding(2.dp)
+            .padding(2.dp)
+.shadow(
+    elevation = if (isSelected) 10.dp else 0.dp,
+    shape = CellCornerShape,
+    ambientColor = Color(0xFF06B6D4),
+    spotColor = Color(0xFF06B6D4)
+)
             .background(targetBackground, CellCornerShape)
             .border(borderWidth, targetBorderColor, CellCornerShape)
             .clickable { onDateSelected(cell.jdn) }
