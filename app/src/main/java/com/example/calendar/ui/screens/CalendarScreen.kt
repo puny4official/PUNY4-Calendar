@@ -1,16 +1,15 @@
 package com.example.calendar.ui.screens
 
-import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.example.calendar.core.CalendarManager
@@ -27,7 +26,8 @@ fun CalendarScreen(
     userSettings: UserSettings,
     targetJdn: Long? = null,
     onTargetJdnConsumed: () -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    listState: LazyListState = rememberLazyListState()
 ) {
     val defaultCalType by userSettings.calendarType.collectAsState()
     val currentCity by userSettings.selectedCity.collectAsState()
@@ -138,135 +138,148 @@ fun CalendarScreen(
     }
 
     CosmicBackground(
-    modifier = modifier
-        .fillMaxSize()
-        .testTag("calendar_screen_root")
-) {
-        val scrollState = rememberScrollState()
-
-        Column(
+        modifier = modifier
+            .fillMaxSize()
+            .testTag("calendar_screen_root")
+    ) {
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(scrollState)
-                .padding(16.dp)
                 .testTag("calendar_screen_scroll"),
+            state = listState,
+            contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            CalendarGridView(
-                calendarType = activeCalendarType,
-                currentYear = currentYear,
-                currentMonth = currentMonth,
-                selectedJdn = selectedJdn,
-                showSecondaryDates = showSecondaryDates,
-                useEnglishDayNumbers = useEnglishDayNumbers,
-                fontScalePercent = fontScalePercent,
-                dayNumberScalePercent = dayNumberScalePercent,
-                onDateSelected = { jdn ->
-                    selectedJdn = jdn
-                    userNote = userSettings.getNote(jdn)
-                },
-                onPreviousMonth = {
-                    if (currentMonth == 1) {
-                        currentMonth = 12
-                        currentYear--
-                    } else {
-                        currentMonth--
-                    }
-                },
-                onNextMonth = {
-                    if (currentMonth == 12) {
-                        currentMonth = 1
-                        currentYear++
-                    } else {
-                        currentMonth++
-                    }
-                },
-                onTodayClicked = handleGoToToday,
-                onSelectYearMonth = { y, m ->
-                    currentYear = y
-                    currentMonth = m
-                },
-                onCalendarTypeChanged = { newType ->
-                    activeCalendarType = newType
-                    when (newType) {
-                        CalendarType.SOLAR_HIJRI -> {
-                            val j = JalaliCalendar.jdnToJalali(selectedJdn)
-                            currentYear = j.year
-                            currentMonth = j.month
+            item(key = "calendar_grid") {
+                CalendarGridView(
+                    calendarType = activeCalendarType,
+                    currentYear = currentYear,
+                    currentMonth = currentMonth,
+                    selectedJdn = selectedJdn,
+                    showSecondaryDates = showSecondaryDates,
+                    useEnglishDayNumbers = useEnglishDayNumbers,
+                    fontScalePercent = fontScalePercent,
+                    dayNumberScalePercent = dayNumberScalePercent,
+                    onDateSelected = { jdn ->
+                        selectedJdn = jdn
+                        userNote = userSettings.getNote(jdn)
+                    },
+                    onPreviousMonth = {
+                        if (currentMonth == 1) {
+                            currentMonth = 12
+                            currentYear--
+                        } else {
+                            currentMonth--
                         }
-                        CalendarType.GREGORIAN -> {
-                            val g = JalaliCalendar.jdnToGregorian(selectedJdn)
-                            currentYear = g.year
-                            currentMonth = g.month
+                    },
+                    onNextMonth = {
+                        if (currentMonth == 12) {
+                            currentMonth = 1
+                            currentYear++
+                        } else {
+                            currentMonth++
                         }
-                        CalendarType.LUNAR_HIJRI -> {
-                            val i = IslamicCalendar.jdnToIslamic(selectedJdn)
-                            currentYear = i.year
-                            currentMonth = i.month
+                    },
+                    onTodayClicked = handleGoToToday,
+                    onSelectYearMonth = { y, m ->
+                        currentYear = y
+                        currentMonth = m
+                    },
+                    onCalendarTypeChanged = { newType ->
+                        activeCalendarType = newType
+                        when (newType) {
+                            CalendarType.SOLAR_HIJRI -> {
+                                val j = JalaliCalendar.jdnToJalali(selectedJdn)
+                                currentYear = j.year
+                                currentMonth = j.month
+                            }
+                            CalendarType.GREGORIAN -> {
+                                val g = JalaliCalendar.jdnToGregorian(selectedJdn)
+                                currentYear = g.year
+                                currentMonth = g.month
+                            }
+                            CalendarType.LUNAR_HIJRI -> {
+                                val i = IslamicCalendar.jdnToIslamic(selectedJdn)
+                                currentYear = i.year
+                                currentMonth = i.month
+                            }
                         }
-                    }
-                },
-                onShowTodaySpotlight = {
-                    showIntroSpotlight = true
-                },
-                appLanguage = appLanguage,
-                holidayColor = holidayColor
-            )
+                    },
+                    onShowTodaySpotlight = {
+                        showIntroSpotlight = true
+                    },
+                    appLanguage = appLanguage,
+                    holidayColor = holidayColor
+                )
+
+            }
 
             // Section 1: All Calendars Card
-            AllCalendarsCard(
-                dayInfo = selectedDayInfo,
-                renderFaDigits = (appLanguage == AppLanguage.PERSIAN && !useEnglishDayNumbers),
-                onJumpToToday = handleGoToToday
-            )
+            item(key = "all_calendars") {
+                    AllCalendarsCard(
+                    dayInfo = selectedDayInfo,
+                    renderFaDigits = (appLanguage == AppLanguage.PERSIAN && !useEnglishDayNumbers),
+                    onJumpToToday = handleGoToToday
+                )
+            }
 
             // Section 2: Astronomy & Prayer Times Card
-            AstronomyCard(
-                dayInfo = selectedDayInfo,
-                currentCity = currentCity,
-                renderFaDigits = (appLanguage == AppLanguage.PERSIAN && !useEnglishDayNumbers),
-                isFa = (appLanguage == AppLanguage.PERSIAN),
-                onOpenCityPicker = { showCityPicker = true }
-            )
+            item(key = "astronomy") {
+                    AstronomyCard(
+                    dayInfo = selectedDayInfo,
+                    currentCity = currentCity,
+                    renderFaDigits = (appLanguage == AppLanguage.PERSIAN && !useEnglishDayNumbers),
+                    isFa = (appLanguage == AppLanguage.PERSIAN),
+                    onOpenCityPicker = { showCityPicker = true }
+                )
+            }
 
             // Section 3: Official Holidays Card (rendered if holiday or Friday)
             val officialHolidays = selectedDayInfo.events.filter { it.isHoliday }
             val isFriday = (selectedDayInfo.dayOfWeekPersian == "جمعه")
             if (officialHolidays.isNotEmpty() || isFriday) {
-                OfficialHolidaysCard(
-                    dayInfo = selectedDayInfo,
-                    holidayColor = holidayColor
-                )
-            }
-
-            // Section 4: Global Events Card
-            val globalEvents = selectedDayInfo.events.filter { it.type == EventType.INTERNATIONAL }
-            if (globalEvents.isNotEmpty()) {
-                GlobalEventsCard(
-                    dayInfo = selectedDayInfo
-                )
-            }
-
-            // Section 5: National Occasions Card
-            val nationalAndAstroEvents = selectedDayInfo.events.filter { !it.isHoliday && it.type != EventType.INTERNATIONAL }
-            if (nationalAndAstroEvents.isNotEmpty()) {
-                NationalOccasionsCard(
-                    dayInfo = selectedDayInfo
-                )
-            }
-
-            // Section 6: Personal Notes Card
-            NotesCard(
-                userNote = userNote,
-                dayInfo = selectedDayInfo,
-                isFa = (appLanguage == AppLanguage.PERSIAN),
-                onSaveNote = { newNote ->
-                    userSettings.saveNote(selectedJdn, newNote)
-                    userNote = newNote
+                item(key = "official_holidays") {
+                    OfficialHolidaysCard(
+                        dayInfo = selectedDayInfo,
+                        holidayColor = holidayColor
+                    )
                 }
-            )
+                }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                // Section 4: Global Events Card
+                val globalEvents = selectedDayInfo.events.filter { it.type == EventType.INTERNATIONAL }
+                if (globalEvents.isNotEmpty()) {
+                item(key = "global_events") {
+                    GlobalEventsCard(
+                        dayInfo = selectedDayInfo
+                    )
+                }
+                }
+
+                // Section 5: National Occasions Card
+                val nationalAndAstroEvents = selectedDayInfo.events.filter { !it.isHoliday && it.type != EventType.INTERNATIONAL }
+                if (nationalAndAstroEvents.isNotEmpty()) {
+                item(key = "national_occasions") {
+                    NationalOccasionsCard(
+                        dayInfo = selectedDayInfo
+                    )
+                }
+                }
+
+                // Section 6: Personal Notes Card
+            item(key = "notes_$selectedJdn") {
+                    NotesCard(
+                    userNote = userNote,
+                    dayInfo = selectedDayInfo,
+                    isFa = (appLanguage == AppLanguage.PERSIAN),
+                    onSaveNote = { newNote ->
+                        userSettings.saveNote(selectedJdn, newNote)
+                        userNote = newNote
+                    }
+                )
+            }
+
+            item(key = "bottom_spacing") { Spacer(modifier = Modifier.height(16.dp)) }
         }
 
         // Dedicated City Picker Dialog
