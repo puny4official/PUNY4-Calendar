@@ -15,6 +15,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -108,6 +109,7 @@ class MainActivity : ComponentActivity() {
                         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                     val coroutineScope = rememberCoroutineScope()
                     var selectedTab by remember { mutableStateOf(MainTab.CALENDAR) }
+                    val calendarListState = rememberLazyListState()
                     var showGuideDialog by remember { mutableStateOf(false) }
                     var showAppearanceDialog by remember { mutableStateOf(false) }
                     var showEventSearchDialog by remember { mutableStateOf(false) }
@@ -635,6 +637,7 @@ class MainActivity : ComponentActivity() {
                                     if (showSeasonalRain && selectedTab == MainTab.CALENDAR) {
                                         SeasonalRainOverlay(
                                             season = currentSeason,
+                                            animationRunning = !calendarListState.isScrollInProgress && drawerState.isClosed,
                                             modifier = Modifier
                                                 .matchParentSize()
                                                 .clipToBounds()
@@ -654,6 +657,7 @@ class MainActivity : ComponentActivity() {
                                     MainTab.CALENDAR -> CalendarScreen(
                                         userSettings = userSettings,
                                         targetJdn = targetJdnFromSearch,
+                                        listState = calendarListState,
                                         onTargetJdnConsumed = { targetJdnFromSearch = null },
                                         modifier = Modifier.fillMaxSize()
                                     )

@@ -1,5 +1,6 @@
 package com.example.calendar.ui.components
 
+import android.graphics.Bitmap
 import android.graphics.Paint
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.*
@@ -9,17 +10,17 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
+import kotlin.math.ceil
 import kotlinx.coroutines.isActive
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-/**
- * Highly optimized, zero-allocation particle structure.
- * Stores precomputed trigonometric phases and pixel values to eliminate
- * any runtime unit conversions or redundant trigonometric operations.
- */
+// Mutable physics data; only the Canvas observes the frame counter.
 private class SeasonalParticle(
     var x: Float = 0f,
     var y: Float = 0f,
@@ -38,20 +39,7 @@ private class SeasonalParticle(
     var isInitialized: Boolean = false
 )
 
-/**
- * Ultra-performance, GPU hardware-accelerated Seasonal Rain & Wind Overlay.
- *
- * Optimizations implemented for 100% smooth, zero-lag execution:
- * 1. Batched native drawing: All blue rain lines are drawn in a SINGLE native call (`drawLines`)
- *    instead of individual JNI calls, cutting draw overhead by ~90%.
- * 2. Precomputed trigonometric phases: Uses angle addition identities with a single frame-level
- *    `sin`/`cos` calculation, eliminating hundreds of expensive `sin()` calls per second.
- * 3. Zero frame-time memory allocations: All arrays, points buffers, and paints are allocated
- *    once in `remember` and reused forever (0 GC pressure).
- * 4. Density values pre-calculated: Eliminates continuous `dp.toPx()` conversions during animation loops.
- * 5. Isolated GPU RenderNode (`graphicsLayer`): Prevents recomposition or invalidation bleeding
- *    into the underlying TopAppBar.
- */
+/** Decorative, touch-transparent particles with cached emoji sprites. */
 @Composable
 fun SeasonalRainOverlay(
     season: String,
@@ -61,9 +49,11 @@ fun SeasonalRainOverlay(
         season.equals("Spring", ignoreCase = true) ||
         season.equals("Autumn", ignoreCase = true) ||
         season.equals("Fall", ignoreCase = true)
-    ) 20 else 10
+    ) 20 else 10,
+    animationRunning: Boolean = true
 ) {
     val density = LocalDensity.current
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     val isSpring = remember(season) {
         season.contains("بهار") || season.equals("Spring", ignoreCase = true)
@@ -97,7 +87,7 @@ fun SeasonalRainOverlay(
     val gustMaxPx = remember(density) { with(density) { 170.dp.toPx() } }
 
     // Pre-allocated particles array
-    val particles = remember(particleCount, foliageEmojis, hasRainlines) {
+    val particles = remember(particleCount, foliageEmojis, hasRainlines, density) {
         Array(particleCount) { i ->
             val isDrop = hasRainlines && (i % 3 != 0)
             val emoji = if (isDrop) "" else foliageEmojis[i % foliageEmojis.size]
@@ -144,6 +134,18 @@ fun SeasonalRainOverlay(
         }
     }
 
+    // Rasterize the small set of emoji glyphs once, not on every frame.
+    val emojiSprites = remember(foliageEmojis, foliageTextSizePx) {
+        val side = ceil(foliageTextSizePx * 1.8f).toInt().coerceAtLeast(1)
+        foliageEmojis.associateWith { emoji ->
+            Bitmap.createBitmap(side, side, Bitmap.Config.ARGB_8888).also { bitmap ->
+                val baseline = side / 2f - (textPaint.ascent() + textPaint.descent()) / 2f
+                android.graphics.Canvas(bitmap).drawText(emoji, side / 2f, baseline, textPaint)
+            }
+        }
+    }
+    val bitmapPaint = remember { Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG) }
+
     // Shared pre-allocated paint for blue rain lines
     val rainPaint = remember(rainStrokeWidthPx) {
         Paint().apply {
@@ -162,65 +164,73 @@ fun SeasonalRainOverlay(
 
     // Draw-phase trigger state
     var frameTick by remember { mutableLongStateOf(0L) }
+    val simulationTime = remember(particles) { floatArrayOf(0f) }
 
     // Lightweight physics loop
-    LaunchedEffect(particles) {
-        var lastNanoTime = 0L
-        var totalTimeSec = 0f
+    LaunchedEffect(particles, animationRunning, lifecycleOwner, gustMaxPx) {
+        if (!animationRunning) return@LaunchedEffect
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            var lastNanoTime = 0L
+            var totalTimeSec = simulationTime[0]
 
-        while (isActive) {
-            withFrameNanos { frameNanos ->
-                if (lastNanoTime == 0L) {
-                    lastNanoTime = frameNanos
-                }
-                val dt = ((frameNanos - lastNanoTime) / 1_000_000_000f).coerceIn(0.001f, 0.05f)
-                lastNanoTime = frameNanos
-                totalTimeSec += dt
-
-                // Wind gust cycle (every 4.2 seconds for 1.6 seconds)
-                val gustPeriod = 4.2f
-                val cyclePos = totalTimeSec % gustPeriod
-                val gustDuration = 1.6f
-                val gustActive = cyclePos < gustDuration
-
-                val gustIntensity = if (gustActive) {
-                    val progress = cyclePos / gustDuration
-                    sin(progress * PI.toFloat()) * gustMaxPx
-                } else {
-                    0f
-                }
-
-                // Global harmonic oscillation computed ONCE per frame
-                val swayAngle = totalTimeSec * 3f
-                val globalSin = sin(swayAngle)
-                val globalCos = cos(swayAngle)
-
-                // High-performance particle physics loop
-                val count = particles.size
-                for (i in 0 until count) {
-                    val p = particles[i]
-                    if (!p.isInitialized) continue
-
-                    // Angle addition identity: sin(A + B) = sin(A)*cos(B) + cos(A)*sin(B)
-                    // Zero transcendental calls inside this inner loop!
-                    val naturalSway = (globalSin * p.cosPhase + globalCos * p.sinPhase) * p.swayAmplitudePx
-
-                    val currentVx = p.driftSpeedX + naturalSway + (gustIntensity * p.windSensitivity)
-                    p.x += currentVx * dt
-
-                    val currentVy = p.baseSpeedY + (gustIntensity * 0.12f)
-                    p.y += currentVy * dt
-
-                    if (p.isRaindrop) {
-                        p.slantX = (currentVx / currentVy * p.lengthPx * 0.75f)
-                            .coerceIn(-p.lengthPx * 1.2f, p.lengthPx * 1.2f)
-                    } else {
-                        val extraRot = if (gustActive) gustIntensity * 0.45f else 0f
-                        p.rotation = (p.rotation + (p.rotationSpeed + extraRot) * dt) % 360f
+            while (isActive) {
+                withFrameNanos { frameNanos ->
+                    if (lastNanoTime == 0L) {
+                        lastNanoTime = frameNanos
+                        return@withFrameNanos
                     }
-                }
+                    // Decorative motion needs at most 30 fps, including on 90/120 Hz screens.
+                    if (frameNanos - lastNanoTime < 33_333_333L) return@withFrameNanos
+                    val dt = ((frameNanos - lastNanoTime) / 1_000_000_000f).coerceIn(0.001f, 0.05f)
+                    lastNanoTime = frameNanos
+                    totalTimeSec += dt
+                    simulationTime[0] = totalTimeSec
 
-                frameTick++
+                    // Wind gust cycle (every 4.2 seconds for 1.6 seconds)
+                    val gustPeriod = 4.2f
+                    val cyclePos = totalTimeSec % gustPeriod
+                    val gustDuration = 1.6f
+                    val gustActive = cyclePos < gustDuration
+
+                    val gustIntensity = if (gustActive) {
+                        val progress = cyclePos / gustDuration
+                        sin(progress * PI.toFloat()) * gustMaxPx
+                    } else {
+                        0f
+                    }
+
+                    // Global harmonic oscillation computed ONCE per frame
+                    val swayAngle = totalTimeSec * 3f
+                    val globalSin = sin(swayAngle)
+                    val globalCos = cos(swayAngle)
+
+                    // High-performance particle physics loop
+                    val count = particles.size
+                    for (i in 0 until count) {
+                        val p = particles[i]
+                        if (!p.isInitialized) continue
+
+                        // Angle addition identity: sin(A + B) = sin(A)*cos(B) + cos(A)*sin(B)
+                        // Zero transcendental calls inside this inner loop!
+                        val naturalSway = (globalSin * p.cosPhase + globalCos * p.sinPhase) * p.swayAmplitudePx
+
+                        val currentVx = p.driftSpeedX + naturalSway + (gustIntensity * p.windSensitivity)
+                        p.x += currentVx * dt
+
+                        val currentVy = p.baseSpeedY + (gustIntensity * 0.12f)
+                        p.y += currentVy * dt
+
+                        if (p.isRaindrop) {
+                            p.slantX = (currentVx / currentVy * p.lengthPx * 0.75f)
+                                .coerceIn(-p.lengthPx * 1.2f, p.lengthPx * 1.2f)
+                        } else {
+                            val extraRot = if (gustActive) gustIntensity * 0.45f else 0f
+                            p.rotation = (p.rotation + (p.rotationSpeed + extraRot) * dt) % 360f
+                        }
+                    }
+
+                    frameTick++
+                }
             }
         }
     }
@@ -229,6 +239,7 @@ fun SeasonalRainOverlay(
     Canvas(
         modifier = modifier.graphicsLayer()
     ) {
+        @Suppress("UNUSED_VARIABLE")
         val tick = frameTick
 
         val canvasWidth = size.width
@@ -277,7 +288,10 @@ fun SeasonalRainOverlay(
                 // Render foliage emoji with rotation
                 nativeCanvas.save()
                 nativeCanvas.rotate(p.rotation, p.x, p.y)
-                nativeCanvas.drawText(p.emoji, p.x, p.y, textPaint)
+                val sprite = emojiSprites.getValue(p.emoji)
+                nativeCanvas.drawBitmap(
+                    sprite, p.x - sprite.width / 2f, p.y - sprite.height / 2f, bitmapPaint
+                )
                 nativeCanvas.restore()
             }
         }
