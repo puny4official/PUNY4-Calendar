@@ -637,7 +637,7 @@ class MainActivity : ComponentActivity() {
                                     if (showSeasonalRain && selectedTab == MainTab.CALENDAR) {
                                         SeasonalRainOverlay(
                                             season = currentSeason,
-                                            animationRunning = !calendarListState.isScrollInProgress && drawerState.isClosed,
+                                            animationRunning = drawerState.isClosed,
                                             modifier = Modifier
                                                 .matchParentSize()
                                                 .clipToBounds()
