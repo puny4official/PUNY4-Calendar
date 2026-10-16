@@ -34,6 +34,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -82,21 +83,23 @@ fun TodaySpotlightOverlay(
     var isHolding by remember { mutableStateOf(false) }
     val totalDurationMs = 2000L
 
-    // Reset progress whenever becoming visible
+    // Runs the 2-second countdown (with hold-to-pause) and then dismisses the card.
     LaunchedEffect(visible) {
         if (visible) {
             progress = 0f
             isHolding = false
-        }
-    }
-
-    // Auto-dismiss after 2.5 seconds without spinning a 16ms recomposition loop
-    LaunchedEffect(visible, isHolding) {
-        if (visible && !isHolding) {
-            delay(2500L)
-            if (!isHolding) {
-                onDismiss()
+            var elapsed = 0f
+            var last = withFrameNanos { it }
+            while (elapsed < 1f) {
+                val now = withFrameNanos { it }
+                if (!isHolding) {
+                    elapsed = (elapsed + (now - last) / 1_000_000f / totalDurationMs).coerceAtMost(1f)
+                }
+                last = now
+                // Publish in small steps so the card is not recomposed on every frame.
+                if (elapsed - progress >= 0.02f || elapsed >= 1f) progress = elapsed
             }
+            onDismiss()
         }
     }
 
@@ -232,14 +235,16 @@ fun TodaySpotlightOverlay(
             // -----------------------------------------------------------
             // COMPACT CALLOUT CARD: WITH INSTAGRAM STORY PROGRESS LINE
             // -----------------------------------------------------------
-            val isTargetCellHigh = (targetCenter?.y ?: 0f) < 320f
+            // The card sits at the top; it only drops to the bottom when today's cell would be hidden behind it.
+            val topCardReachPx = with(LocalDensity.current) { 260.dp.toPx() }
+            val isTargetCellHigh = targetCenter != null && targetCenter.y < topCardReachPx
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp)
                     .align(if (isTargetCellHigh) Alignment.BottomCenter else Alignment.TopCenter)
-                    .padding(top = if (isTargetCellHigh) 0.dp else 40.dp, bottom = if (isTargetCellHigh) 20.dp else 0.dp)
+                    .padding(top = if (isTargetCellHigh) 0.dp else 8.dp, bottom = if (isTargetCellHigh) 20.dp else 0.dp)
                     .onGloballyPositioned { coordinates ->
                         val overlayCoords = overlayLayoutCoordinates
                         if (overlayCoords != null && overlayCoords.isAttached && coordinates.isAttached) {

@@ -10,6 +10,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.example.calendar.core.CalendarManager
@@ -20,6 +22,10 @@ import com.example.calendar.model.AppLanguage
 import com.example.calendar.model.CalendarType
 import com.example.calendar.model.EventType
 import com.example.calendar.ui.components.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlin.math.min
 
 @Composable
 fun CalendarScreen(
@@ -27,7 +33,9 @@ fun CalendarScreen(
     targetJdn: Long? = null,
     onTargetJdnConsumed: () -> Unit = {},
     modifier: Modifier = Modifier,
-    listState: LazyListState = rememberLazyListState()
+    listState: LazyListState = rememberLazyListState(),
+    autoShowSpotlight: Boolean = false,
+    onAutoSpotlightShown: () -> Unit = {}
 ) {
     val defaultCalType by userSettings.calendarType.collectAsState()
     val currentCity by userSettings.selectedCity.collectAsState()
@@ -114,6 +122,56 @@ fun CalendarScreen(
     var indicatorCenterOffset by remember { mutableStateOf<Offset?>(null) }
     var indicatorCellRadius by remember { mutableFloatStateOf(0f) }
     var showIntroSpotlight by remember { mutableStateOf(false) }
+    var arrowDismissed by remember { mutableStateOf(false) }
+    var spotlightToken by remember { mutableIntStateOf(0) }
+    val spotlightScope = rememberCoroutineScope()
+    // [0] = this screen, [1] = today's cell. Plain holder (not state) so scrolling never triggers recomposition.
+    val coordsHolder = remember { arrayOfNulls<LayoutCoordinates>(2) }
+
+    // Shows the card; the arrow is anchored once, to where today's cell is at this moment.
+    val triggerSpotlight: () -> Unit = {
+        spotlightScope.launch {
+            delay(150)
+            var tries = 0
+            while (tries < 10) {
+                val cell = coordsHolder[1]
+                val screen = coordsHolder[0]
+                if (cell != null && cell.isAttached && screen != null && screen.isAttached) break
+                delay(50)
+                tries++
+            }
+            val cell = coordsHolder[1]
+            val screen = coordsHolder[0]
+            if (cell != null && screen != null && cell.isAttached && screen.isAttached) {
+                todayCenterOffset = screen.localPositionOf(
+                    cell, Offset(cell.size.width / 2f, cell.size.height / 2f)
+                )
+                todayCellRadius = min(cell.size.width, cell.size.height) / 2f
+            } else {
+                todayCenterOffset = null
+            }
+            arrowDismissed = false
+            spotlightToken++
+            showIntroSpotlight = true
+        }
+    }
+
+    // Auto-show once, right after the loading screen hands over to the calendar.
+    LaunchedEffect(autoShowSpotlight) {
+        if (autoShowSpotlight) {
+            delay(450)
+            triggerSpotlight()
+            onAutoSpotlightShown()
+        }
+    }
+
+    // The card stays pinned at the top while scrolling, but the arrow disappears on the first scroll.
+    LaunchedEffect(showIntroSpotlight, spotlightToken) {
+        if (showIntroSpotlight) {
+            snapshotFlow { listState.isScrollInProgress }.first { it }
+            arrowDismissed = true
+        }
+    }
 
     val handleGoToToday = {
         selectedJdn = todayJdn
@@ -140,6 +198,7 @@ fun CalendarScreen(
     CosmicBackground(
         modifier = modifier
             .fillMaxSize()
+            .onGloballyPositioned { coordsHolder[0] = it }
             .testTag("calendar_screen_root")
     ) {
         LazyColumn(
@@ -205,9 +264,8 @@ fun CalendarScreen(
                             }
                         }
                     },
-                    onShowTodaySpotlight = {
-                        showIntroSpotlight = true
-                    },
+                    onShowTodaySpotlight = { triggerSpotlight() },
+                    onTodayPositioned = { coordsHolder[1] = it },
                     appLanguage = appLanguage,
                     holidayColor = holidayColor
                 )
@@ -304,7 +362,7 @@ fun CalendarScreen(
                 visible = showIntroSpotlight,
                 isFa = (appLanguage == AppLanguage.PERSIAN),
                 holidayColor = holidayColor,
-                showDashedLines = true,
+                showDashedLines = !arrowDismissed,
                 onDismiss = { showIntroSpotlight = false }
             )
         }

@@ -493,6 +493,13 @@ private fun DayCellView(
 )
             .background(targetBackground, CellCornerShape)
             .border(borderWidth, targetBorderColor, CellCornerShape)
+            .then(
+                if (isToday && onTodayPositioned != null) {
+                    Modifier.onGloballyPositioned { onTodayPositioned(it) }
+                } else {
+                    Modifier
+                }
+            )
             .clickable { onDateSelected(cell.jdn) }
             .testTag("day_cell_${cell.primaryNumber}"),
         contentAlignment = Alignment.Center

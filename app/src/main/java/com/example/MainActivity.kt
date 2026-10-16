@@ -84,6 +84,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             var isAppInitializing by remember { mutableStateOf(true) }
+            var spotlightPending by remember { mutableStateOf(true) }
 
             val themeMode by userSettings.themeMode.collectAsState()
             val appLanguage by userSettings.appLanguage.collectAsState()
@@ -659,6 +660,8 @@ class MainActivity : ComponentActivity() {
                                         targetJdn = targetJdnFromSearch,
                                         listState = calendarListState,
                                         onTargetJdnConsumed = { targetJdnFromSearch = null },
+                                        autoShowSpotlight = !isAppInitializing && spotlightPending,
+                                        onAutoSpotlightShown = { spotlightPending = false },
                                         modifier = Modifier.fillMaxSize()
                                     )
                                     MainTab.ASTRONOMY -> AstronomyScreen(
