@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.R
 import kotlinx.coroutines.delay
+import androidx.compose.runtime.getValue
 
 /** Total time the startup loading screen stays visible. */
 private const val LOADING_DURATION_MS = 5000L
