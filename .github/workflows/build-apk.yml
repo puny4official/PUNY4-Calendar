@@ -39,7 +39,14 @@ jobs:
             -dname "CN=Android Debug,O=Android,C=US"
 
       - name: Build release APK
-        run: gradle --no-daemon assembleRelease
+        run: |
+          set +e
+          gradle --no-daemon --console=plain assembleRelease 2>&1 | tee build.log
+          code=${PIPESTATUS[0]}
+          if [ "$code" != "0" ]; then
+            grep -E "^e: |error:|Error:|What went wrong|Execution failed|Lint found|^Error " -A2 build.log | head -40 | while IFS= read -r l; do echo "::error::$l"; done
+          fi
+          exit $code
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
