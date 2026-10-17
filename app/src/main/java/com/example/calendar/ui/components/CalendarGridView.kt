@@ -172,7 +172,10 @@ Box(
                     isSelected = calendarType == CalendarType.SOLAR_HIJRI,
                     testTag = "calendar_chip_${CalendarType.SOLAR_HIJRI.name.lowercase()}",
                     modifier = Modifier.weight(1f),
-                    onClick = { onCalendarTypeChanged(CalendarType.SOLAR_HIJRI) }
+                    onClick = {
+                        onCalendarTypeChanged(CalendarType.SOLAR_HIJRI)
+                        showMoreCalendars = false
+                    }
                 )
 
                 // The ( › ) button: points toward the hidden chips, flips when the drawer is open.
@@ -220,7 +223,10 @@ Box(
                                 isSelected = type == calendarType,
                                 testTag = "calendar_chip_${type.name.lowercase()}",
                                 modifier = Modifier.weight(1f),
-                                onClick = { onCalendarTypeChanged(type) }
+                                onClick = {
+                                    onCalendarTypeChanged(type)
+                                    showMoreCalendars = false // close the drawer after choosing
+                                }
                             )
                         }
                     }
