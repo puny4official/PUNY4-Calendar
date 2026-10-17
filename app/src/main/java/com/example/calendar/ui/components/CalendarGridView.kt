@@ -1,6 +1,11 @@
 package com.example.calendar.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -14,6 +19,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.ExpandMore
@@ -102,6 +109,7 @@ fun CalendarGridView(
     val isFa = (appLanguage == AppLanguage.PERSIAN)
     var showDatePickerDialog by remember { mutableStateOf(false) }
     var showMonthlyPredictionsDialog by remember { mutableStateOf(false) }
+    var showMoreCalendars by remember { mutableStateOf(false) }
 
     val monthlyPrediction = remember(calendarType, currentYear, currentMonth) {
         MonthlyPredictionHelper.generatePrediction(calendarType, currentYear, currentMonth)
@@ -152,51 +160,67 @@ Box(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Calendar Types (Solar, Gregorian, Lunar)
-                CalendarType.values().forEach { type ->
-                    val isSelected = (type == calendarType)
-                    val label = when (type) {
-                        CalendarType.SOLAR_HIJRI -> if (isFa) "شمسی" else "Solar"
-                        CalendarType.GREGORIAN -> if (isFa) "میلادی" else "Gregorian"
-                        CalendarType.LUNAR_HIJRI -> if (isFa) "قمری" else "Lunar"
-                    }
-                    Box(
-    contentAlignment = Alignment.Center,
-    modifier = Modifier
-        .weight(1f)
-        .height(30.dp)
-        .clip(RoundedCornerShape(8.dp))
-        .background(
-            if (isSelected) {
-                Color(0xFF8B5CFF)
-            } else {
-                MaterialTheme.colorScheme.surface
-            },
-            RoundedCornerShape(8.dp)
-        )
-        .border(
-            1.dp,
-            if (isSelected) {
-                Color(0xFF8B5CFF)
-            } else {
-                MaterialTheme.colorScheme.outlineVariant
-            },
-            RoundedCornerShape(8.dp)
-        )
-                       .clickable { onCalendarTypeChanged(type) }
-.testTag("calendar_chip_${type.name.lowercase()}")
-) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            Text(
-                                text = label,
-                                fontSize = 12.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                textAlign = TextAlign.Center
+                // Calendar Types: Solar is always visible; Gregorian and Lunar slide out with the ( › ) button
+                fun typeLabel(type: CalendarType) = when (type) {
+                    CalendarType.SOLAR_HIJRI -> if (isFa) "شمسی" else "Solar"
+                    CalendarType.GREGORIAN -> if (isFa) "میلادی" else "Gregorian"
+                    CalendarType.LUNAR_HIJRI -> if (isFa) "قمری" else "Lunar"
+                }
+
+                CalendarTypeChip(
+                    label = typeLabel(CalendarType.SOLAR_HIJRI),
+                    isSelected = calendarType == CalendarType.SOLAR_HIJRI,
+                    testTag = "calendar_chip_${CalendarType.SOLAR_HIJRI.name.lowercase()}",
+                    modifier = Modifier.weight(1f),
+                    onClick = { onCalendarTypeChanged(CalendarType.SOLAR_HIJRI) }
+                )
+
+                // The ( › ) button: points toward the hidden chips, flips when the drawer is open.
+                // It gets a purple outline while the active calendar is hidden inside the drawer.
+                val hiddenTypeActive = !showMoreCalendars && calendarType != CalendarType.SOLAR_HIJRI
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
+                        .border(
+                            1.dp,
+                            if (hiddenTypeActive) Color(0xFF8B5CFF) else MaterialTheme.colorScheme.outlineVariant,
+                            RoundedCornerShape(8.dp)
+                        )
+                        .clickable { showMoreCalendars = !showMoreCalendars }
+                        .testTag("calendar_more_types_button")
+                ) {
+                    Icon(
+                        imageVector = if (showMoreCalendars) {
+                            Icons.AutoMirrored.Filled.KeyboardArrowLeft
+                        } else {
+                            Icons.AutoMirrored.Filled.KeyboardArrowRight
+                        },
+                        contentDescription = if (isFa) "تقویم‌های بیشتر" else "More calendars",
+                        tint = if (hiddenTypeActive) Color(0xFF8B5CFF) else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                AnimatedVisibility(
+                    visible = showMoreCalendars,
+                    enter = expandHorizontally(tween(220)) + fadeIn(tween(220)),
+                    exit = shrinkHorizontally(tween(180)) + fadeOut(tween(180)),
+                    modifier = Modifier.weight(2f, fill = false)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        listOf(CalendarType.GREGORIAN, CalendarType.LUNAR_HIJRI).forEach { type ->
+                            CalendarTypeChip(
+                                label = typeLabel(type),
+                                isSelected = type == calendarType,
+                                testTag = "calendar_chip_${type.name.lowercase()}",
+                                modifier = Modifier.weight(1f),
+                                onClick = { onCalendarTypeChanged(type) }
                             )
                         }
                     }
@@ -737,4 +761,42 @@ fun YearMonthPickerDialog(
             }
         }
     )
+}
+
+
+/** One calendar-type chip (Solar / Gregorian / Lunar). */
+@Composable
+private fun CalendarTypeChip(
+    label: String,
+    isSelected: Boolean,
+    testTag: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .height(30.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(
+                if (isSelected) Color(0xFF8B5CFF) else MaterialTheme.colorScheme.surface,
+                RoundedCornerShape(8.dp)
+            )
+            .border(
+                1.dp,
+                if (isSelected) Color(0xFF8B5CFF) else MaterialTheme.colorScheme.outlineVariant,
+                RoundedCornerShape(8.dp)
+            )
+            .clickable(onClick = onClick)
+            .testTag(testTag)
+    ) {
+        Text(
+            text = label,
+            fontSize = 12.5.sp,
+            fontWeight = FontWeight.Bold,
+            color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            textAlign = TextAlign.Center
+        )
+    }
 }
