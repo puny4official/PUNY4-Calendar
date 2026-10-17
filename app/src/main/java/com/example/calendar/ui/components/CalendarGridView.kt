@@ -160,7 +160,7 @@ Box(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Calendar Types: Solar is always visible; Gregorian and Lunar slide out with the ( › ) button
+                // Calendar Types: Solar is always visible; Gregorian, Lunar and Forecast slide out with the ( › ) button
                 fun typeLabel(type: CalendarType) = when (type) {
                     CalendarType.SOLAR_HIJRI -> if (isFa) "شمسی" else "Solar"
                     CalendarType.GREGORIAN -> if (isFa) "میلادی" else "Gregorian"
@@ -207,62 +207,67 @@ Box(
                     )
                 }
 
-                AnimatedVisibility(
-                    visible = showMoreCalendars,
-                    enter = expandHorizontally(tween(220)) + fadeIn(tween(220)),
-                    exit = shrinkHorizontally(tween(180)) + fadeOut(tween(180)),
-                    modifier = Modifier.weight(2f, fill = false)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                // Fixed-size slot: keeps the layout stable and pushes the star button to the end
+                Box(modifier = Modifier.weight(3.15f)) {
+                    AnimatedVisibility(
+                        visible = showMoreCalendars,
+                        enter = expandHorizontally(tween(220)) + fadeIn(tween(220)),
+                        exit = shrinkHorizontally(tween(180)) + fadeOut(tween(180))
                     ) {
-                        listOf(CalendarType.GREGORIAN, CalendarType.LUNAR_HIJRI).forEach { type ->
-                            CalendarTypeChip(
-                                label = typeLabel(type),
-                                isSelected = type == calendarType,
-                                testTag = "calendar_chip_${type.name.lowercase()}",
-                                modifier = Modifier.weight(1f),
-                                onClick = {
-                                    onCalendarTypeChanged(type)
-                                    showMoreCalendars = false // close the drawer after choosing
-                                }
-                            )
-                        }
-                    }
-                }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            listOf(CalendarType.GREGORIAN, CalendarType.LUNAR_HIJRI).forEach { type ->
+                                CalendarTypeChip(
+                                    label = typeLabel(type),
+                                    isSelected = type == calendarType,
+                                    testTag = "calendar_chip_${type.name.lowercase()}",
+                                    modifier = Modifier.weight(1f),
+                                    onClick = {
+                                        onCalendarTypeChanged(type)
+                                        showMoreCalendars = false // close the drawer after choosing
+                                    }
+                                )
+                            }
 
-                // Monthly Predictions compact chip
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = if (showMonthlyPredictionsDialog) HolidayPurple else HolidayPurpleContainer.copy(alpha = 0.5f),
-                    border = BorderStroke(
-                        1.dp,
-                        if (showMonthlyPredictionsDialog) HolidayPurple else HolidayPurple.copy(alpha = 0.4f)
-                    ),
-                    modifier = Modifier
-                        .weight(1.15f)
-                        .height(30.dp)
-                        .clickable { showMonthlyPredictionsDialog = true }
-                        .testTag("monthly_predictions_chip")
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 2.dp)
-                    ) {
-                        Text(text = "🔮", fontSize = 11.sp)
-                        Spacer(modifier = Modifier.width(3.dp))
-                        Text(
-                            text = if (isFa) "پیشگویی" else "Forecast",
-                            fontSize = 12.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (showMonthlyPredictionsDialog) Color.White else OnHolidayPurpleContainer,
-                            maxLines = 1,
-                            textAlign = TextAlign.Center
-                        )
+                            // Monthly Predictions compact chip
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = if (showMonthlyPredictionsDialog) HolidayPurple else HolidayPurpleContainer.copy(alpha = 0.5f),
+                                border = BorderStroke(
+                                    1.dp,
+                                    if (showMonthlyPredictionsDialog) HolidayPurple else HolidayPurple.copy(alpha = 0.4f)
+                                ),
+                                modifier = Modifier
+                                    .weight(1.15f)
+                                    .height(30.dp)
+                                    .clickable {
+                                            showMonthlyPredictionsDialog = true
+                                            showMoreCalendars = false // close the drawer
+                                        }
+                                    .testTag("monthly_predictions_chip")
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(horizontal = 2.dp)
+                                ) {
+                                    Text(text = "🔮", fontSize = 11.sp)
+                                    Spacer(modifier = Modifier.width(3.dp))
+                                    Text(
+                                        text = if (isFa) "پیشگویی" else "Forecast",
+                                        fontSize = 12.5.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (showMonthlyPredictionsDialog) Color.White else OnHolidayPurpleContainer,
+                                        maxLines = 1,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 
