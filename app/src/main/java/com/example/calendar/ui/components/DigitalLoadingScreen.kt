@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -15,13 +16,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,7 +43,7 @@ private const val LOADING_DURATION_MS = 5000L
  *  1. app cover in the middle
  *  2. app name under it
  *  3. blue spinner video under the name
- *  4. small "Loading" text video under the spinner
+ *  4. fixed "Loading" text under the spinner, only its three dots come and go
  *  5. "Version 1.0.0" at the bottom
  * Hands over to the app after 5 seconds.
  */
@@ -88,12 +94,7 @@ fun DigitalLoadingScreen(
                     .testTag("digital_loading_spinner")
             )
 
-            LoadingVideo(
-                rawRes = R.raw.loading_text,
-                modifier = Modifier
-                    .size(110.dp)
-                    .testTag("digital_loading_text")
-            )
+            LoadingDotsText(modifier = Modifier.testTag("digital_loading_text"))
         }
 
         Text(
@@ -105,6 +106,37 @@ fun DigitalLoadingScreen(
                 .padding(bottom = 32.dp)
                 .testTag("digital_loading_version")
         )
+    }
+}
+
+/** "Loading" stays fixed; the three dots appear one by one and reset, without shifting the text. */
+@Composable
+private fun LoadingDotsText(modifier: Modifier = Modifier) {
+    var visibleDots by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(400)
+            visibleDots = (visibleDots + 1) % 4 // 0, 1, 2, 3 dots, then back to 0
+        }
+    }
+
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        val style = TextStyle(
+            color = Color.White.copy(alpha = 0.85f),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Light,
+            letterSpacing = 1.sp
+        )
+        Text(text = "Loading", style = style)
+        // Dots are always laid out (just transparent) so "Loading" never moves.
+        for (i in 1..3) {
+            Text(
+                text = ".",
+                style = style,
+                modifier = Modifier.alpha(if (i <= visibleDots) 1f else 0f)
+            )
+        }
     }
 }
 
