@@ -57,10 +57,19 @@ object DailyNotificationHelper {
             textWidth = textPaint.measureText(dayNumberStr)
         }
 
-        val fontMetrics = textPaint.fontMetrics
-        // Precise mathematical vertical centering
-        val y = center - (fontMetrics.ascent + fontMetrics.descent) / 2f
-        canvas.drawText(dayNumberStr, center, y, textPaint)
+        // Fill the full icon height with tall digits; squeeze horizontally if needed.
+        textPaint.textSize = 170f
+        textPaint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
+        val bounds = android.graphics.Rect()
+        textPaint.getTextBounds(dayNumberStr, 0, dayNumberStr.length, bounds)
+        val targetH = size * 0.94f
+        textPaint.textSize *= targetH / bounds.height().coerceAtLeast(1)
+        textPaint.getTextBounds(dayNumberStr, 0, dayNumberStr.length, bounds)
+        val targetW = size * 0.98f
+        if (bounds.width() > targetW) textPaint.textScaleX = targetW / bounds.width()
+        textPaint.getTextBounds(dayNumberStr, 0, dayNumberStr.length, bounds)
+        val y = center - bounds.exactCenterY()
+        canvas.drawText(dayNumberStr, center - bounds.exactCenterX() + 0f, y, textPaint)
 
         return bitmap
     }
