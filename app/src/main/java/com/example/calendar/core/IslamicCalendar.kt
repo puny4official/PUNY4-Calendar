@@ -19,8 +19,14 @@ object IslamicCalendar {
     /**
      * Converts Julian Day Number to Islamic (Hijri Qamari) date using standard astronomical tabular algorithm.
      */
+    /**
+     * Offset (days) between the tabular algorithm and Iran's official (moon-sighting) calendar.
+     * Verified: 24 Mehr 1405 = 5 Jumada I 1448 (Nurse Day) in the official calendar.
+     */
+    const val IRAN_OFFSET_DAYS = 1L
+
     fun jdnToIslamic(jdn: Long): IslamicDate {
-        val l = jdn - 1948440L + 10632L
+        val l = jdn + IRAN_OFFSET_DAYS - 1948440L + 10632L
         val n = floor((l - 1.0) / 10631.0).toLong()
         val l2 = l - 10631L * n + 354L
         val j = (floor((10985.0 - l2) / 5316.0) * floor((50.0 * l2) / 17719.0) +
@@ -41,7 +47,7 @@ object IslamicCalendar {
                 Math.ceil(29.5 * (month - 1)).toLong() +
                 (year - 1L) * 354L +
                 floor((3L + (11L * year)) / 30.0).toLong() +
-                1948440L) - 385L
+                1948440L) - 385L - IRAN_OFFSET_DAYS
     }
 
     fun isLeapYear(year: Int): Boolean {
