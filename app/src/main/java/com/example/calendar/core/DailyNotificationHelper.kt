@@ -26,7 +26,7 @@ import com.example.calendar.model.CityLocation
  */
 object DailyNotificationHelper {
 
-    const val CHANNEL_ID = "puny4_daily_calendar_channel_v3"
+    const val CHANNEL_ID = "puny4_daily_calendar_channel_v4"
     const val NOTIFICATION_ID = 1001
 
     /**
@@ -79,7 +79,7 @@ object DailyNotificationHelper {
             val channelName = "گاه‌شمار و تقویم امروز"
             val channelDesc = "نمایش پین‌شده و دائمی تاریخ روز در نوار اعلان"
             // Use IMPORTANCE_DEFAULT with sound/vibration disabled so it stays pinned and visible
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val importance = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel(CHANNEL_ID, channelName, importance).apply {
                 description = channelDesc
                 setShowBadge(false)
@@ -88,6 +88,7 @@ object DailyNotificationHelper {
                 enableLights(false)
             }
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            runCatching { notificationManager.deleteNotificationChannel("puny4_daily_calendar_channel_v3") }
             notificationManager.createNotificationChannel(channel)
         }
     }
