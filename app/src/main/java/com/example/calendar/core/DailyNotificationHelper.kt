@@ -166,9 +166,12 @@ object DailyNotificationHelper {
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setSilent(true) // Silent so it does not disturb or make notification sounds
             .setSortKey("00_pinned_calendar")
+            .setOnlyAlertOnce(true)
+            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+            .setShowWhen(false)
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(NOTIFICATION_ID, builder.build())
+        PinnedCalendarService.show(context.applicationContext, builder.build())
 
         // Make sure the notification flips to the new day at Iran midnight, even if the app is closed.
         scheduleNextDayChange(context)
@@ -176,6 +179,7 @@ object DailyNotificationHelper {
 
     fun cancelDailyNotification(context: Context) {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        PinnedCalendarService.stop(context.applicationContext)
         notificationManager.cancel(NOTIFICATION_ID)
         dayChangePendingIntent(context)?.let {
             (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).cancel(it)
