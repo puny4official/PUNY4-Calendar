@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -26,9 +27,11 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -121,6 +124,8 @@ private fun LoadingDotsText(modifier: Modifier = Modifier) {
         }
     }
 
+    // The app is RTL in Persian, which would put the dots on the left; force LTR so they sit after the text.
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         val style = TextStyle(
             color = Color.White.copy(alpha = 0.85f),
@@ -137,6 +142,7 @@ private fun LoadingDotsText(modifier: Modifier = Modifier) {
                 modifier = Modifier.alpha(if (i <= visibleDots) 1f else 0f)
             )
         }
+    }
     }
 }
 
