@@ -100,6 +100,7 @@ fun AstronomyScreen(
                         fontWeight = FontWeight.Bold,
                         color = MoonPaleYellow
                     )
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "${todayInfo.moonInfo.phaseType.titleEnglish} • سن ماه: ${String.format(java.util.Locale.US, "%.1f", todayInfo.moonInfo.ageDays)} روز",
                         style = MaterialTheme.typography.bodyMedium,
@@ -114,14 +115,17 @@ fun AstronomyScreen(
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text("درصد روشنایی", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text("${todayInfo.moonInfo.illuminationPercent}%", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text("زاویه فاز", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text("${todayInfo.moonInfo.phaseAngleDegrees.toInt()}°", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text("برج قمر", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(todayInfo.moonInfo.moonZodiacName, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                         }
                     }
@@ -277,6 +281,7 @@ fun AstronomyScreen(
                             style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
                             color = MaterialTheme.colorScheme.primary
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = sign.description,
                             style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),

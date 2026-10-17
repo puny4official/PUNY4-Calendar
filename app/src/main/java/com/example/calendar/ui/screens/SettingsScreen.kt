@@ -604,6 +604,7 @@ fun SettingsScreen(
                                     fontWeight = if (isChosen) FontWeight.Bold else FontWeight.Normal,
                                     color = if (isChosen) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
                                 )
+                                Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = "${city.latitude}°N, ${city.longitude}°E",
                                     fontSize = 11.sp,
@@ -686,6 +687,7 @@ private fun SettingsCategoryCard(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.bodySmall,

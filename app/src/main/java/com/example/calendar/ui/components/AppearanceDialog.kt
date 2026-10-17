@@ -158,6 +158,7 @@ fun AppearanceDialog(
                                 fontWeight = FontWeight.ExtraBold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = if (isFa) "شخصی‌سازی حالت پوسته و رنگ تعطیلات" else "Customize theme mode & holiday style",
                                 style = MaterialTheme.typography.bodySmall,
@@ -308,6 +309,7 @@ fun AppearanceDialog(
                                                 fontSize = 18.sp,
                                                 color = Color.White
                                             )
+                                            Spacer(modifier = Modifier.height(4.dp))
                                             Text(
                                                 text = if (isFa) "جمعه" else "Friday",
                                                 fontSize = 9.sp,

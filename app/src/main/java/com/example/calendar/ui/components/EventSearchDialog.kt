@@ -115,6 +115,7 @@ fun EventSearchDialog(
                                 fontSize = (16 * scale).sp,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = if (isFa) "${filteredEvents.size} مورد یافت شد" else "${filteredEvents.size} results found",
                                 style = MaterialTheme.typography.labelSmall,

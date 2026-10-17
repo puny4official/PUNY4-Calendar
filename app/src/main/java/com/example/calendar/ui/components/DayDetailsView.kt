@@ -147,6 +147,7 @@ fun AllCalendarsCard(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "${dayInfo.dayOfWeekArabic} • ${dayInfo.dayOfWeekEnglish}",
                                 style = MaterialTheme.typography.bodySmall,
@@ -413,11 +414,13 @@ fun AstronomyCard(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "${dayInfo.moonInfo.phaseType.titleEnglish} • سن: ${DigitFormatter.toSystemDigits(dayInfo.moonInfo.ageDays, renderFaDigits)} روز",
                                 style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Default),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "موقعیت در آسمان: برج ${dayInfo.moonInfo.moonZodiacName} (${DigitFormatter.toSystemDigits(dayInfo.moonInfo.moonZodiacDegree, renderFaDigits)}°)",
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, fontFamily = FontFamily.Default),
@@ -479,6 +482,7 @@ fun AstronomyCard(
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "عنصر: ${dayInfo.sunZodiac.element.titlePersian} • حاکم: ${dayInfo.sunZodiac.rulingPlanet}",
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
@@ -507,6 +511,7 @@ fun AstronomyCard(
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = dayInfo.planetaryRuler.nature,
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
@@ -733,6 +738,7 @@ fun AstronomyCard(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = if (isFa) "به افق ${currentCity.namePersian}" else "Horizon: ${currentCity.nameEnglish}",
                                 style = MaterialTheme.typography.labelSmall,
@@ -1412,6 +1418,7 @@ fun CityPickerDialog(
                                             fontWeight = if (isChosen) FontWeight.Bold else FontWeight.Normal,
                                             color = if (isChosen) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
                                         )
+                                        Spacer(modifier = Modifier.height(4.dp))
                                         Text(
                                             text = "${city.latitude}°N, ${city.longitude}°E",
                                             fontSize = 11.sp,
@@ -1473,6 +1480,7 @@ private fun CalendarDateRow(
                     fontSize = 12.5.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = dateString,
                     style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Default),
@@ -1554,6 +1562,7 @@ private fun SolarTimeItem(
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = time,
             fontWeight = FontWeight.ExtraBold,

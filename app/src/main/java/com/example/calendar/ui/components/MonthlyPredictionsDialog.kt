@@ -101,6 +101,7 @@ fun MonthlyPredictionsDialog(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = prediction.monthTitle.removePrefix("پیشگوییهای ماه – "),
                                 style = MaterialTheme.typography.bodySmall,
