@@ -210,7 +210,7 @@ Box(
 
                 // Fixed-size slot: keeps the layout stable and pushes the star button to the end
                 Box(modifier = Modifier.weight(3.15f)) {
-                    AnimatedVisibility(
+                    DrawerSlot(
                         visible = showMoreCalendars,
                         enter = expandHorizontally(tween(220)) + fadeIn(tween(220)),
                         exit = shrinkHorizontally(tween(180)) + fadeOut(tween(180))
@@ -811,4 +811,16 @@ private fun CalendarTypeChip(
             textAlign = TextAlign.Center
         )
     }
+}
+
+
+/** Scope-free wrapper so AnimatedVisibility resolves unambiguously inside Row/Box scopes. */
+@androidx.compose.runtime.Composable
+private fun DrawerSlot(
+    visible: Boolean,
+    enter: androidx.compose.animation.EnterTransition,
+    exit: androidx.compose.animation.ExitTransition,
+    content: @androidx.compose.runtime.Composable () -> Unit
+) {
+    AnimatedVisibility(visible = visible, enter = enter, exit = exit) { content() }
 }
