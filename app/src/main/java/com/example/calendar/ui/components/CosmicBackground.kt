@@ -4,13 +4,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.luminance
 import kotlin.random.Random
 
 private data class CosmicStar(
@@ -31,46 +32,42 @@ private val CosmicStars = List(90) {
     )
 }
 
+/**
+ * Screen background that follows the theme:
+ *  - dark mode: pure AMOLED black with faint stars
+ *  - light mode: plain white
+ */
 @Composable
 fun CosmicBackground(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit
 ) {
+    val backgroundColor = MaterialTheme.colorScheme.background
+    val isDark = backgroundColor.luminance() < 0.5f
+
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF05030D))
+            .background(backgroundColor)
     ) {
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .graphicsLayer()
-                .drawWithCache {
-
-                    val mainGlow = Brush.radialGradient(
-                        colors = listOf(Color(0xFF35146E), Color(0xFF130A2B), Color(0xFF05030D)),
-                        center = Offset(size.width * 0.50f, size.height * 0.08f),
-                        radius = size.maxDimension * 0.90f
-                    )
-                    val secondaryGlow = Brush.radialGradient(
-                        colors = listOf(Color(0xFF182B62).copy(alpha = 0.30f), Color.Transparent),
-                        center = Offset(size.width * 0.12f, size.height * 0.70f),
-                        radius = size.width * 0.75f
-                    )
-                    onDrawBehind {
-                        drawRect(mainGlow)
-                        drawRect(secondaryGlow)
-                        CosmicStars.forEach { star ->
-                            drawCircle(
-                                color = Color.White.copy(alpha = star.alpha),
-                                radius = star.radius,
-                                center = Offset(size.width * star.x, size.height * star.y)
-                            )
+        if (isDark) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer()
+                    .drawWithCache {
+                        onDrawBehind {
+                            CosmicStars.forEach { star ->
+                                drawCircle(
+                                    color = Color.White.copy(alpha = star.alpha),
+                                    radius = star.radius,
+                                    center = Offset(size.width * star.x, size.height * star.y)
+                                )
+                            }
                         }
                     }
-                }
-        )
+            )
+        }
 
         content()
     }

@@ -131,7 +131,7 @@ Box(
     modifier = modifier
         .fillMaxWidth()
         .clip(RoundedCornerShape(24.dp))
-        .background(Color(0xFF0D0820))
+        .background(MaterialTheme.colorScheme.surface)
         .border(
             width = 1.dp,
             color = Color(0xFF8B5CFF).copy(alpha = 0.35f),
@@ -170,7 +170,7 @@ Box(
             if (isSelected) {
                 Color(0xFF8B5CFF)
             } else {
-                Color(0xFF0D0820)
+                MaterialTheme.colorScheme.surface
             },
             RoundedCornerShape(8.dp)
         )
@@ -179,7 +179,7 @@ Box(
             if (isSelected) {
                 Color(0xFF8B5CFF)
             } else {
-                Color(0xFF2A1B4A)
+                MaterialTheme.colorScheme.outlineVariant
             },
             RoundedCornerShape(8.dp)
         )
@@ -194,7 +194,7 @@ Box(
                                 text = label,
                                 fontSize = 12.5.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (isSelected) Color.White else Color(0xFFB8AEC9),
+                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 1,
                                 textAlign = TextAlign.Center
                             )
@@ -293,7 +293,7 @@ Box(
                         style = MaterialTheme.typography.titleLarge,
                         fontSize = 18.5.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFFF8F5FF)
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
@@ -333,7 +333,7 @@ Box(
                         text = name,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isFriday) HolidayPurple else Color(0xFFB8AEC9),
+                        color = if (isFriday) HolidayPurple else MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f)
                     )
@@ -342,7 +342,7 @@ Box(
 
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 8.dp),
-                color = Color(0xFF2A1B4A)
+                color = MaterialTheme.colorScheme.outlineVariant
             )
 
             // Grid rows
@@ -457,27 +457,27 @@ private fun DayCellView(
     val targetBackground = when {
         isSelected -> Color.Transparent
         isHoliday -> holidayColor.copy(alpha = 0.50f)
-        else -> Color(0xFF0D0820)
+        else -> MaterialTheme.colorScheme.surface
     }
 
     val targetBorderColor = when {
         isSelected -> Color(0xFF06B6D4) // فقط دور نشانگر فیروزه‌ای باشه
         isHoliday -> holidayColor.copy(alpha = 0.80f) // کادر شیشه‌ای به رنگ انتخابی کاربر
         isToday -> Color(0xFF06B6D4).copy(alpha = 0.65f)
-        else -> Color(0xFF1A1035)
+        else -> MaterialTheme.colorScheme.outlineVariant
     }
     val borderWidth = if (isSelected) 2.5.dp else if (isHoliday) 1.5.dp else if (isToday) 1.5.dp else 1.dp
 
     val textColor = when {
-        isSelected -> Color.White
+        isSelected -> MaterialTheme.colorScheme.onSurface // selected cell is transparent, so use theme text
         isHoliday -> Color.White // نوشته داخل تعطیلات رسمی سفید
-        else -> Color(0xFFF8F5FF)
+        else -> MaterialTheme.colorScheme.onSurface
     }
 
     val secondaryTextColor = when {
-        isSelected -> Color.White.copy(alpha = 0.88f)
+        isSelected -> MaterialTheme.colorScheme.onSurfaceVariant
         isHoliday -> Color.White.copy(alpha = 0.88f) // نوشته‌های کوچک زیر روزهای تعطیل رسمی نیز سفید
-        else -> Color(0xFFB8AEC9).copy(alpha = 0.72f)
+        else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f)
     }
 
     Box(
@@ -660,7 +660,7 @@ fun YearMonthPickerDialog(
                                 text = "سال ${dialogYearAnimal.namePersian} ${dialogYearAnimal.emoji}",
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFFB8AEC9)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -694,7 +694,7 @@ fun YearMonthPickerDialog(
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
                                     .clickable { selectedMonth = mNum },
-                                color = if (isChosen) HolidayPurple else Color(0xFF130A2B),
+                                color = if (isChosen) HolidayPurple else MaterialTheme.colorScheme.surfaceVariant,
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Column(
@@ -706,14 +706,14 @@ fun YearMonthPickerDialog(
                                         textAlign = TextAlign.Center,
                                         fontSize = 11.5.sp,
                                         fontWeight = if (isChosen) FontWeight.Bold else FontWeight.Normal,
-                                        color = if (isChosen) Color.White else Color(0xFFF8F5FF)
+                                        color = if (isChosen) Color.White else MaterialTheme.colorScheme.onSurface
                                     )
                                     if (element != null) {
                                         Text(
                                             text = "${element.titlePersian} ${element.emoji}",
                                             fontSize = 9.sp,
                                             color = if (isChosen) Color.White.copy(alpha = 0.85f)
-                                                    else Color(0xFFB8AEC9).copy(alpha = 0.75f)
+                                                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f)
                                         )
                                     }
                                 }

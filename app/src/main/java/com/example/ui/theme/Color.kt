@@ -38,20 +38,20 @@ val TertiaryContainerLight = Color(0xFFEBDDFF)
 val OnTertiaryContainerLight = Color(0xFF27134A)
 
 // Background & Surface — Cosmic Black
-val BackgroundDark = Color(0xFF05030D)
-val SurfaceDark = Color(0xFF0D0820)
-val SurfaceVariantDark = Color(0xFF130A2B)
+val BackgroundDark = Color(0xFF000000)
+val SurfaceDark = Color(0xFF000000)
+val SurfaceVariantDark = Color(0xFF121212)
 val OnBackgroundDark = Color(0xFFF8F5FF)
 val OnSurfaceDark = Color(0xFFF8F5FF)
-val OnSurfaceVariantDark = Color(0xFFB8AEC9)
+val OnSurfaceVariantDark = Color(0xFFB5B5B5)
 
 // Light theme
-val BackgroundLight = Color(0xFFF8F5FF)
+val BackgroundLight = Color(0xFFFFFFFF)
 val SurfaceLight = Color(0xFFFFFFFF)
-val SurfaceVariantLight = Color(0xFFEDE7F7)
+val SurfaceVariantLight = Color(0xFFF2F2F2)
 val OnBackgroundLight = Color(0xFF17121F)
 val OnSurfaceLight = Color(0xFF17121F)
-val OnSurfaceVariantLight = Color(0xFF625A6D)
+val OnSurfaceVariantLight = Color(0xFF5F5F5F)
 
 // PUNY4 Cosmic Colors
 val CelestialBlue = Color(0xFF4D8DFF)
