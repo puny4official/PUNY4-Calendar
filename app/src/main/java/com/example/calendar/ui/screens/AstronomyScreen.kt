@@ -33,8 +33,8 @@ fun AstronomyScreen(
     userSettings: UserSettings,
     modifier: Modifier = Modifier
 ) {
-    val todayG = remember { CalendarManager.getTodayGregorian() }
-    val todayJdn = remember { JalaliCalendar.gregorianToJdn(todayG.year, todayG.month, todayG.day) }
+    val todayG = com.example.calendar.ui.components.rememberTodayGregorian()
+    val todayJdn = remember(todayG) { JalaliCalendar.gregorianToJdn(todayG.year, todayG.month, todayG.day) }
     val currentCity by userSettings.selectedCity.collectAsState()
 
     val todayInfo = remember(todayJdn, currentCity) {

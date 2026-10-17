@@ -1,5 +1,6 @@
 package com.example.calendar.core
 
+import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -168,10 +169,55 @@ object DailyNotificationHelper {
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.notify(NOTIFICATION_ID, builder.build())
+
+        // Make sure the notification flips to the new day at Iran midnight, even if the app is closed.
+        scheduleNextDayChange(context)
     }
 
     fun cancelDailyNotification(context: Context) {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.cancel(NOTIFICATION_ID)
+        dayChangePendingIntent(context)?.let {
+            (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).cancel(it)
+        }
+    }
+
+    /** Re-posts the notification using the saved settings (used by the midnight alarm and boot/time changes). */
+    fun refreshFromSettings(context: Context) {
+        val appContext = context.applicationContext
+        val settings = com.example.calendar.data.UserSettings(appContext)
+        if (settings.showPinnedNotification.value) {
+            showPinnedDailyNotification(
+                context = appContext,
+                appLanguage = settings.appLanguage.value,
+                useEnglishDigits = settings.useEnglishDayNumbers.value,
+                city = settings.selectedCity.value
+            )
+        } else {
+            cancelDailyNotification(appContext)
+        }
+    }
+
+    private fun dayChangePendingIntent(context: Context): PendingIntent? {
+        val intent = Intent(context, DayChangeReceiver::class.java).setAction(DayChangeReceiver.ACTION_DAY_CHANGED)
+        return PendingIntent.getBroadcast(
+            context,
+            2001,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    /** Sets a one-shot alarm for the next midnight in Iran time (+2s so the date has surely rolled over). */
+    fun scheduleNextDayChange(context: Context) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val pendingIntent = dayChangePendingIntent(context) ?: return
+        val triggerAt = CalendarManager.nextIranMidnightMillis() + 2000L
+        try {
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
+        } catch (_: SecurityException) {
+            // Exact alarms not permitted on this device: fall back to an inexact one (can be a few minutes late).
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
+        }
     }
 }

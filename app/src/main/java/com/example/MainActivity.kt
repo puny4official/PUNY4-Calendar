@@ -52,6 +52,7 @@ import com.example.calendar.ui.components.AppearanceDialog
 import com.example.calendar.ui.components.EventSearchDialog
 import com.example.calendar.ui.components.SeasonalRainOverlay
 import com.example.calendar.ui.components.DigitalLoadingScreen
+import com.example.calendar.ui.components.rememberTodayGregorian
 import com.example.calendar.ui.screens.AstronomyScreen
 import com.example.calendar.ui.screens.CalendarScreen
 import com.example.calendar.ui.screens.DateConverterScreen
@@ -117,8 +118,8 @@ class MainActivity : ComponentActivity() {
                     var targetJdnFromSearch by remember { mutableStateOf<Long?>(null) }
 
                     // Current season for app header rain effect
-                    val todayG = remember { CalendarManager.getTodayGregorian() }
-                    val todayJalali = remember { JalaliCalendar.gregorianToJalali(todayG.year, todayG.month, todayG.day) }
+                    val todayG = rememberTodayGregorian()
+                    val todayJalali = remember(todayG) { JalaliCalendar.gregorianToJalali(todayG.year, todayG.month, todayG.day) }
                     val currentSeason = remember(todayJalali.month) { JalaliCalendar.getSeasonPersian(todayJalali.month) }
                     val isSpring = remember(todayJalali.month) { todayJalali.month in 1..3 || currentSeason == "بهار" }
                     val isSummer = remember(todayJalali.month) { todayJalali.month in 4..6 || currentSeason == "تابستان" }
@@ -131,7 +132,7 @@ class MainActivity : ComponentActivity() {
                     val context = LocalContext.current
 
                     // Sync pinned daily notification state with user preference and updates on background dispatcher
-                    LaunchedEffect(showPinnedNotification, appLanguage, useEnglishDayNumbers, selectedCity) {
+                    LaunchedEffect(showPinnedNotification, appLanguage, useEnglishDayNumbers, selectedCity, todayG) {
                         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
                             if (showPinnedNotification) {
                                 DailyNotificationHelper.showPinnedDailyNotification(

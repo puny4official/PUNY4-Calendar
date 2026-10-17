@@ -48,9 +48,9 @@ fun CalendarScreen(
     val dayNumberScalePercent by userSettings.dayNumberScalePercent.collectAsState()
 
     var activeCalendarType by remember(defaultCalType) { mutableStateOf(defaultCalType) }
-    val todayJdn: Long = remember {
-        val now = java.time.LocalDate.now()
-        JalaliCalendar.gregorianToJdn(now.year, now.monthValue, now.dayOfMonth)
+    val todayG = rememberTodayGregorian() // Iran time; changes at Iran midnight
+    val todayJdn: Long = remember(todayG) {
+        JalaliCalendar.gregorianToJdn(todayG.year, todayG.month, todayG.day)
     }
 
     val initialYear: Int
@@ -192,6 +192,16 @@ fun CalendarScreen(
                 currentYear = i.year
                 currentMonth = i.month
             }
+        }
+    }
+
+    // When the day changes while the app is open, follow it if the user was looking at "today".
+    var lastTodayJdn by remember { mutableLongStateOf(todayJdn) }
+    LaunchedEffect(todayJdn) {
+        if (todayJdn != lastTodayJdn) {
+            val wasOnToday = selectedJdn == lastTodayJdn
+            lastTodayJdn = todayJdn
+            if (wasOnToday) handleGoToToday()
         }
     }
 

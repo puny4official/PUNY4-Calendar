@@ -33,9 +33,9 @@ import com.example.calendar.ui.components.MoonPhaseCompactBadge
 fun DateConverterScreen(
     modifier: Modifier = Modifier
 ) {
-    val todayG = remember { CalendarManager.getTodayGregorian() }
-    val todayJ = remember { JalaliCalendar.gregorianToJalali(todayG.year, todayG.month, todayG.day) }
-    val todayI = remember {
+    val todayG = com.example.calendar.ui.components.rememberTodayGregorian()
+    val todayJ = remember(todayG) { JalaliCalendar.gregorianToJalali(todayG.year, todayG.month, todayG.day) }
+    val todayI = remember(todayG) {
         val jdn = JalaliCalendar.gregorianToJdn(todayG.year, todayG.month, todayG.day)
         IslamicCalendar.jdnToIslamic(jdn)
     }

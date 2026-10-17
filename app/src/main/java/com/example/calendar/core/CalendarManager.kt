@@ -17,10 +17,21 @@ object CalendarManager {
         "Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"
     )
 
+    /** All "today" logic follows Iran time, whatever the phone's own time zone is set to. */
+    val IRAN_ZONE: java.time.ZoneId = java.time.ZoneId.of("Asia/Tehran")
+
     fun getTodayGregorian(): GregorianDate {
-        val now = LocalDate.now()
+        val now = LocalDate.now(IRAN_ZONE)
         return GregorianDate(now.year, now.monthValue, now.dayOfMonth)
     }
+
+    /** Epoch millis of the next midnight in Iran. */
+    fun nextIranMidnightMillis(): Long =
+        LocalDate.now(IRAN_ZONE).plusDays(1).atStartOfDay(IRAN_ZONE).toInstant().toEpochMilli()
+
+    /** Milliseconds from now until the next midnight in Iran (at least 1 second). */
+    fun millisUntilNextIranMidnight(): Long =
+        (nextIranMidnightMillis() - System.currentTimeMillis()).coerceAtLeast(1000L)
 
     fun getTodayJalali(): JalaliDate {
         val g = getTodayGregorian()

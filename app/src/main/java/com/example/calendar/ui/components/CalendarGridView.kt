@@ -115,7 +115,8 @@ fun CalendarGridView(
         MonthlyPredictionHelper.generatePrediction(calendarType, currentYear, currentMonth)
     }
 
-    val cells = remember(calendarType, currentYear, currentMonth, selectedJdn) {
+    val todayKey = rememberTodayGregorian()
+    val cells = remember(calendarType, currentYear, currentMonth, selectedJdn, todayKey) {
         CalendarManager.buildMonthGrid(calendarType, currentYear, currentMonth, selectedJdn)
     }
 
