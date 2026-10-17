@@ -8,6 +8,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
@@ -100,3 +101,11 @@ fun MyApplicationTheme(
         content = content
     )
 }
+
+/** Frame around cards and info boxes: whitish-gray in dark mode, black in light mode. Always visible. */
+val cardFrameColor: Color
+    @Composable get() = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) {
+        Color(0xFFD0D0D0)
+    } else {
+        Color.Black
+    }

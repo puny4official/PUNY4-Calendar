@@ -2,6 +2,7 @@ package com.example.calendar.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -107,7 +108,7 @@ fun AllCalendarsCard(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             ),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)),
+            border = BorderStroke(1.dp, cardFrameColor),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
@@ -349,7 +350,7 @@ fun AstronomyCard(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             ),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)),
+            border = BorderStroke(1.dp, cardFrameColor),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
@@ -395,6 +396,7 @@ fun AstronomyCard(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                        .border(1.dp, cardFrameColor, RoundedCornerShape(14.dp))
                         .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -450,7 +452,8 @@ fun AstronomyCard(
                     Surface(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(14.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        border = BorderStroke(1.dp, cardFrameColor)
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Row(
@@ -488,7 +491,8 @@ fun AstronomyCard(
                     Surface(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(14.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        border = BorderStroke(1.dp, cardFrameColor)
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text(
@@ -527,7 +531,7 @@ fun AstronomyCard(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(14.dp),
                         color = MaterialTheme.colorScheme.background,
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f))
+                        border = BorderStroke(1.dp, cardFrameColor)
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text(
@@ -563,7 +567,7 @@ fun AstronomyCard(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(14.dp),
                         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                        border = BorderStroke(1.dp, cardFrameColor)
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text(
@@ -846,7 +850,7 @@ fun OfficialHolidaysCard(
             colors = CardDefaults.cardColors(
                 containerColor = if (hasOfficialHoliday) holidayColor.copy(alpha = 0.50f) else MaterialTheme.colorScheme.surface
             ),
-            border = if (hasOfficialHoliday) BorderStroke(1.5.dp, holidayColor.copy(alpha = 0.70f)) else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)),
+            border = if (hasOfficialHoliday) BorderStroke(1.5.dp, holidayColor.copy(alpha = 0.70f)) else BorderStroke(1.dp, cardFrameColor),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
@@ -997,7 +1001,7 @@ fun GlobalEventsCard(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             ),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)),
+            border = BorderStroke(1.dp, cardFrameColor),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
@@ -1108,7 +1112,7 @@ fun NationalOccasionsCard(
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 ),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)),
+                border = BorderStroke(1.dp, cardFrameColor),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Column(
@@ -1217,7 +1221,7 @@ fun NotesCard(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             ),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)),
+            border = BorderStroke(1.dp, cardFrameColor),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
@@ -1304,6 +1308,7 @@ fun NotesCard(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
                             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                            .border(1.dp, cardFrameColor, RoundedCornerShape(12.dp))
                             .padding(12.dp)
                     )
                 }
@@ -1445,6 +1450,7 @@ private fun CalendarDateRow(
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f))
+            .border(1.dp, cardFrameColor, RoundedCornerShape(12.dp))
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -1497,7 +1503,7 @@ private fun StatisticPill(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+        border = BorderStroke(1.dp, cardFrameColor)
     ) {
         Column(
             modifier = Modifier.padding(vertical = 10.dp, horizontal = 8.dp),
@@ -1569,7 +1575,7 @@ private fun AzanTimeCard(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f))
+        border = BorderStroke(1.dp, cardFrameColor)
     ) {
         Column(
             modifier = Modifier
