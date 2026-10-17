@@ -49,27 +49,20 @@ object DailyNotificationHelper {
             textSize = if (dayNumberStr.length >= 2) 104f else 122f
         }
 
-        // Allow text to occupy the full icon canvas safely
-        val maxInnerWidth = size * 0.96f
-        var textWidth = textPaint.measureText(dayNumberStr)
-        while (textWidth > maxInnerWidth && textPaint.textSize > 32f) {
-            textPaint.textSize -= 2f
-            textWidth = textPaint.measureText(dayNumberStr)
-        }
-
-        // Fill the full icon height with tall digits; squeeze horizontally if needed.
-        textPaint.textSize = 170f
-        textPaint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-        val bounds = android.graphics.Rect()
-        textPaint.getTextBounds(dayNumberStr, 0, dayNumberStr.length, bounds)
-        val targetH = size * 0.94f
-        textPaint.textSize *= targetH / bounds.height().coerceAtLeast(1)
-        textPaint.getTextBounds(dayNumberStr, 0, dayNumberStr.length, bounds)
-        val targetW = size * 0.98f
-        if (bounds.width() > targetW) textPaint.textScaleX = targetW / bounds.width()
-        textPaint.getTextBounds(dayNumberStr, 0, dayNumberStr.length, bounds)
-        val y = center - bounds.exactCenterY()
-        canvas.drawText(dayNumberStr, center - bounds.exactCenterX() + 0f, y, textPaint)
+        // Convert the digits to a path and fit it exactly into the icon (tall digits, small side margin from the clock)
+        textPaint.textAlign = Paint.Align.LEFT
+        textPaint.textSize = 100f
+        val path = android.graphics.Path()
+        textPaint.getTextPath(dayNumberStr, 0, dayNumberStr.length, 0f, 0f, path)
+        val src = android.graphics.RectF()
+        path.computeBounds(src, true)
+        val dst = android.graphics.RectF(10f, 4f, size - 10f, size - 4f)
+        val m = android.graphics.Matrix()
+        m.setRectToRect(src, dst, android.graphics.Matrix.ScaleToFit.FILL)
+        path.transform(m)
+        textPaint.style = Paint.Style.FILL_AND_STROKE
+        textPaint.strokeWidth = 3f
+        canvas.drawPath(path, textPaint)
 
         return bitmap
     }
