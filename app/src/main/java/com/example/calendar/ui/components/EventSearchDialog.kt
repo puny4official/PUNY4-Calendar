@@ -1,5 +1,6 @@
 package com.example.calendar.ui.components
 
+import com.example.ui.theme.cardFrameColor
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -332,7 +333,7 @@ private fun EventSearchItemCard(
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
         border = BorderStroke(
             width = 1.dp,
-            color = if (event.isHoliday) HolidayRed.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+            color = if (event.isHoliday) HolidayRed.copy(alpha = 0.5f) else cardFrameColor
         ),
         modifier = Modifier
             .fillMaxWidth()

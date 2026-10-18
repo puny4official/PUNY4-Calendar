@@ -1,5 +1,6 @@
 package com.example.calendar.ui.components
 
+import com.example.ui.theme.cardFrameColor
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -216,7 +217,7 @@ fun AppGuideDialog(
                     .testTag("app_guide_dialog"),
                 shape = RoundedCornerShape(24.dp),
                 color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                border = BorderStroke(1.dp, cardFrameColor),
                 tonalElevation = 0.dp,
                 shadowElevation = 8.dp
             ) {
@@ -298,7 +299,7 @@ fun AppGuideDialog(
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                HorizontalDivider(color = cardFrameColor)
                 Spacer(modifier = Modifier.height(10.dp))
 
                 // Scrollable content
@@ -342,7 +343,7 @@ private fun GuideTopicCard(
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+        border = BorderStroke(1.dp, cardFrameColor),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(

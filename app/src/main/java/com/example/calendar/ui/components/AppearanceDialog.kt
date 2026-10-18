@@ -1,5 +1,6 @@
 package com.example.calendar.ui.components
 
+import com.example.ui.theme.cardFrameColor
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -132,7 +133,7 @@ fun AppearanceDialog(
                 .fillMaxWidth(0.94f)
                 .fillMaxHeight(0.88f)
                 .clip(RoundedCornerShape(24.dp))
-                .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(24.dp))
+                .border(1.dp, cardFrameColor, RoundedCornerShape(24.dp))
                 .testTag("appearance_dialog"),
             shape = RoundedCornerShape(24.dp),
             color = MaterialTheme.colorScheme.surface,
@@ -212,7 +213,7 @@ fun AppearanceDialog(
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
                         ),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                        border = BorderStroke(1.dp, cardFrameColor)
                     ) {
                         Column(modifier = Modifier.padding(14.dp)) {
                             Text(
@@ -285,7 +286,7 @@ fun AppearanceDialog(
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
                         ),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                        border = BorderStroke(1.dp, cardFrameColor)
                     ) {
                         Column(modifier = Modifier.padding(14.dp)) {
                             Text(
@@ -499,7 +500,8 @@ fun AppearanceDialog(
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
-                        )
+                        ),
+                        border = BorderStroke(1.dp, cardFrameColor)
                     ) {
                         Column(modifier = Modifier.padding(14.dp)) {
                             Row(
@@ -588,7 +590,7 @@ fun AppearanceDialog(
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
                         ),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                        border = BorderStroke(1.dp, cardFrameColor)
                     ) {
                         Column(modifier = Modifier.padding(14.dp)) {
                             Row(
@@ -680,7 +682,7 @@ fun AppearanceDialog(
                                         color = if (isSelected) animatedColor else MaterialTheme.colorScheme.surface,
                                         border = BorderStroke(
                                             1.dp,
-                                            if (isSelected) animatedColor else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                                            if (isSelected) animatedColor else cardFrameColor
                                         ),
                                         modifier = Modifier
                                             .weight(1f)
@@ -715,7 +717,7 @@ fun AppearanceDialog(
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
                         ),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                        border = BorderStroke(1.dp, cardFrameColor)
                     ) {
                         Column(modifier = Modifier.padding(14.dp)) {
                             Row(
@@ -807,7 +809,7 @@ fun AppearanceDialog(
                                         color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
                                         border = BorderStroke(
                                             1.dp,
-                                            if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                                            if (isSelected) MaterialTheme.colorScheme.primary else cardFrameColor
                                         ),
                                         modifier = Modifier
                                             .weight(1f)

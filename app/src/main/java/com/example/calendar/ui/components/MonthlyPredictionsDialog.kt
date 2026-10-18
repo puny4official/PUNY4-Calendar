@@ -1,5 +1,6 @@
 package com.example.calendar.ui.components
 
+import com.example.ui.theme.cardFrameColor
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -63,7 +64,7 @@ fun MonthlyPredictionsDialog(
                 shape = RoundedCornerShape(24.dp),
                 color = MaterialTheme.colorScheme.surface,
                 tonalElevation = 0.dp,
-                border = BorderStroke(1.dp, HolidayPurple.copy(alpha = 0.25f))
+                border = BorderStroke(1.dp, cardFrameColor)
             ) {
             Column(
                 modifier = Modifier
@@ -241,7 +242,7 @@ private fun PredictionCard(
     Surface(
         shape = RoundedCornerShape(14.dp),
         color = containerColor,
-        border = BorderStroke(1.dp, accentColor.copy(alpha = 0.25f)),
+        border = BorderStroke(1.dp, cardFrameColor),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
