@@ -580,21 +580,12 @@ class MainActivity : ComponentActivity() {
                                                     onClick = { showEventSearchDialog = true },
                                                     modifier = Modifier.testTag("top_bar_search_events_button")
                                                 ) {
-                                                    Surface(
-                                                        shape = CircleShape,
-                                                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
-                                                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)),
-                                                        modifier = Modifier.size(30.dp)
-                                                    ) {
-                                                        Box(contentAlignment = Alignment.Center) {
-                                                            Icon(
-                                                                imageVector = Icons.Default.Search,
-                                                                contentDescription = if (isFa) "جستجوی مناسبت‌ها" else "Search Events",
-                                                                tint = MaterialTheme.colorScheme.primary,
-                                                                modifier = Modifier.size(18.dp)
-                                                            )
-                                                        }
-                                                    }
+                                                    Icon(
+                                                        imageVector = Icons.Default.Search,
+                                                        contentDescription = if (isFa) "جستجوی مناسبت‌ها" else "Search Events",
+                                                        tint = MaterialTheme.colorScheme.onSurface,
+                                                        modifier = Modifier.size(28.dp)
+                                                    )
                                                 }
 
                                                 IconButton(
