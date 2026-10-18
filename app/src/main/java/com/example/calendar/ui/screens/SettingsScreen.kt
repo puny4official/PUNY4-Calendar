@@ -1,5 +1,6 @@
 package com.example.calendar.ui.screens
 
+import com.example.ui.theme.cardFrameColor
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -207,7 +208,7 @@ fun SettingsScreen(
                 Surface(
                     shape = RoundedCornerShape(14.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                    border = BorderStroke(1.dp, cardFrameColor),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -259,7 +260,7 @@ fun SettingsScreen(
                 Surface(
                     shape = RoundedCornerShape(14.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                    border = BorderStroke(1.dp, cardFrameColor),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -298,7 +299,7 @@ fun SettingsScreen(
                 Surface(
                     shape = RoundedCornerShape(14.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                    border = BorderStroke(1.dp, cardFrameColor),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -338,7 +339,7 @@ fun SettingsScreen(
                 Surface(
                     shape = RoundedCornerShape(14.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                    border = BorderStroke(1.dp, cardFrameColor),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -377,7 +378,7 @@ fun SettingsScreen(
                 Surface(
                     shape = RoundedCornerShape(14.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                    border = BorderStroke(1.dp, cardFrameColor),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -416,7 +417,7 @@ fun SettingsScreen(
                 Surface(
                     shape = RoundedCornerShape(14.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                    border = BorderStroke(1.dp, cardFrameColor),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -655,6 +656,7 @@ private fun SettingsCategoryCard(
             .testTag(cardTag),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, cardFrameColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
