@@ -1,5 +1,7 @@
 package com.example
 
+import com.example.ui.theme.cardFrameColor
+import androidx.compose.foundation.border
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -163,6 +165,7 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier
                                     .widthIn(max = 320.dp)
                                     .fillMaxHeight()
+                                    .border(1.dp, cardFrameColor)
                                     .testTag("hamburger_drawer_sheet"),
                                 drawerContainerColor = MaterialTheme.colorScheme.surface
                             ) {

@@ -1,5 +1,6 @@
 package com.example.calendar.ui.components
 
+import com.example.ui.theme.cardFrameColor
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
@@ -1346,6 +1347,7 @@ fun CityPickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.border(1.dp, cardFrameColor, RoundedCornerShape(28.dp)),
                 title = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,

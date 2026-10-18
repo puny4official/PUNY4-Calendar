@@ -1,5 +1,6 @@
 package com.example.calendar.ui.components
 
+import com.example.ui.theme.cardFrameColor
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.expandHorizontally
@@ -143,7 +144,7 @@ Box(
         .background(MaterialTheme.colorScheme.surface)
         .border(
             width = 1.dp,
-            color = Color(0xFF8B5CFF).copy(alpha = 0.35f),
+            color = cardFrameColor,
             shape = RoundedCornerShape(24.dp)
         )
         .testTag("calendar_grid_card")
@@ -661,6 +662,7 @@ fun YearMonthPickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.border(1.dp, cardFrameColor, RoundedCornerShape(28.dp)),
         title = {
             Text(
                 text = "انتخاب ماه و سال (${calendarType.titlePersian})",

@@ -1,5 +1,6 @@
 package com.example.calendar.ui.screens
 
+import androidx.compose.foundation.border
 import com.example.ui.theme.cardFrameColor
 import android.Manifest
 import android.content.pm.PackageManager
@@ -564,6 +565,7 @@ fun SettingsScreen(
     if (showCityDialog) {
         AlertDialog(
             onDismissRequest = { showCityDialog = false },
+            modifier = Modifier.border(1.dp, cardFrameColor, RoundedCornerShape(28.dp)),
             title = {
                 Text(
                     text = if (isFa) "انتخاب شهر جهت اوقات خورشیدی" else "Select City for Solar Times",
