@@ -253,6 +253,7 @@ Pair(12, 29) to listOf(CalendarEvent("روز ملی شدن صنعت نفت ای�
         Pair(10, 9) to listOf(CalendarEvent("روز بصیرت و میثاق امت با ولایت", isHoliday = false, EventType.NATIONAL)),
         Pair(10, 13) to listOf(CalendarEvent("سالروز شهادت سپهبد قاسم سلیمانی", isHoliday = false, EventType.NATIONAL)),
         Pair(11, 29) to listOf(CalendarEvent("قیام مردم تبریز (۲۹ بهمن)", isHoliday = false, EventType.NATIONAL)),
+        Pair(7, 13) to listOf(CalendarEvent("روز جهانی معلم", isHoliday = false, EventType.NATIONAL)),
         Pair(7, 14) to listOf(CalendarEvent("روز دامپزشکی", isHoliday = false, EventType.NATIONAL))
     )
 
@@ -306,6 +307,8 @@ Pair(12, 29) to listOf(CalendarEvent("روز ملی شدن صنعت نفت ای�
         Pair(12, 15) to listOf(CalendarEvent("ولادت امام علی‌النقی الهادی (ع)", isHoliday = false, EventType.RELIGIOUS)),
         Pair(12, 18) to listOf(CalendarEvent("عید بزرگ ولایت، عید سعید غدیر خم", isHoliday = true, EventType.RELIGIOUS)),
         Pair(12, 24) to listOf(CalendarEvent("روز مباهله پیامبر اکرم (ص)", isHoliday = false, EventType.RELIGIOUS)),
+        Pair(2, 13) to listOf(CalendarEvent("وفات حضرت رقیه (س)", isHoliday = false, EventType.RELIGIOUS)),
+        Pair(12, 8) to listOf(CalendarEvent("روز ترویه", isHoliday = false, EventType.RELIGIOUS)),
         Pair(1, 1) to listOf(CalendarEvent("آغاز ماه محرم و سال جدید هجری قمری", isHoliday = false, EventType.RELIGIOUS)),
         Pair(2, 1) to listOf(CalendarEvent("ورود اهل بیت (ع) به شام", isHoliday = false, EventType.RELIGIOUS)),
         Pair(2, 7) to listOf(CalendarEvent("ولادت امام موسی کاظم (ع)", isHoliday = false, EventType.RELIGIOUS)),
