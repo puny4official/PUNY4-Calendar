@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -79,6 +81,10 @@ private fun hsvToColorLong(hue: Float, saturation: Float, value: Float): Long {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+private object AppearanceScrollMemory {
+    @Volatile var position: Int = 0
+}
+
 @Composable
 fun AppearanceDialog(
     userSettings: UserSettings,
@@ -107,8 +113,18 @@ fun AppearanceDialog(
         label = "previewColor"
     )
 
+    // Keep the scroll position across text-size changes (the whole UI recomposes when the scale changes)
+    val bodyScrollState = rememberScrollState(AppearanceScrollMemory.position)
+    LaunchedEffect(bodyScrollState) {
+        snapshotFlow { bodyScrollState.value }.collect { AppearanceScrollMemory.position = it }
+    }
+    val dismiss: () -> Unit = {
+        AppearanceScrollMemory.position = 0
+        onDismiss()
+    }
+
     Dialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = dismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         Surface(
@@ -168,7 +184,7 @@ fun AppearanceDialog(
                     }
 
                     IconButton(
-                        onClick = onDismiss,
+                        onClick = dismiss,
                         modifier = Modifier.size(36.dp)
                     ) {
                         Icon(
@@ -185,7 +201,7 @@ fun AppearanceDialog(
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .verticalScroll(rememberScrollState())
+                        .verticalScroll(bodyScrollState)
                 ) {
                     // 1. THEME MODE SELECTION (حالت روشن / تاریک امولد / سیستم)
                     Card(
@@ -820,7 +836,7 @@ fun AppearanceDialog(
 
                 // Bottom Done Button
                 Button(
-                    onClick = onDismiss,
+                    onClick = dismiss,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp)
