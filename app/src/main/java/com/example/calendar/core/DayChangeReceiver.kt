@@ -11,6 +11,10 @@ import android.content.Intent
 class DayChangeReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         DailyNotificationHelper.refreshFromSettings(context)
+        // Keep the home-screen widget in sync and make sure the next midnight alarm stays scheduled.
+        if (DayWidgetProvider.updateAll(context)) {
+            DailyNotificationHelper.scheduleNextDayChange(context)
+        }
     }
 
     companion object {
