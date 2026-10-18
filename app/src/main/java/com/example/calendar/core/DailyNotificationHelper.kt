@@ -33,7 +33,7 @@ object DailyNotificationHelper {
      * Generates a freestanding, extra-large, extra-bold day number bitmap for the status bar icon.
      * Completely eliminates any outer circular ring as requested ("اون رو درشت کن عددش رو و از دایره خارج کن").
      */
-    private fun createDayNumberBitmap(dayNumberStr: String): Bitmap {
+    fun createDayNumberBitmap(dayNumberStr: String): Bitmap {
         val size = 128
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
