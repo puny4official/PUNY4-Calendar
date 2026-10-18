@@ -151,7 +151,7 @@ Box(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(start = 8.dp, end = 8.dp, top = 14.dp, bottom = 12.dp)
         ) {
             // Calendar Type Switcher Chips & Monthly Predictions (Compact Single-Row Bar)
             Row(
@@ -519,8 +519,7 @@ private fun DayCellView(
     Box(
         modifier = modifier
             .aspectRatio(1f)
-            .padding(2.dp)
-            .padding(2.dp)
+            .padding(1.5.dp)
 .shadow(
     elevation = if (isSelected) 10.dp else 0.dp,
     shape = CellCornerShape,
@@ -543,7 +542,7 @@ private fun DayCellView(
         val renderFaDigits = isFa && !useEnglishDayNumbers
 
         val dayScale = (dayNumberScalePercent / 100f).coerceIn(0.80f, 1.60f)
-        val baseFontSize = if (showSecondaryDates) 14.5f else 18f
+        val baseFontSize = if (showSecondaryDates) 17f else 20f
         val dayFontSize = (baseFontSize * dayScale).sp
 
         Column(
@@ -578,7 +577,7 @@ private fun DayCellView(
                             text = DigitFormatter.toSystemDigits(cell.secondaryText1, renderFaDigits),
                             style = SecondaryDateCompactStyle,
                             fontWeight = FontWeight.SemiBold,
-                            fontSize = 8.8.sp,
+                            fontSize = 9.6.sp,
                             color = secondaryTextColor,
                             maxLines = 1,
                             softWrap = false
@@ -596,7 +595,7 @@ private fun DayCellView(
                             text = DigitFormatter.toSystemDigits(cell.secondaryText2, renderFaDigits),
                             style = SecondaryDateCompactStyle,
                             fontWeight = FontWeight.SemiBold,
-                            fontSize = 8.8.sp,
+                            fontSize = 9.6.sp,
                             color = secondaryTextColor,
                             maxLines = 1,
                             softWrap = false
