@@ -444,7 +444,7 @@ class MainActivity : ComponentActivity() {
                                             ) {
                                                 Box(contentAlignment = Alignment.Center) {
                                                     Text(
-                                                        text = "!",
+                                                        text = "?",
                                                         fontWeight = FontWeight.Black,
                                                         fontSize = 13.sp,
                                                         color = Color.White
@@ -604,15 +604,15 @@ class MainActivity : ComponentActivity() {
                                                     Surface(
                                                         shape = CircleShape,
                                                         color = Color.Transparent,
-                                                        border = BorderStroke(1.2.dp, Color(0xFF9333EA).copy(alpha = 0.65f)),
-                                                        modifier = Modifier.size(20.dp)
+                                                        border = BorderStroke(2.dp, Color(0xFFB5B5B5)),
+                                                        modifier = Modifier.size(28.dp)
                                                     ) {
                                                         Box(contentAlignment = Alignment.Center) {
                                                             Text(
-                                                                text = "!",
-                                                                fontWeight = FontWeight.ExtraBold,
-                                                                fontSize = 12.sp,
-                                                                color = Color(0xFF9333EA)
+                                                                text = "?",
+                                                                fontWeight = FontWeight.Bold,
+                                                                fontSize = 17.sp,
+                                                                color = Color(0xFFB5B5B5)
                                                             )
                                                         }
                                                     }

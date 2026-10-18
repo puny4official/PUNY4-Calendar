@@ -270,7 +270,7 @@ fun AppGuideDialog(
                                 ) {
                                     Box(contentAlignment = Alignment.Center) {
                                         Text(
-                                            text = "!",
+                                            text = "?",
                                             fontWeight = FontWeight.Black,
                                             fontSize = 12.sp,
                                             color = Color.White
