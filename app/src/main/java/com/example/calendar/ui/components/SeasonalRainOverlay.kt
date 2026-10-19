@@ -36,6 +36,7 @@ private class SeasonalParticle(
     var slantX: Float = 0f,
     var emoji: String = "🌸",
     var isRaindrop: Boolean = false,
+    var layer: Int = 1,
     var isInitialized: Boolean = false
 )
 
@@ -49,7 +50,7 @@ fun SeasonalRainOverlay(
         season.equals("Spring", ignoreCase = true) ||
         season.equals("Autumn", ignoreCase = true) ||
         season.equals("Fall", ignoreCase = true)
-    ) 20 else 10,
+    ) 34 else 10,
     animationRunning: Boolean = true
 ) {
     val density = LocalDensity.current
@@ -92,13 +93,28 @@ fun SeasonalRainOverlay(
             val isDrop = hasRainlines && (i % 3 != 0)
             val emoji = if (isDrop) "" else foliageEmojis[i % foliageEmojis.size]
 
+            // Depth layer: 0 = far (small, slow, faint), 1 = middle, 2 = near (long, fast, bright)
+            val layer = when (Random.nextInt(10)) { in 0..3 -> 0; in 4..7 -> 1; else -> 2 }
+
             val speedY = if (isDrop) {
-                with(density) { Random.nextInt(90, 135).dp.toPx() }
+                with(density) {
+                    when (layer) {
+                        0 -> Random.nextInt(70, 95)
+                        1 -> Random.nextInt(105, 135)
+                        else -> Random.nextInt(165, 215)
+                    }.dp.toPx()
+                }
             } else {
                 with(density) { Random.nextInt(35, 60).dp.toPx() }
             }
 
-            val rainLength = with(density) { Random.nextInt(10, 15).dp.toPx() }
+            val rainLength = with(density) {
+                when (layer) {
+                    0 -> Random.nextInt(7, 10)
+                    1 -> Random.nextInt(12, 16)
+                    else -> Random.nextInt(19, 27)
+                }.dp.toPx()
+            }
             val swayPhase = Random.nextFloat() * (2f * PI.toFloat())
             val swayAmp = with(density) { (if (isDrop) 4.dp else 13.dp).toPx() }
 
@@ -120,7 +136,8 @@ fun SeasonalRainOverlay(
                 lengthPx = rainLength,
                 slantX = 0f,
                 emoji = emoji,
-                isRaindrop = isDrop
+                isRaindrop = isDrop,
+                layer = layer
             )
         }
     }
@@ -146,21 +163,37 @@ fun SeasonalRainOverlay(
     }
     val bitmapPaint = remember { Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG) }
 
-    // Shared pre-allocated paint for blue rain lines
-    val rainPaint = remember(rainStrokeWidthPx) {
-        Paint().apply {
-            isAntiAlias = true
-            color = android.graphics.Color.argb(235, 56, 189, 248)
-            style = Paint.Style.STROKE
-            strokeCap = Paint.Cap.ROUND
-            strokeWidth = rainStrokeWidthPx
+    // Rain paints per depth layer: far (thin, faint) -> near (thick, bright), each with a thin bright "glass" core.
+    val rainPaints = remember(density) {
+        val widths = floatArrayOf(with(density) { 1.dp.toPx() }, with(density) { 1.7.dp.toPx() }, with(density) { 2.8.dp.toPx() })
+        val alphas = intArrayOf(85, 150, 205)
+        Array(3) { l ->
+            Paint().apply {
+                isAntiAlias = true
+                color = android.graphics.Color.argb(alphas[l], 96, 180, 245)
+                style = Paint.Style.STROKE
+                strokeCap = Paint.Cap.ROUND
+                strokeWidth = widths[l]
+            }
+        }
+    }
+    val corePaints = remember(density) {
+        val widths = floatArrayOf(0f, with(density) { 0.6.dp.toPx() }, with(density) { 1.0.dp.toPx() })
+        val alphas = intArrayOf(0, 140, 230)
+        Array(3) { l ->
+            Paint().apply {
+                isAntiAlias = true
+                color = android.graphics.Color.argb(alphas[l], 235, 248, 255)
+                style = Paint.Style.STROKE
+                strokeCap = Paint.Cap.ROUND
+                strokeWidth = widths[l]
+            }
         }
     }
 
-    // Pre-allocated float buffer for batched native line rendering (4 floats per line: x1, y1, x2, y2)
-    val rainLinesBuffer = remember(particleCount) {
-        FloatArray(particleCount * 4)
-    }
+    // One float buffer per depth layer (4 floats per line: x1, y1, x2, y2)
+    val rainBuffers = remember(particleCount) { Array(3) { FloatArray(particleCount * 4) } }
+    val rainCounts = remember { IntArray(3) }
 
     // Draw-phase trigger state
     var frameTick by remember { mutableLongStateOf(0L) }
@@ -252,7 +285,7 @@ fun SeasonalRainOverlay(
         val count = particles.size
         val segmentWidth = canvasWidth / count.coerceAtLeast(1)
 
-        var rainPointIndex = 0
+        rainCounts[0] = 0; rainCounts[1] = 0; rainCounts[2] = 0
 
         for (i in 0 until count) {
             val p = particles[i]
@@ -280,10 +313,13 @@ fun SeasonalRainOverlay(
 
             if (p.isRaindrop) {
                 // Batch rain points into continuous buffer
-                rainLinesBuffer[rainPointIndex++] = p.x
-                rainLinesBuffer[rainPointIndex++] = p.y
-                rainLinesBuffer[rainPointIndex++] = p.x + p.slantX
-                rainLinesBuffer[rainPointIndex++] = p.y + p.lengthPx
+                val buf = rainBuffers[p.layer]
+                var idx = rainCounts[p.layer]
+                buf[idx++] = p.x
+                buf[idx++] = p.y
+                buf[idx++] = p.x + p.slantX
+                buf[idx++] = p.y + p.lengthPx
+                rainCounts[p.layer] = idx
             } else {
                 // Render foliage emoji with rotation
                 nativeCanvas.save()
@@ -296,9 +332,13 @@ fun SeasonalRainOverlay(
             }
         }
 
-        // Draw ALL raindrops in ONE single native call for maximum GPU throughput
-        if (rainPointIndex > 0) {
-            nativeCanvas.drawLines(rainLinesBuffer, 0, rainPointIndex, rainPaint)
+        // Far -> near, so close drops overlap distant ones; each layer is one batched call plus a bright core.
+        for (l in 0..2) {
+            val n = rainCounts[l]
+            if (n > 0) {
+                nativeCanvas.drawLines(rainBuffers[l], 0, n, rainPaints[l])
+                if (l > 0) nativeCanvas.drawLines(rainBuffers[l], 0, n, corePaints[l])
+            }
         }
     }
 }
