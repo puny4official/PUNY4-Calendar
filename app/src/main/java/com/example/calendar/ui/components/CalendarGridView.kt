@@ -140,11 +140,18 @@ fun CalendarGridView(
 Box(
     modifier = modifier
         .fillMaxWidth()
+        // Neon gold glow spreading around the card
+        .shadow(
+            elevation = 18.dp,
+            shape = RoundedCornerShape(24.dp),
+            ambientColor = Color(0xFFFFC832),
+            spotColor = Color(0xFFFFC832)
+        )
         .clip(RoundedCornerShape(24.dp))
         .background(MaterialTheme.colorScheme.surface)
         .border(
-            width = 1.dp,
-            color = cardFrameColor,
+            width = 1.5.dp,
+            color = Color(0xFFFFD25A),
             shape = RoundedCornerShape(24.dp)
         )
         .testTag("calendar_grid_card")
