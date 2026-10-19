@@ -37,6 +37,8 @@ private class SeasonalParticle(
     var emoji: String = "🌸",
     var isRaindrop: Boolean = false,
     var layer: Int = 1,
+    var flipPhase: Float = 0f,
+    var flipSpeed: Float = 0f,
     var isInitialized: Boolean = false
 )
 
@@ -105,7 +107,9 @@ fun SeasonalRainOverlay(
                     }.dp.toPx()
                 }
             } else {
-                with(density) { Random.nextInt(35, 60).dp.toPx() }
+                with(density) {
+                    (Random.nextInt(35, 60) * when (layer) { 0 -> 0.7f; 1 -> 1f; else -> 1.5f }).dp.toPx()
+                }
             }
 
             val rainLength = with(density) {
@@ -137,7 +141,9 @@ fun SeasonalRainOverlay(
                 slantX = 0f,
                 emoji = emoji,
                 isRaindrop = isDrop,
-                layer = layer
+                layer = layer,
+                flipPhase = Random.nextFloat() * 6.2831855f,
+                flipSpeed = Random.nextFloat() * 2.2f + 1.2f
             )
         }
     }
@@ -151,17 +157,32 @@ fun SeasonalRainOverlay(
         }
     }
 
-    // Rasterize the small set of emoji glyphs once, not on every frame.
+    // Rasterize emoji glyphs once per depth layer. Far leaves are drawn at half resolution and scaled up (soft focus),
+    // near leaves are larger and sharp.
+    val layerScale = remember { floatArrayOf(0.62f, 1f, 1.6f) }
     val emojiSprites = remember(foliageEmojis, foliageTextSizePx) {
-        val side = ceil(foliageTextSizePx * 1.8f).toInt().coerceAtLeast(1)
-        foliageEmojis.associateWith { emoji ->
-            Bitmap.createBitmap(side, side, Bitmap.Config.ARGB_8888).also { bitmap ->
-                val baseline = side / 2f - (textPaint.ascent() + textPaint.descent()) / 2f
-                android.graphics.Canvas(bitmap).drawText(emoji, side / 2f, baseline, textPaint)
+        Array(3) { l ->
+            val renderScale = if (l == 0) 0.5f else 1f
+            val paint = Paint(textPaint).apply { textSize = foliageTextSizePx * layerScale[l] * renderScale }
+            val side = ceil(paint.textSize * 1.8f).toInt().coerceAtLeast(1)
+            foliageEmojis.associateWith { emoji ->
+                Bitmap.createBitmap(side, side, Bitmap.Config.ARGB_8888).also { bitmap ->
+                    val baseline = side / 2f - (paint.ascent() + paint.descent()) / 2f
+                    android.graphics.Canvas(bitmap).drawText(emoji, side / 2f, baseline, paint)
+                }
             }
         }
     }
-    val bitmapPaint = remember { Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG) }
+    val spriteDrawSize = remember(foliageTextSizePx) {
+        FloatArray(3) { l -> ceil(foliageTextSizePx * layerScale[l] * 1.8f) }
+    }
+    val spritePaints = remember {
+        val alphas = intArrayOf(120, 215, 255)
+        Array(3) { l ->
+            Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG).apply { alpha = alphas[l] }
+        }
+    }
+    val spriteRect = remember { android.graphics.RectF() }
 
     // Rain paints per depth layer: far (thin, faint) -> near (thick, bright), each with a thin bright "glass" core.
     val rainPaints = remember(density) {
@@ -259,6 +280,7 @@ fun SeasonalRainOverlay(
                         } else {
                             val extraRot = if (gustActive) gustIntensity * 0.45f else 0f
                             p.rotation = (p.rotation + (p.rotationSpeed + extraRot) * dt) % 360f
+                            p.flipPhase += p.flipSpeed * dt
                         }
                     }
 
@@ -321,12 +343,17 @@ fun SeasonalRainOverlay(
                 buf[idx++] = p.y + p.lengthPx
                 rainCounts[p.layer] = idx
             } else {
-                // Render foliage emoji with rotation
+                // Render foliage with rotation + tumbling (3D flip) that grows with proximity
+                val layer = p.layer
+                val flip = if (layer == 0) 1f
+                else kotlin.math.abs(cos(p.flipPhase)).coerceAtLeast(if (layer == 2) 0.28f else 0.5f)
+                val half = spriteDrawSize[layer] / 2f
                 nativeCanvas.save()
                 nativeCanvas.rotate(p.rotation, p.x, p.y)
-                val sprite = emojiSprites.getValue(p.emoji)
+                nativeCanvas.scale(flip, 1f, p.x, p.y)
+                spriteRect.set(p.x - half, p.y - half, p.x + half, p.y + half)
                 nativeCanvas.drawBitmap(
-                    sprite, p.x - sprite.width / 2f, p.y - sprite.height / 2f, bitmapPaint
+                    emojiSprites[layer].getValue(p.emoji), null, spriteRect, spritePaints[layer]
                 )
                 nativeCanvas.restore()
             }
