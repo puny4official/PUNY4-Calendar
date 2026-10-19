@@ -30,6 +30,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.shadow
@@ -528,12 +529,24 @@ private fun DayCellView(
         modifier = modifier
             .aspectRatio(1f)
             .padding(1.5.dp)
-.shadow(
-    elevation = if (isSelected) 10.dp else 0.dp,
-    shape = CellCornerShape,
-    ambientColor = Color(0xFF06B6D4),
-    spotColor = Color(0xFF06B6D4)
-)
+            .then(
+                if (isSelected) {
+                    // Soft neon glow drawn behind the cell (no shadow layer, so no dark square shows through)
+                    Modifier.drawBehind {
+                        val r = 12.dp.toPx()
+                        for (i in 1..5) {
+                            val grow = i * 2.2.dp.toPx()
+                            drawRoundRect(
+                                color = Color(0xFF06B6D4).copy(alpha = 0.20f - i * 0.03f),
+                                topLeft = androidx.compose.ui.geometry.Offset(-grow, -grow),
+                                size = androidx.compose.ui.geometry.Size(size.width + 2 * grow, size.height + 2 * grow),
+                                cornerRadius = androidx.compose.ui.geometry.CornerRadius(r + grow),
+                                style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.2.dp.toPx())
+                            )
+                        }
+                    }
+                } else Modifier
+            )
             .background(targetBackground, CellCornerShape)
             .border(borderWidth, targetBorderColor, CellCornerShape)
             .then(
