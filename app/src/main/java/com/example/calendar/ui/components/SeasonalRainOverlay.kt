@@ -52,7 +52,7 @@ fun SeasonalRainOverlay(
         season.equals("Spring", ignoreCase = true) ||
         season.equals("Autumn", ignoreCase = true) ||
         season.equals("Fall", ignoreCase = true)
-    ) 34 else 10,
+    ) 44 else 10,
     animationRunning: Boolean = true
 ) {
     val density = LocalDensity.current
@@ -114,9 +114,9 @@ fun SeasonalRainOverlay(
 
             val rainLength = with(density) {
                 when (layer) {
-                    0 -> Random.nextInt(7, 10)
-                    1 -> Random.nextInt(12, 16)
-                    else -> Random.nextInt(19, 27)
+                    0 -> Random.nextInt(4, 6)
+                    1 -> Random.nextInt(7, 10)
+                    else -> Random.nextInt(11, 15)
                 }.dp.toPx()
             }
             val swayPhase = Random.nextFloat() * (2f * PI.toFloat())
@@ -186,7 +186,7 @@ fun SeasonalRainOverlay(
 
     // Rain paints per depth layer: far (thin, faint) -> near (thick, bright), each with a thin bright "glass" core.
     val rainPaints = remember(density) {
-        val widths = floatArrayOf(with(density) { 1.dp.toPx() }, with(density) { 1.7.dp.toPx() }, with(density) { 2.8.dp.toPx() })
+        val widths = floatArrayOf(with(density) { 0.6.dp.toPx() }, with(density) { 1.0.dp.toPx() }, with(density) { 1.5.dp.toPx() })
         val alphas = intArrayOf(85, 150, 205)
         Array(3) { l ->
             Paint().apply {
@@ -199,7 +199,7 @@ fun SeasonalRainOverlay(
         }
     }
     val corePaints = remember(density) {
-        val widths = floatArrayOf(0f, with(density) { 0.6.dp.toPx() }, with(density) { 1.0.dp.toPx() })
+        val widths = floatArrayOf(0f, with(density) { 0.35.dp.toPx() }, with(density) { 0.55.dp.toPx() })
         val alphas = intArrayOf(0, 140, 230)
         Array(3) { l ->
             Paint().apply {
