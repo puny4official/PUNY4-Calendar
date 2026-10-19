@@ -52,7 +52,7 @@ fun SeasonalRainOverlay(
         season.equals("Spring", ignoreCase = true) ||
         season.equals("Autumn", ignoreCase = true) ||
         season.equals("Fall", ignoreCase = true)
-    ) 44 else 10,
+    ) 28 else 10,
     animationRunning: Boolean = true
 ) {
     val density = LocalDensity.current
@@ -233,8 +233,8 @@ fun SeasonalRainOverlay(
                         lastNanoTime = frameNanos
                         return@withFrameNanos
                     }
-                    // Decorative motion needs at most 30 fps, including on 90/120 Hz screens.
-                    if (frameNanos - lastNanoTime < 33_333_333L) return@withFrameNanos
+                    // Cap at ~60 fps (smooth) so 90/120 Hz screens don't do double work.
+                    if (frameNanos - lastNanoTime < 15_000_000L) return@withFrameNanos
                     val dt = ((frameNanos - lastNanoTime) / 1_000_000_000f).coerceIn(0.001f, 0.05f)
                     lastNanoTime = frameNanos
                     totalTimeSec += dt
@@ -364,7 +364,7 @@ fun SeasonalRainOverlay(
             val n = rainCounts[l]
             if (n > 0) {
                 nativeCanvas.drawLines(rainBuffers[l], 0, n, rainPaints[l])
-                if (l > 0) nativeCanvas.drawLines(rainBuffers[l], 0, n, corePaints[l])
+                if (l == 2) nativeCanvas.drawLines(rainBuffers[l], 0, n, corePaints[l])
             }
         }
     }
