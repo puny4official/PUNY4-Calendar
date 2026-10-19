@@ -186,8 +186,8 @@ fun SeasonalRainOverlay(
 
     // Rain paints per depth layer: far (thin, faint) -> near (thick, bright), each with a thin bright "glass" core.
     val rainPaints = remember(density) {
-        val widths = floatArrayOf(with(density) { 0.6.dp.toPx() }, with(density) { 1.0.dp.toPx() }, with(density) { 1.5.dp.toPx() })
-        val alphas = intArrayOf(85, 150, 205)
+        val widths = floatArrayOf(with(density) { 0.5.dp.toPx() }, with(density) { 0.8.dp.toPx() }, with(density) { 1.1.dp.toPx() })
+        val alphas = intArrayOf(45, 80, 120)
         Array(3) { l ->
             Paint().apply {
                 isAntiAlias = true
@@ -211,6 +211,22 @@ fun SeasonalRainOverlay(
             }
         }
     }
+
+    // Bright round "water bead" at the leading end of each streak (drawn as batched points)
+    val headPaints = remember(density) {
+        val sizes = floatArrayOf(with(density) { 1.1.dp.toPx() }, with(density) { 1.7.dp.toPx() }, with(density) { 2.4.dp.toPx() })
+        val alphas = intArrayOf(120, 190, 245)
+        Array(3) { l ->
+            Paint().apply {
+                isAntiAlias = true
+                color = android.graphics.Color.argb(alphas[l], 215, 238, 255)
+                style = Paint.Style.STROKE
+                strokeCap = Paint.Cap.ROUND
+                strokeWidth = sizes[l]
+            }
+        }
+    }
+    val headBuffers = remember(particleCount) { Array(3) { FloatArray(particleCount * 2) } }
 
     // One float buffer per depth layer (4 floats per line: x1, y1, x2, y2)
     val rainBuffers = remember(particleCount) { Array(3) { FloatArray(particleCount * 4) } }
@@ -342,6 +358,10 @@ fun SeasonalRainOverlay(
                 buf[idx++] = p.x + p.slantX
                 buf[idx++] = p.y + p.lengthPx
                 rainCounts[p.layer] = idx
+                val hb = headBuffers[p.layer]
+                val hi = (idx shr 1) - 2
+                hb[hi] = p.x + p.slantX
+                hb[hi + 1] = p.y + p.lengthPx
             } else {
                 // Render foliage with rotation + tumbling (3D flip) that grows with proximity
                 val layer = p.layer
@@ -364,7 +384,7 @@ fun SeasonalRainOverlay(
             val n = rainCounts[l]
             if (n > 0) {
                 nativeCanvas.drawLines(rainBuffers[l], 0, n, rainPaints[l])
-                if (l == 2) nativeCanvas.drawLines(rainBuffers[l], 0, n, corePaints[l])
+                nativeCanvas.drawPoints(headBuffers[l], 0, n / 2, headPaints[l])
             }
         }
     }
