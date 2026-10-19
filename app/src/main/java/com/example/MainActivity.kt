@@ -26,6 +26,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
@@ -158,8 +159,16 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
+                    // Frosted effect: blur the calendar behind the open drawer (blur needs Android 12+)
+                    val drawerBlur by androidx.compose.animation.core.animateDpAsState(
+                        targetValue = if (drawerState.targetValue == DrawerValue.Open) 14.dp else 0.dp,
+                        animationSpec = tween(260),
+                        label = "drawerBlur"
+                    )
+
                     ModalNavigationDrawer(
                         drawerState = drawerState,
+                        scrimColor = androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.25f),
                         drawerContent = {
                             ModalDrawerSheet(
                                 modifier = Modifier
@@ -173,7 +182,7 @@ class MainActivity : ComponentActivity() {
                                         androidx.compose.foundation.shape.RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
                                     )
                                     .testTag("hamburger_drawer_sheet"),
-                                drawerContainerColor = MaterialTheme.colorScheme.surface
+                                drawerContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f)
                             ) {
                                 Column(
                                     modifier = Modifier
@@ -544,6 +553,7 @@ class MainActivity : ComponentActivity() {
                         Scaffold(
                             modifier = Modifier
                                 .fillMaxSize()
+                                .blur(drawerBlur, androidx.compose.ui.draw.BlurredEdgeTreatment.Unbounded)
                                 .testTag("main_scaffold"),
                             topBar = {
                                 Box(
