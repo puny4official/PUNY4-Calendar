@@ -165,7 +165,13 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier
                                     .widthIn(max = 320.dp)
                                     .fillMaxHeight()
-                                    .border(1.dp, cardFrameColor)
+                                    .border(
+                                        1.dp,
+                                        androidx.compose.ui.graphics.Brush.verticalGradient(
+                                            listOf(cardFrameColor.copy(alpha = 0.22f), cardFrameColor.copy(alpha = 0f))
+                                        ),
+                                        androidx.compose.foundation.shape.RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
+                                    )
                                     .testTag("hamburger_drawer_sheet"),
                                 drawerContainerColor = MaterialTheme.colorScheme.surface
                             ) {
