@@ -124,6 +124,9 @@ fun CalendarScreen(
     var showIntroSpotlight by remember { mutableStateOf(false) }
     var arrowDismissed by remember { mutableStateOf(false) }
     var spotlightToken by remember { mutableIntStateOf(0) }
+    var dayMenuJdn by remember { mutableStateOf<Long?>(null) }
+    var addEventJdn by remember { mutableStateOf<Long?>(null) }
+    var personalVersion by remember { mutableIntStateOf(0) }
     val spotlightScope = rememberCoroutineScope()
     // [0] = this screen, [1] = today's cell. Plain holder (not state) so scrolling never triggers recomposition.
     val coordsHolder = remember { arrayOfNulls<LayoutCoordinates>(2) }
@@ -233,6 +236,11 @@ fun CalendarScreen(
                         selectedJdn = jdn
                         userNote = userSettings.getNote(jdn)
                     },
+                    onDateLongPressed = { jdn ->
+                        selectedJdn = jdn
+                        userNote = userSettings.getNote(jdn)
+                        dayMenuJdn = jdn
+                    },
                     onPreviousMonth = {
                         if (currentMonth == 1) {
                             currentMonth = 12
@@ -334,6 +342,34 @@ fun CalendarScreen(
                 }
                 }
 
+            item(key = "personal_events_$selectedJdn") {
+                val faP = (appLanguage == AppLanguage.PERSIAN)
+                val pEvents = remember(selectedJdn, personalVersion) { userSettings.getPersonalEvents(selectedJdn) }
+                if (pEvents.isNotEmpty()) {
+                    androidx.compose.material3.OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            androidx.compose.material3.Text(
+                                if (faP) "⭐ مناسبت‌های شخصی" else "⭐ Personal occasions",
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                            )
+                            pEvents.forEachIndexed { idx, t ->
+                                Row(
+                                    Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                                ) {
+                                    androidx.compose.material3.Text(t, modifier = Modifier.weight(1f))
+                                    androidx.compose.material3.TextButton(onClick = {
+                                        userSettings.removePersonalEvent(selectedJdn, idx)
+                                        personalVersion++
+                                    }) { androidx.compose.material3.Text(if (faP) "حذف" else "Delete") }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
                 // Section 6: Personal Notes Card
             item(key = "notes_$selectedJdn") {
                     NotesCard(
@@ -364,6 +400,57 @@ fun CalendarScreen(
             )
         }
 
+        dayMenuJdn?.let { jdn ->
+            val faMenu = (appLanguage == AppLanguage.PERSIAN)
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { dayMenuJdn = null },
+                confirmButton = {},
+                title = { androidx.compose.material3.Text(if (faMenu) "این روز" else "This day") },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        androidx.compose.material3.OutlinedButton(
+                            onClick = { dayMenuJdn = null; triggerSpotlight() },
+                            modifier = Modifier.fillMaxWidth()
+                        ) { androidx.compose.material3.Text(if (faMenu) "نمایش مناسبت‌های این روز" else "Show this day's occasions") }
+                        androidx.compose.material3.OutlinedButton(
+                            onClick = { dayMenuJdn = null; addEventJdn = jdn },
+                            modifier = Modifier.fillMaxWidth()
+                        ) { androidx.compose.material3.Text(if (faMenu) "افزودن مناسبت شخصی" else "Add personal occasion") }
+                    }
+                }
+            )
+        }
+
+        addEventJdn?.let { jdn ->
+            val faAdd = (appLanguage == AppLanguage.PERSIAN)
+            var title by remember(jdn) { mutableStateOf("") }
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { addEventJdn = null },
+                title = { androidx.compose.material3.Text(if (faAdd) "مناسبت شخصی" else "Personal occasion") },
+                text = {
+                    androidx.compose.material3.OutlinedTextField(
+                        value = title,
+                        onValueChange = { title = it },
+                        singleLine = true,
+                        placeholder = { androidx.compose.material3.Text(if (faAdd) "مثلاً تولد دوست" else "e.g. Friend's birthday") }
+                    )
+                },
+                confirmButton = {
+                    androidx.compose.material3.TextButton(onClick = {
+                        userSettings.addPersonalEvent(jdn, title)
+                        personalVersion++
+                        addEventJdn = null
+                        triggerSpotlight()
+                    }) { androidx.compose.material3.Text(if (faAdd) "ذخیره" else "Save") }
+                },
+                dismissButton = {
+                    androidx.compose.material3.TextButton(onClick = { addEventJdn = null }) {
+                        androidx.compose.material3.Text(if (faAdd) "انصراف" else "Cancel")
+                    }
+                }
+            )
+        }
+
         if (showIntroSpotlight) {
             TodaySpotlightOverlay(
                 dayInfo = if (selectedJdn == todayJdn) todayDayInfo else selectedDayInfo,
@@ -373,6 +460,7 @@ fun CalendarScreen(
                 isFa = (appLanguage == AppLanguage.PERSIAN),
                 holidayColor = holidayColor,
                 showDashedLines = !arrowDismissed,
+                personalEvents = remember(selectedJdn, personalVersion) { userSettings.getPersonalEvents(if (selectedJdn == todayJdn) todayJdn else selectedJdn) },
                 onDismiss = { showIntroSpotlight = false }
             )
         }

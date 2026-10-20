@@ -147,4 +147,22 @@ class UserSettings(context: Context) {
             prefs.edit().putString("note_$jdn", note.trim()).apply()
         }
     }
+
+    // Personal occasions, stored per day (one per line)
+    fun getPersonalEvents(jdn: Long): List<String> =
+        (prefs.getString("pevents_$jdn", "") ?: "").split("\n").filter { it.isNotBlank() }
+
+    private fun savePersonalEvents(jdn: Long, list: List<String>) {
+        if (list.isEmpty()) prefs.edit().remove("pevents_$jdn").apply()
+        else prefs.edit().putString("pevents_$jdn", list.joinToString("\n")).apply()
+    }
+
+    fun addPersonalEvent(jdn: Long, title: String) {
+        val t = title.replace("\n", " ").trim()
+        if (t.isNotEmpty()) savePersonalEvents(jdn, getPersonalEvents(jdn) + t)
+    }
+
+    fun removePersonalEvent(jdn: Long, index: Int) {
+        savePersonalEvents(jdn, getPersonalEvents(jdn).filterIndexed { i, _ -> i != index })
+    }
 }

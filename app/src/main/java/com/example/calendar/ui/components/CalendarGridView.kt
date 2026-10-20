@@ -12,6 +12,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -97,6 +98,7 @@ fun CalendarGridView(
     selectedJdn: Long,
     showSecondaryDates: Boolean,
     onDateSelected: (Long) -> Unit,
+    onDateLongPressed: (Long) -> Unit = {},
     onPreviousMonth: () -> Unit,
     onNextMonth: () -> Unit,
     onTodayClicked: () -> Unit,
@@ -437,6 +439,7 @@ Box(
                             dayNumberScalePercent = dayNumberScalePercent,
                             holidayColor = holidayColor,
                             onDateSelected = onDateSelected,
+                            onDateLongPressed = onDateLongPressed,
                             onTodayPositioned = onTodayPositioned,
                             onIndicatorPositioned = onIndicatorPositioned,
                             modifier = Modifier.weight(1f)
@@ -498,11 +501,13 @@ Box(
     }
 }
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 private fun DayCellView(
     cell: CalendarManager.CalendarGridCell,
     showSecondaryDates: Boolean,
     onDateSelected: (Long) -> Unit,
+    onDateLongPressed: (Long) -> Unit = {},
     modifier: Modifier = Modifier,
     isFa: Boolean = true,
     useEnglishDayNumbers: Boolean = false,
@@ -585,7 +590,7 @@ private fun DayCellView(
                     Modifier
                 }
             )
-            .clickable { onDateSelected(cell.jdn) }
+            .combinedClickable(onClick = { onDateSelected(cell.jdn) }, onLongClick = { onDateLongPressed(cell.jdn) })
             .testTag("day_cell_${cell.primaryNumber}"),
         contentAlignment = Alignment.Center
     ) {

@@ -78,7 +78,8 @@ fun TodaySpotlightOverlay(
     modifier: Modifier = Modifier,
     isFa: Boolean = true,
     holidayColor: Color = Color(0xFF8B5CF6L),
-    showDashedLines: Boolean = true
+    showDashedLines: Boolean = true,
+    personalEvents: List<String> = emptyList()
 ) {
     var progress by remember { mutableFloatStateOf(0f) }
     var isHolding by remember { mutableStateOf(false) }
@@ -388,8 +389,9 @@ fun TodaySpotlightOverlay(
                                 append(if (isFa) "🌍 مناسبت‌های جهانی و ایرانی: " else "🌍 Global & Iranian Occasions: ")
                             }
                             withStyle(SpanStyle(fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)) {
-                                if (otherOccasions.isNotEmpty()) {
-                                    append(otherOccasions.joinToString(" • "))
+                                val shown = otherOccasions + personalEvents.map { "⭐ $it" }
+                                if (shown.isNotEmpty()) {
+                                    append(shown.joinToString(" • "))
                                 } else {
                                     append(if (isFa) "مناسبت دیگری برای امروز ثبت نشده است." else "No other occasions recorded for today.")
                                 }

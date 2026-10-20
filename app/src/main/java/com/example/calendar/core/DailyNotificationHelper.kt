@@ -141,6 +141,13 @@ object DailyNotificationHelper {
             .setOnlyAlertOnce(true)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setShowWhen(false)
+            .setDeleteIntent(
+                PendingIntent.getBroadcast(
+                    context, 2003,
+                    Intent(context, DayChangeReceiver::class.java).setAction(DayChangeReceiver.ACTION_RESTORE),
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+            )
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         PinnedCalendarService.show(context.applicationContext, builder.build())
@@ -198,7 +205,7 @@ object DailyNotificationHelper {
      * Keeps the pinned notification alive: if a cleaner app / cache cleaning kills the app, this alarm
      * brings the notification back shortly afterwards (and keeps doing so every 15 minutes).
      */
-    fun scheduleKeepAlive(context: Context, delayMs: Long = 15 * 60 * 1000L) {
+    fun scheduleKeepAlive(context: Context, delayMs: Long = 5 * 60 * 1000L) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val pi = keepAlivePendingIntent(context)
         val at = System.currentTimeMillis() + delayMs
