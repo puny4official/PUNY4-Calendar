@@ -34,6 +34,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.example.R
 import com.example.ui.theme.AstroGold
 import com.example.ui.theme.HolidayPurple
+import com.example.ui.theme.HolidayPurpleLight
 import com.example.ui.theme.ScorpioAlert
 
 private data class GuideTopic(
@@ -265,8 +266,8 @@ fun AppGuideDialog(
                                 )
                                 Surface(
                                     shape = CircleShape,
-                                    color = Color(0xFF9333EA),
-                                    border = BorderStroke(1.dp, Color(0xFFE879F9)),
+                                    color = HolidayPurple,
+                                    border = BorderStroke(1.dp, HolidayPurpleLight),
                                     modifier = Modifier.size(20.dp)
                                 ) {
                                     Box(contentAlignment = Alignment.Center) {

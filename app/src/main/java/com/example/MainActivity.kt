@@ -104,7 +104,8 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
-            MyApplicationTheme(themeMode = themeMode) {
+            val accentLong by userSettings.holidayColorLong.collectAsState()
+            MyApplicationTheme(themeMode = themeMode, accentColor = androidx.compose.ui.graphics.Color(accentLong)) {
                 // Respect layout direction and custom percentage font scale without moving any UI components
                 CompositionLocalProvider(
                     LocalLayoutDirection provides layoutDirection,

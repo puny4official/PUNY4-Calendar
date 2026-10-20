@@ -51,6 +51,7 @@ import com.example.calendar.model.EventType
 import com.example.calendar.model.FullDayInfo
 import com.example.ui.theme.AstroGold
 import com.example.ui.theme.HolidayPurple
+import com.example.ui.theme.HolidayPurpleLight
 import com.example.ui.theme.HolidayPurpleContainer
 import com.example.ui.theme.OnHolidayPurpleContainer
 import com.example.ui.theme.ScorpioAlert
@@ -422,9 +423,9 @@ fun TodaySpotlightOverlay(
                                     .background(
                                         Brush.horizontalGradient(
                                             listOf(
-                                                Color(0xFF9333EA),
+                                                HolidayPurple,
                                                 Color(0xFFC084FC),
-                                                Color(0xFFE879F9)
+                                                HolidayPurpleLight
                                             )
                                         )
                                     )

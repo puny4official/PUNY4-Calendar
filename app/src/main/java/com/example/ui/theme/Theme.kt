@@ -78,6 +78,7 @@ private val LightColorScheme = lightColorScheme(
 fun MyApplicationTheme(
     themeMode: ThemeMode = ThemeMode.SYSTEM,
     dynamicColor: Boolean = false,
+    accentColor: Color? = null,
     content: @Composable () -> Unit
 ) {
     val darkTheme = when (themeMode) {
@@ -95,11 +96,34 @@ fun MyApplicationTheme(
         else -> LightColorScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    val accent = accentColor ?: Color(0xFF8B5CFF)
+    val themed = if (accentColor == null) colorScheme else if (darkTheme) {
+        colorScheme.copy(
+            primary = accent,
+            onPrimary = if (accent.luminance() > 0.55f) Color.Black else Color.White,
+            primaryContainer = androidx.compose.ui.graphics.lerp(accent, Color.Black, 0.68f),
+            onPrimaryContainer = androidx.compose.ui.graphics.lerp(accent, Color.White, 0.86f),
+            tertiary = androidx.compose.ui.graphics.lerp(accent, Color.White, 0.25f),
+            tertiaryContainer = androidx.compose.ui.graphics.lerp(accent, Color.Black, 0.72f)
+        )
+    } else {
+        colorScheme.copy(
+            primary = accent,
+            onPrimary = if (accent.luminance() > 0.55f) Color.Black else Color.White,
+            primaryContainer = androidx.compose.ui.graphics.lerp(accent, Color.White, 0.85f),
+            onPrimaryContainer = androidx.compose.ui.graphics.lerp(accent, Color.Black, 0.70f),
+            tertiary = accent,
+            tertiaryContainer = androidx.compose.ui.graphics.lerp(accent, Color.White, 0.85f)
+        )
+    }
+
+    androidx.compose.runtime.CompositionLocalProvider(LocalAccentColor provides accent) {
+        MaterialTheme(
+            colorScheme = themed,
+            typography = Typography,
+            content = content
+        )
+    }
 }
 
 /** Frame around cards and info boxes: whitish-gray in dark mode, black in light mode. Always visible. */

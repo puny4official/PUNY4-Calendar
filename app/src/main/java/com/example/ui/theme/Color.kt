@@ -56,10 +56,20 @@ val OnSurfaceVariantLight = Color(0xFF5F5F5F)
 // PUNY4 Cosmic Colors
 val CelestialBlue = Color(0xFF4D8DFF)
 
-val HolidayPurple = Color(0xFF8B5CFF)
-val HolidayPurpleLight = Color(0xFFA980FF)
-val HolidayPurpleContainer = Color(0xFF35146E)
-val OnHolidayPurpleContainer = Color(0xFFE9DDFF)
+/** The user-chosen accent / holiday colour (default purple). Everything "purple" in the UI follows it. */
+val LocalAccentColor = androidx.compose.runtime.compositionLocalOf { Color(0xFF8B5CFF) }
+
+val HolidayPurple: Color
+    @androidx.compose.runtime.Composable @androidx.compose.runtime.ReadOnlyComposable get() = LocalAccentColor.current
+val HolidayPurpleLight: Color
+    @androidx.compose.runtime.Composable @androidx.compose.runtime.ReadOnlyComposable
+    get() = androidx.compose.ui.graphics.lerp(LocalAccentColor.current, Color.White, 0.22f)
+val HolidayPurpleContainer: Color
+    @androidx.compose.runtime.Composable @androidx.compose.runtime.ReadOnlyComposable
+    get() = androidx.compose.ui.graphics.lerp(LocalAccentColor.current, Color.Black, 0.68f)
+val OnHolidayPurpleContainer: Color
+    @androidx.compose.runtime.Composable @androidx.compose.runtime.ReadOnlyComposable
+    get() = androidx.compose.ui.graphics.lerp(LocalAccentColor.current, Color.White, 0.86f)
 
 val HolidayPink = Color(0xFFEC4899)
 val HolidayPinkLight = Color(0xFFF472B6)

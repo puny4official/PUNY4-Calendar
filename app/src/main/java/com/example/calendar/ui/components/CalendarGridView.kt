@@ -199,7 +199,7 @@ Box(
                         .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
                         .border(
                             1.dp,
-                            if (hiddenTypeActive) Color(0xFF8B5CFF) else MaterialTheme.colorScheme.outlineVariant,
+                            if (hiddenTypeActive) HolidayPurple else MaterialTheme.colorScheme.outlineVariant,
                             RoundedCornerShape(8.dp)
                         )
                         .clickable { showMoreCalendars = !showMoreCalendars }
@@ -212,7 +212,7 @@ Box(
                             Icons.AutoMirrored.Filled.KeyboardArrowRight
                         },
                         contentDescription = if (isFa) "تقویم‌های بیشتر" else "More calendars",
-                        tint = if (hiddenTypeActive) Color(0xFF8B5CFF) else MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = if (hiddenTypeActive) HolidayPurple else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -812,12 +812,12 @@ private fun CalendarTypeChip(
             .height(30.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(
-                if (isSelected) Color(0xFF8B5CFF) else MaterialTheme.colorScheme.surface,
+                if (isSelected) HolidayPurple else MaterialTheme.colorScheme.surface,
                 RoundedCornerShape(8.dp)
             )
             .border(
                 1.dp,
-                if (isSelected) Color(0xFF8B5CFF) else MaterialTheme.colorScheme.outlineVariant,
+                if (isSelected) HolidayPurple else MaterialTheme.colorScheme.outlineVariant,
                 RoundedCornerShape(8.dp)
             )
             .clickable(onClick = onClick)
