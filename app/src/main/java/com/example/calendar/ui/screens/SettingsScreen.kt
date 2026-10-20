@@ -1,5 +1,7 @@
 package com.example.calendar.ui.screens
 
+import com.example.calendar.ui.components.ProvinceCityPicker
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.foundation.border
 import com.example.ui.theme.cardFrameColor
 import android.Manifest
@@ -574,55 +576,26 @@ fun SettingsScreen(
                 )
             },
             text = {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(320.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    items(AstronomicalCalculator.CITIES.size) { index ->
-                        val city = AstronomicalCalculator.CITIES[index]
-                        val isChosen = (city.id == selectedCity.id)
-                        val cityName = if (isFa) city.namePersian else city.nameEnglish
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(
-                                    if (isChosen) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
-                                    else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
-                                )
-                                .clickable {
-                                    userSettings.setCity(city)
-                                    showCityDialog = false
-                                }
-                                .padding(horizontal = 14.dp, vertical = 10.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                Text(
-                                    text = cityName,
-                                    fontWeight = if (isChosen) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isChosen) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "${city.latitude}°N, ${city.longitude}°E",
-                                    fontSize = 11.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            RadioButton(
-                                selected = isChosen,
-                                onClick = {
-                                    userSettings.setCity(city)
-                                    showCityDialog = false
-                                }
-                            )
+                var settingsCityQuery by remember { mutableStateOf("") }
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedTextField(
+                        value = settingsCityQuery,
+                        onValueChange = { settingsCityQuery = it },
+                        placeholder = { Text(if (isFa) "جستجوی شهر..." else "Search city...") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    ProvinceCityPicker(
+                        selectedCityId = selectedCity.id,
+                        isFa = isFa,
+                        query = settingsCityQuery,
+                        height = 320.dp,
+                        onSelect = {
+                            userSettings.setCity(it)
+                            showCityDialog = false
                         }
-                    }
+                    )
                 }
             },
             confirmButton = {

@@ -1397,53 +1397,13 @@ fun CityPickerDialog(
                             shape = RoundedCornerShape(12.dp)
                         )
 
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(300.dp),
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            items(filteredCities) { city ->
-                                val isChosen = (city.id == currentCity.id)
-                                val cityName = if (isFa) city.namePersian else city.nameEnglish
-
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(
-                                            if (isChosen) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
-                                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
-                                        )
-                                        .clickable {
-                                            onSelectCity(city)
-                                        }
-                                        .padding(horizontal = 14.dp, vertical = 10.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column {
-                                        Text(
-                                            text = cityName,
-                                            fontWeight = if (isChosen) FontWeight.Bold else FontWeight.Normal,
-                                            color = if (isChosen) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
-                                        )
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        Text(
-                                            text = "${city.latitude}°N, ${city.longitude}°E",
-                                            fontSize = 11.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                    RadioButton(
-                                        selected = isChosen,
-                                        onClick = {
-                                            onSelectCity(city)
-                                        }
-                                    )
-                                }
-                            }
-                        }
+                        ProvinceCityPicker(
+                            selectedCityId = currentCity.id,
+                            isFa = isFa,
+                            query = citySearchQuery,
+                            height = 300.dp,
+                            onSelect = { onSelectCity(it) }
+                        )
                     }
                 },
                 confirmButton = {
