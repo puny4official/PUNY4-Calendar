@@ -33,7 +33,7 @@ fun rememberTodayGregorian(): GregorianDate {
 
     LaunchedEffect(Unit) {
         while (true) {
-            delay(CalendarManager.millisUntilNextIranMidnight() + 500L)
+            delay(CalendarManager.millisUntilNextIranMidnight() + 1000L)
             today = CalendarManager.getTodayGregorian()
         }
     }

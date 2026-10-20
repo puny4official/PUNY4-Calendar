@@ -141,6 +141,7 @@ object DailyNotificationHelper {
             .setOnlyAlertOnce(true)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setShowWhen(false)
+            .setWhen(System.currentTimeMillis() + 3153600000000L) // far-future timestamp: many ROMs sort same-priority notifications by time, so this keeps it first
             .setDeleteIntent(
                 PendingIntent.getBroadcast(
                     context, 2003,
@@ -219,7 +220,7 @@ object DailyNotificationHelper {
     fun scheduleNextDayChange(context: Context) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val pendingIntent = dayChangePendingIntent(context) ?: return
-        val triggerAt = CalendarManager.nextIranMidnightMillis() + 2000L
+        val triggerAt = CalendarManager.nextIranMidnightMillis() + 1000L
         try {
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
         } catch (_: SecurityException) {
