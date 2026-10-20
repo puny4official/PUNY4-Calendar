@@ -33,6 +33,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -141,18 +145,43 @@ fun CalendarGridView(
 Box(
     modifier = modifier
         .fillMaxWidth()
-        // Neon gold glow spreading around the card
-        .shadow(
-            elevation = 18.dp,
-            shape = RoundedCornerShape(24.dp),
-            ambientColor = Color(0xFFFFC832),
-            spotColor = Color(0xFFFFC832)
-        )
+        // Warm light spilling out of the gold frame (soft, wide falloff)
+        .drawBehind {
+            val r = 24.dp.toPx()
+            val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+                style = android.graphics.Paint.Style.STROKE
+            }
+            drawIntoCanvas { c ->
+                // wide diffuse halo -> tight bright core
+                val layers = listOf(
+                    Triple(46.dp.toPx(), 22.dp.toPx(), 0x30),
+                    Triple(28.dp.toPx(), 14.dp.toPx(), 0x48),
+                    Triple(14.dp.toPx(), 7.dp.toPx(), 0x70),
+                    Triple(5.dp.toPx(), 3.dp.toPx(), 0xB0)
+                )
+                for ((blur, width, alpha) in layers) {
+                    paint.strokeWidth = width
+                    paint.color = android.graphics.Color.argb(alpha, 255, 200, 90)
+                    paint.maskFilter = android.graphics.BlurMaskFilter(blur, android.graphics.BlurMaskFilter.Blur.NORMAL)
+                    c.nativeCanvas.drawRoundRect(0f, 0f, size.width, size.height, r, r, paint)
+                }
+            }
+        }
         .clip(RoundedCornerShape(24.dp))
         .background(MaterialTheme.colorScheme.surface)
+        // Inner light cast from the frame toward the middle of the card
+        .drawWithContent {
+            drawContent()
+            val glow = 36.dp.toPx()
+            val warm = Color(0xFFFFC85A)
+            drawRect(Brush.verticalGradient(listOf(warm.copy(alpha = 0.16f), Color.Transparent), 0f, glow))
+            drawRect(Brush.verticalGradient(listOf(Color.Transparent, warm.copy(alpha = 0.12f)), size.height - glow, size.height))
+            drawRect(Brush.horizontalGradient(listOf(warm.copy(alpha = 0.12f), Color.Transparent), 0f, glow))
+            drawRect(Brush.horizontalGradient(listOf(Color.Transparent, warm.copy(alpha = 0.12f)), size.width - glow, size.width))
+        }
         .border(
             width = 1.5.dp,
-            color = Color(0xFFFFD25A),
+            color = Color(0xFFFFE08A),
             shape = RoundedCornerShape(24.dp)
         )
         .testTag("calendar_grid_card")
