@@ -6,18 +6,14 @@
     android:gravity="center"
     android:orientation="vertical">
 
-    <TextView
+    <ImageView
         android:id="@+id/widget_day"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:includeFontPadding="false"
-        android:shadowColor="#99000000"
-        android:shadowDx="0"
-        android:shadowDy="2"
-        android:shadowRadius="4"
-        android:textColor="#FFFFFF"
-        android:textSize="44sp"
-        android:textStyle="bold" />
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:adjustViewBounds="true"
+        android:contentDescription="@null"
+        android:scaleType="fitCenter" />
 
     <TextView
         android:id="@+id/widget_month"
@@ -30,5 +26,5 @@
         android:shadowDy="1"
         android:shadowRadius="3"
         android:textColor="#FFFFFF"
-        android:textSize="15sp" />
+        android:textSize="14sp" />
 </LinearLayout>

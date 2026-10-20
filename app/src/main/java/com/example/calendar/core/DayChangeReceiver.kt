@@ -19,5 +19,6 @@ class DayChangeReceiver : BroadcastReceiver() {
 
     companion object {
         const val ACTION_DAY_CHANGED = "com.puny4.calendar.ACTION_DAY_CHANGED"
+        const val ACTION_KEEP_ALIVE = "com.puny4.calendar.ACTION_KEEP_ALIVE"
     }
 }

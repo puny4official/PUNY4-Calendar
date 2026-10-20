@@ -427,65 +427,6 @@ class MainActivity : ComponentActivity() {
                                             .testTag("drawer_item_settings")
                                     )
 
-                                    NavigationDrawerItem(
-                                        icon = {
-                                            val currentHolColorLong by userSettings.holidayColorLong.collectAsState()
-                                            Icon(
-                                                imageVector = Icons.Default.Palette,
-                                                contentDescription = null,
-                                                tint = Color(currentHolColorLong)
-                                            )
-                                        },
-                                        label = {
-                                            Text(
-                                                text = if (isFa) "ویرایش ظاهر" else "Appearance",
-                                                fontWeight = FontWeight.Normal
-                                            )
-                                        },
-                                        selected = false,
-                                        onClick = {
-                                            coroutineScope.launch { drawerState.close() }
-                                            showAppearanceDialog = true
-                                        },
-                                        modifier = Modifier
-                                            .padding(NavigationDrawerItemDefaults.ItemPadding)
-                                            .testTag("drawer_item_appearance")
-                                    )
-
-                                    NavigationDrawerItem(
-                                        icon = {
-                                            Surface(
-                                                shape = CircleShape,
-                                                color = Color(0xFF9333EA),
-                                                border = BorderStroke(1.2.dp, Color(0xFFE879F9)),
-                                                modifier = Modifier.size(24.dp)
-                                            ) {
-                                                Box(contentAlignment = Alignment.Center) {
-                                                    Text(
-                                                        text = "?",
-                                                        fontWeight = FontWeight.Black,
-                                                        fontSize = 13.sp,
-                                                        color = Color.White
-                                                    )
-                                                }
-                                            }
-                                        },
-                                        label = {
-                                            Text(
-                                                text = if (isFa) "راهنمای برنامه" else "App Guide",
-                                                fontWeight = FontWeight.Normal
-                                            )
-                                        },
-                                        selected = false,
-                                        onClick = {
-                                            coroutineScope.launch { drawerState.close() }
-                                            showGuideDialog = true
-                                        },
-                                        modifier = Modifier
-                                            .padding(NavigationDrawerItemDefaults.ItemPadding)
-                                            .testTag("drawer_item_guide")
-                                    )
-
                                     // Push version to the bottom of the drawer
                                     Spacer(modifier = Modifier.weight(1f))
 
@@ -604,6 +545,18 @@ class MainActivity : ComponentActivity() {
                                                         contentDescription = if (isFa) "جستجوی مناسبت‌ها" else "Search Events",
                                                         tint = MaterialTheme.colorScheme.onSurface,
                                                         modifier = Modifier.size(28.dp)
+                                                    )
+                                                }
+
+                                                IconButton(
+                                                    onClick = { showAppearanceDialog = true },
+                                                    modifier = Modifier.testTag("top_bar_appearance_button")
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Palette,
+                                                        contentDescription = if (isFa) "ویرایش ظاهر" else "Appearance",
+                                                        tint = MaterialTheme.colorScheme.onSurface,
+                                                        modifier = Modifier.size(26.dp)
                                                     )
                                                 }
 

@@ -18,6 +18,12 @@ class PinnedCalendarService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
+    /** Swiped away from recents / killed by a cleaner: come back quickly. */
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        DailyNotificationHelper.scheduleKeepAlive(applicationContext, 1500L)
+        super.onTaskRemoved(rootIntent)
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val n = pending
         if (n == null) {

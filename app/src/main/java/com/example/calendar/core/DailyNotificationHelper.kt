@@ -33,39 +33,8 @@ object DailyNotificationHelper {
      * Generates a freestanding, extra-large, extra-bold day number bitmap for the status bar icon.
      * Completely eliminates any outer circular ring as requested ("اون رو درشت کن عددش رو و از دایره خارج کن").
      */
-    fun createDayNumberBitmap(dayNumberStr: String): Bitmap {
-        val size = 128
-        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-
-        val center = size / 2f
-
-        // Draw day number text extra bold and significantly enlarged, completely filling the icon area
-        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.SUBPIXEL_TEXT_FLAG).apply {
-            color = Color.WHITE
-            textAlign = Paint.Align.CENTER
-            typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-            // Extra large font size now that the bounding circle is eliminated
-            textSize = if (dayNumberStr.length >= 2) 104f else 122f
-        }
-
-        // Convert the digits to a path and fit it exactly into the icon (tall digits, small side margin from the clock)
-        textPaint.textAlign = Paint.Align.LEFT
-        textPaint.textSize = 100f
-        val path = android.graphics.Path()
-        textPaint.getTextPath(dayNumberStr, 0, dayNumberStr.length, 0f, 0f, path)
-        val src = android.graphics.RectF()
-        path.computeBounds(src, true)
-        val dst = android.graphics.RectF(10f, 4f, size - 10f, size - 4f)
-        val m = android.graphics.Matrix()
-        m.setRectToRect(src, dst, android.graphics.Matrix.ScaleToFit.FILL)
-        path.transform(m)
-        textPaint.style = Paint.Style.FILL_AND_STROKE
-        textPaint.strokeWidth = 3f
-        canvas.drawPath(path, textPaint)
-
-        return bitmap
-    }
+    fun createDayNumberBitmap(dayNumberStr: String): Bitmap =
+        DigitalDigits.render(dayNumberStr, 128, 128)
 
     fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -178,12 +147,14 @@ object DailyNotificationHelper {
 
         // Make sure the notification flips to the new day at Iran midnight, even if the app is closed.
         scheduleNextDayChange(context)
+        scheduleKeepAlive(context)
     }
 
     fun cancelDailyNotification(context: Context) {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         PinnedCalendarService.stop(context.applicationContext)
         notificationManager.cancel(NOTIFICATION_ID)
+        (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).cancel(keepAlivePendingIntent(context))
         dayChangePendingIntent(context)?.let {
             (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).cancel(it)
         }
@@ -216,6 +187,28 @@ object DailyNotificationHelper {
     }
 
     /** Sets a one-shot alarm for the next midnight in Iran time (+2s so the date has surely rolled over). */
+    private fun keepAlivePendingIntent(context: Context): PendingIntent {
+        val intent = Intent(context, DayChangeReceiver::class.java).setAction(DayChangeReceiver.ACTION_KEEP_ALIVE)
+        return PendingIntent.getBroadcast(
+            context, 2002, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    /**
+     * Keeps the pinned notification alive: if a cleaner app / cache cleaning kills the app, this alarm
+     * brings the notification back shortly afterwards (and keeps doing so every 15 minutes).
+     */
+    fun scheduleKeepAlive(context: Context, delayMs: Long = 15 * 60 * 1000L) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val pi = keepAlivePendingIntent(context)
+        val at = System.currentTimeMillis() + delayMs
+        try {
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
+        } catch (_: SecurityException) {
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
+        }
+    }
+
     fun scheduleNextDayChange(context: Context) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val pendingIntent = dayChangePendingIntent(context) ?: return
