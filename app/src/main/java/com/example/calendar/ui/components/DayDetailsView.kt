@@ -237,14 +237,22 @@ fun AllCalendarsCard(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Time Statistics Badges
-                val jalaliCentury = ((dayInfo.jalaliDate.year - 1) / 100) + 1
-                val centuryNumberFa = DigitFormatter.toSystemDigits(jalaliCentury, renderFaDigits)
-                val centuryText = when (jalaliCentury) {
-                    14 -> if (isFa) "قرن ۱۴ (چهاردهم)" else "14th Century"
-                    15 -> if (isFa) "قرن ۱۵ (پانزدهم)" else "15th Century"
-                    16 -> if (isFa) "قرن ۱۶ (شانزدهم)" else "16th Century"
-                    else -> if (isFa) "قرن $centuryNumberFa خورشیدی" else "$jalaliCentury th Century"
+                // Century is shown in the Gregorian (میلادی) calendar
+                val gregCentury = ((dayInfo.gregorianDate.year - 1) / 100) + 1
+                val centuryNumberFa = DigitFormatter.toSystemDigits(gregCentury, renderFaDigits)
+                val centuryOrdinalFa = when (gregCentury) {
+                    19 -> "نوزدهم"; 20 -> "بیستم"; 21 -> "بیست‌ویکم"; 22 -> "بیست‌ودوم"; else -> ""
                 }
+                val centurySuffixEn = when {
+                    gregCentury % 100 in 11..13 -> "th"
+                    gregCentury % 10 == 1 -> "st"
+                    gregCentury % 10 == 2 -> "nd"
+                    gregCentury % 10 == 3 -> "rd"
+                    else -> "th"
+                }
+                val centuryText = if (isFa) {
+                    if (centuryOrdinalFa.isNotEmpty()) "قرن $centuryNumberFa میلادی ($centuryOrdinalFa)" else "قرن $centuryNumberFa میلادی"
+                } else "$gregCentury$centurySuffixEn Century (CE)"
 
                 // محاسبه فاصله روز انتخابی با تاریخ جاری
                 val todayG = CalendarManager.getTodayGregorian()
@@ -312,7 +320,7 @@ fun AllCalendarsCard(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         StatisticPill(
-                            label = if (isFa) "قرن" else "Century",
+                            label = if (isFa) "قرن (میلادی)" else "Century (CE)",
                             value = centuryText,
                             modifier = Modifier
                                 .weight(1f)
