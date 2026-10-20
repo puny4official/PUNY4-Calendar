@@ -52,7 +52,7 @@ fun SeasonalRainOverlay(
         season.equals("Spring", ignoreCase = true) ||
         season.equals("Autumn", ignoreCase = true) ||
         season.equals("Fall", ignoreCase = true)
-    ) 28 else 10,
+    ) 46 else 18,
     animationRunning: Boolean = true
 ) {
     val density = LocalDensity.current
@@ -92,7 +92,7 @@ fun SeasonalRainOverlay(
     // Pre-allocated particles array
     val particles = remember(particleCount, foliageEmojis, hasRainlines, density) {
         Array(particleCount) { i ->
-            val isDrop = hasRainlines && (i % 3 != 0)
+            val isDrop = hasRainlines && (i % 5 >= 2) // ~60% drops, ~40% leaves/flowers
             val emoji = if (isDrop) "" else foliageEmojis[i % foliageEmojis.size]
 
             // Depth layer: 0 = far (small, slow, faint), 1 = middle, 2 = near (long, fast, bright)
