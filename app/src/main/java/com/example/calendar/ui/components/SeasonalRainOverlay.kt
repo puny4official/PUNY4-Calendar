@@ -101,9 +101,9 @@ fun SeasonalRainOverlay(
             val speedY = if (isDrop) {
                 with(density) {
                     when (layer) {
-                        0 -> Random.nextInt(70, 95)
-                        1 -> Random.nextInt(105, 135)
-                        else -> Random.nextInt(165, 215)
+                        0 -> Random.nextInt(280, 350)
+                        1 -> Random.nextInt(430, 520)
+                        else -> Random.nextInt(650, 800)
                     }.dp.toPx()
                 }
             } else {
@@ -114,9 +114,9 @@ fun SeasonalRainOverlay(
 
             val rainLength = with(density) {
                 when (layer) {
-                    0 -> Random.nextInt(4, 6)
-                    1 -> Random.nextInt(7, 10)
-                    else -> Random.nextInt(11, 15)
+                    0 -> Random.nextInt(6, 9)
+                    1 -> Random.nextInt(10, 14)
+                    else -> Random.nextInt(16, 22)
                 }.dp.toPx()
             }
             val swayPhase = Random.nextFloat() * (2f * PI.toFloat())
