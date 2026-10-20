@@ -82,7 +82,7 @@ fun TodaySpotlightOverlay(
 ) {
     var progress by remember { mutableFloatStateOf(0f) }
     var isHolding by remember { mutableStateOf(false) }
-    val totalDurationMs = 2000L
+    val totalDurationMs = 4000L
 
     // Runs the 2-second countdown (with hold-to-pause) and then dismisses the card.
     LaunchedEffect(visible) {
@@ -438,7 +438,7 @@ fun TodaySpotlightOverlay(
                         // -----------------------------------------------------------
                         // 4. BOTTOM STATUS ROW: PURE INSTAGRAM STORY MECHANISM
                         // -----------------------------------------------------------
-                        val remainingSec = ((1f - progress) * 2f + 0.95f).toInt().coerceIn(1, 2)
+                        val remainingSec = ((1f - progress) * 4f + 0.95f).toInt().coerceIn(1, 4)
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
