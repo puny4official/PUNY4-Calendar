@@ -95,7 +95,9 @@ fun AppearanceDialog(
     val themeMode by userSettings.themeMode.collectAsState()
     val currentHolidayColorLong by userSettings.holidayColorLong.collectAsState()
     val activeColor = remember(currentHolidayColorLong) { Color(currentHolidayColorLong) }
-    val fontScalePercent by userSettings.fontScalePercent.collectAsState()
+    // Text size is held locally and applied on close, so the global density change
+    // doesn't recreate this dialog window while the user taps +/-.
+    var fontScalePercent by remember { mutableStateOf(userSettings.fontScalePercent.value) }
     val dayNumberScalePercent by userSettings.dayNumberScalePercent.collectAsState()
 
     var selectedHue by remember {
@@ -121,6 +123,7 @@ fun AppearanceDialog(
     }
     val dismiss: () -> Unit = {
         AppearanceScrollMemory.position = 0
+        userSettings.setFontScalePercent(fontScalePercent)
         onDismiss()
     }
 
@@ -764,7 +767,7 @@ fun AppearanceDialog(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 FilledTonalIconButton(
-                                    onClick = { userSettings.setFontScalePercent(fontScalePercent - 5) },
+                                    onClick = { fontScalePercent = fontScalePercent - 5 },
                                     enabled = fontScalePercent > 70,
                                     modifier = Modifier.size(40.dp)
                                 ) {
@@ -773,14 +776,14 @@ fun AppearanceDialog(
 
                                 Slider(
                                     value = fontScalePercent.toFloat(),
-                                    onValueChange = { userSettings.setFontScalePercent(it.toInt()) },
+                                    onValueChange = { fontScalePercent = it.toInt() },
                                     valueRange = 70f..160f,
                                     steps = 17,
                                     modifier = Modifier.weight(1f)
                                 )
 
                                 FilledTonalIconButton(
-                                    onClick = { userSettings.setFontScalePercent(fontScalePercent + 5) },
+                                    onClick = { fontScalePercent = fontScalePercent + 5 },
                                     enabled = fontScalePercent < 160,
                                     modifier = Modifier.size(40.dp)
                                 ) {
@@ -813,7 +816,7 @@ fun AppearanceDialog(
                                         ),
                                         modifier = Modifier
                                             .weight(1f)
-                                            .clickable { userSettings.setFontScalePercent(percent) }
+                                            .clickable { fontScalePercent = percent }
                                     ) {
                                         Box(
                                             modifier = Modifier.padding(vertical = 7.dp, horizontal = 2.dp),
