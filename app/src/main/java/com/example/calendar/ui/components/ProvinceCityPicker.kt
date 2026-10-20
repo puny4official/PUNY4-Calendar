@@ -61,7 +61,7 @@ fun ProvinceCityPicker(
     ) {
         if (q.isNotEmpty()) {
             val found = AstronomicalCalculator.CITIES.filter {
-                it.namePersian.contains(q) || it.nameEnglish.lowercase().contains(q)
+                Provinces.provinceOf(it.id) != null && (it.namePersian.contains(q) || it.nameEnglish.lowercase().contains(q))
             }
             items(found, key = { it.id }) { city ->
                 CityRow(city, city.id == selectedCityId, isFa, onSelect)

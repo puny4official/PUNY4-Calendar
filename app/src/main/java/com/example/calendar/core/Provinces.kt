@@ -37,8 +37,7 @@ object Provinces {
     Province("هرمزگان", "Hormozgan", listOf("bandarabbas", "kish", "qeshm", "bandarlengeh", "bastak", "hajiabad", "rudan", "minab", "jask")),
     Province("بوشهر", "Bushehr", listOf("bushehr", "borazjan", "genaveh", "khormuj", "deylam", "jam", "asaluyeh", "dayyer", "kangan")),
     Province("کرمان", "Kerman", listOf("kerman", "baft", "bam", "jiroft", "rafsanjan", "sirjan", "shahrebabak", "zarand", "bardsir", "anar")),
-    Province("سیستان و بلوچستان", "Sistan and Baluchestan", listOf("zahedan", "zabol", "chabahar", "iranshahr", "khash", "nikshahr", "sarbaz", "konarak", "saravan")),
-    Province("خارج از ایران", "Outside Iran", listOf("najaf", "karbala", "mecca", "medina", "dubai", "istanbul"))
+    Province("سیستان و بلوچستان", "Sistan and Baluchestan", listOf("zahedan", "zabol", "chabahar", "iranshahr", "khash", "nikshahr", "sarbaz", "konarak", "saravan"))
     )
 
     private val byCity: Map<String, Province> by lazy {
