@@ -34,7 +34,7 @@ object DailyNotificationHelper {
      * Completely eliminates any outer circular ring as requested ("اون رو درشت کن عددش رو و از دایره خارج کن").
      */
     fun createDayNumberBitmap(dayNumberStr: String): Bitmap =
-        DigitalDigits.render(dayNumberStr, 128, 128)
+        DigitalDigits.render(dayNumberStr, 128, 128, aspect = 0.46f, padFrac = 0.0f, gapFrac = 0.07f)
 
     fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

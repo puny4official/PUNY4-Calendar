@@ -13,17 +13,18 @@ object DigitalDigits {
         "abcdef", "bc", "abdeg", "abcdg", "bcfg", "acdfg", "acdefg", "abc", "abcdefg", "abcdfg"
     )
 
-    fun render(text: String, widthPx: Int, heightPx: Int, color: Int = Color.WHITE, glow: Boolean = false): Bitmap {
+    fun render(text: String, widthPx: Int, heightPx: Int, color: Int = Color.WHITE, glow: Boolean = false,
+               aspect: Float = 0.58f, padFrac: Float = 0.04f, gapFrac: Float = 0.10f): Bitmap {
         val bmp = Bitmap.createBitmap(widthPx, heightPx, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bmp)
         val digits = text.filter { it in '0'..'9' }.ifEmpty { "0" }
         val n = digits.length
-        val pad = heightPx * 0.04f
-        val gapBetween = heightPx * 0.10f
+        val pad = heightPx * padFrac
+        val gapBetween = heightPx * gapFrac
         val availW = widthPx - 2 * pad - gapBetween * (n - 1)
         // digit aspect ~ 0.58 (w/h); fit to both bounds
-        val dh = minOf(heightPx - 2 * pad, availW / n / 0.58f)
-        val dw = dh * 0.58f
+        val dh = minOf(heightPx - 2 * pad, availW / n / aspect)
+        val dw = dh * aspect
         val totalW = dw * n + gapBetween * (n - 1)
         var x0 = (widthPx - totalW) / 2f
         val y0 = (heightPx - dh) / 2f
