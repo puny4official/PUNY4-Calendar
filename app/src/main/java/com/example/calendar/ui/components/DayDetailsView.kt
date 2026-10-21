@@ -685,7 +685,7 @@ fun AstronomyCard(
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     SolarTimeItem("طلوع آفتاب", DigitFormatter.toSystemDigits(dayInfo.solarTimes.sunrise, renderFaDigits), Icons.Default.WbSunny, art = R.drawable.ic_sunrise_art)
-                    SolarTimeItem("ظهر خورشیدی", DigitFormatter.toSystemDigits(dayInfo.solarTimes.noon, renderFaDigits), Icons.Default.LightMode)
+                    SolarTimeItem("ظهر خورشیدی", DigitFormatter.toSystemDigits(dayInfo.solarTimes.noon, renderFaDigits), Icons.Default.LightMode, art = R.drawable.ic_noon_art)
                     SolarTimeItem("غروب آفتاب", DigitFormatter.toSystemDigits(dayInfo.solarTimes.sunset, renderFaDigits), Icons.Default.Bedtime)
                     SolarTimeItem("نیمه‌شب خورشیدی", DigitFormatter.toSystemDigits(dayInfo.solarTimes.midnight, renderFaDigits), Icons.Default.NightsStay)
                 }
