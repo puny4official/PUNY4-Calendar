@@ -516,7 +516,24 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.background)
+                        ) {
+                        // Seasonal animation sits BEHIND the content, so it shows through the glass calendar card
+                        if (showSeasonalRain && selectedTab == MainTab.CALENDAR) {
+                            SeasonalRainOverlay(
+                                season = currentSeason,
+                                animationRunning = drawerState.isClosed,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .blur(drawerBlur, androidx.compose.ui.draw.BlurredEdgeTreatment.Unbounded)
+                                    .clipToBounds()
+                            )
+                        }
                         Scaffold(
+                            containerColor = Color.Transparent,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .blur(drawerBlur, androidx.compose.ui.draw.BlurredEdgeTreatment.Unbounded)
@@ -658,16 +675,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
-                    // Seasonal animation across the WHOLE page (touch-transparent, drawn above the content)
-                    if (showSeasonalRain && selectedTab == MainTab.CALENDAR) {
-                        SeasonalRainOverlay(
-                            season = currentSeason,
-                            animationRunning = drawerState.isClosed,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clipToBounds()
-                        )
-                    }
+                        }
                     }
 
                     if (showEventSearchDialog) {
