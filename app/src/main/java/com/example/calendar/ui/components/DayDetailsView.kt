@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.example.calendar.core.AstronomicalCalculator
 import com.example.calendar.core.CalendarManager
 import com.example.calendar.core.DigitFormatter
+import com.example.R
 import com.example.calendar.core.JalaliCalendar
 import com.example.calendar.model.CityLocation
 import com.example.calendar.model.EventType
@@ -683,7 +684,7 @@ fun AstronomyCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
-                    SolarTimeItem("طلوع آفتاب", DigitFormatter.toSystemDigits(dayInfo.solarTimes.sunrise, renderFaDigits), Icons.Default.WbSunny)
+                    SolarTimeItem("طلوع آفتاب", DigitFormatter.toSystemDigits(dayInfo.solarTimes.sunrise, renderFaDigits), Icons.Default.WbSunny, art = R.drawable.ic_sunrise_art)
                     SolarTimeItem("ظهر خورشیدی", DigitFormatter.toSystemDigits(dayInfo.solarTimes.noon, renderFaDigits), Icons.Default.LightMode)
                     SolarTimeItem("غروب آفتاب", DigitFormatter.toSystemDigits(dayInfo.solarTimes.sunset, renderFaDigits), Icons.Default.Bedtime)
                     SolarTimeItem("نیمه‌شب خورشیدی", DigitFormatter.toSystemDigits(dayInfo.solarTimes.midnight, renderFaDigits), Icons.Default.NightsStay)
@@ -790,7 +791,7 @@ fun AstronomyCard(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // نمایش شش‌گانه اوقات شرعی شهر منتخب
+                // فقط سه اذان: صبح، ظهر، مغرب
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -802,41 +803,15 @@ fun AstronomyCard(
                         modifier = Modifier.weight(1f)
                     )
                     AzanTimeCard(
-                        title = if (isFa) "طلوع آفتاب" else "Sunrise",
-                        time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.sunrise, renderFaDigits),
-                        icon = Icons.Default.WbSunny,
-                        modifier = Modifier.weight(1f)
-                    )
-                    AzanTimeCard(
                         title = if (isFa) "اذان ظهر" else "Dhuhr",
                         time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.noon, renderFaDigits),
                         icon = Icons.Default.LightMode,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    AzanTimeCard(
-                        title = if (isFa) "غروب آفتاب" else "Sunset",
-                        time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.sunset, renderFaDigits),
-                        icon = Icons.Default.WbTwilight,
                         modifier = Modifier.weight(1f)
                     )
                     AzanTimeCard(
                         title = if (isFa) "اذان مغرب" else "Maghrib",
                         time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.maghrib, renderFaDigits),
                         icon = Icons.Default.NightsStay,
-                        modifier = Modifier.weight(1f)
-                    )
-                    AzanTimeCard(
-                        title = if (isFa) "نیمه‌شب" else "Midnight",
-                        time = DigitFormatter.toSystemDigits(dayInfo.solarTimes.midnight, renderFaDigits),
-                        icon = Icons.Default.Brightness3,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -1514,12 +1489,19 @@ private fun StatisticPill(
 private fun SolarTimeItem(
     title: String,
     time: String,
-    icon: ImageVector
+    icon: ImageVector,
+    art: Int? = null
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(
+        if (art != null) {
+            androidx.compose.foundation.Image(
+                painter = androidx.compose.ui.res.painterResource(id = art),
+                contentDescription = null,
+                modifier = Modifier.size(width = 30.dp, height = 23.dp)
+            )
+        } else Icon(
             imageVector = icon,
             contentDescription = null,
             modifier = Modifier.size(19.dp),
