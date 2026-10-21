@@ -1492,6 +1492,7 @@ private fun SolarTimeItem(
     icon: ImageVector,
     art: Int? = null
 ) {
+    val fixedTint = if (icon == Icons.Default.Bedtime || icon == Icons.Default.NightsStay) Color(0xFF9FB4FF) else Color(0xFFFFC857)
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -1505,7 +1506,7 @@ private fun SolarTimeItem(
             imageVector = icon,
             contentDescription = null,
             modifier = Modifier.size(19.dp),
-            tint = MaterialTheme.colorScheme.primary
+            tint = fixedTint // fixed colour: never follows the holiday/accent colour
         )
         Spacer(modifier = Modifier.height(3.dp))
         Text(
