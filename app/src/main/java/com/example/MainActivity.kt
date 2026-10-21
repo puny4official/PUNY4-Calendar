@@ -623,16 +623,6 @@ class MainActivity : ComponentActivity() {
                                         )
                                     )
 
-                                    // Seasonal falling emoji rain overlay across every point of the top header
-                                    if (showSeasonalRain && selectedTab == MainTab.CALENDAR) {
-                                        SeasonalRainOverlay(
-                                            season = currentSeason,
-                                            animationRunning = drawerState.isClosed,
-                                            modifier = Modifier
-                                                .matchParentSize()
-                                                .clipToBounds()
-                                        )
-                                    }
                                 }
                             }
                             // Note: bottomBar is intentionally completely omitted as requested:
@@ -667,6 +657,17 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         }
+
+                    // Seasonal animation across the WHOLE page (touch-transparent, drawn above the content)
+                    if (showSeasonalRain && selectedTab == MainTab.CALENDAR) {
+                        SeasonalRainOverlay(
+                            season = currentSeason,
+                            animationRunning = drawerState.isClosed,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clipToBounds()
+                        )
+                    }
                     }
 
                     if (showEventSearchDialog) {

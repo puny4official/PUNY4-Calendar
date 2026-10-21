@@ -170,9 +170,18 @@ Box(
             }
         }
         .clip(RoundedCornerShape(24.dp))
-        .background(MaterialTheme.colorScheme.surface)
+        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.55f))
         // Inner light cast from the frame toward the middle of the card
         .drawWithContent {
+            // Convex glass: bright sheen on the upper part, soft shade towards the bottom
+            drawRect(Brush.verticalGradient(
+                listOf(Color.White.copy(alpha = 0.13f), Color.White.copy(alpha = 0.03f), Color.Transparent),
+                0f, size.height * 0.55f))
+            drawRect(Brush.verticalGradient(
+                listOf(Color.Transparent, Color.Black.copy(alpha = 0.18f)),
+                size.height * 0.6f, size.height))
+            // thin bright rim on the very top edge
+            drawRect(Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.28f), Color.Transparent), 0f, 3.dp.toPx()))
             drawContent()
             val glow = 36.dp.toPx()
             val warm = Color(0xFFFFC85A)
