@@ -1,6 +1,7 @@
 package com.example
 
 import com.example.ui.theme.cardFrameColor
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.foundation.border
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -162,28 +163,51 @@ class MainActivity : ComponentActivity() {
 
                     // Frosted effect: blur the calendar behind the open drawer (blur needs Android 12+)
                     val drawerBlur by androidx.compose.animation.core.animateDpAsState(
-                        targetValue = if (drawerState.targetValue == DrawerValue.Open) 14.dp else 0.dp,
+                        targetValue = if (drawerState.targetValue == DrawerValue.Open) 22.dp else 0.dp,
                         animationSpec = tween(260),
                         label = "drawerBlur"
                     )
 
                     ModalNavigationDrawer(
                         drawerState = drawerState,
-                        scrimColor = androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.25f),
+                        scrimColor = androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.18f),
                         drawerContent = {
                             ModalDrawerSheet(
                                 modifier = Modifier
                                     .widthIn(max = 320.dp)
                                     .fillMaxHeight()
+                                    // Convex glass: light tint that is brighter at the top, plus a bright rim
+                                    .drawBehind {
+                                        drawRect(
+                                            androidx.compose.ui.graphics.Brush.verticalGradient(
+                                                listOf(
+                                                    androidx.compose.ui.graphics.Color.White.copy(alpha = 0.16f),
+                                                    androidx.compose.ui.graphics.Color.White.copy(alpha = 0.05f),
+                                                    androidx.compose.ui.graphics.Color.White.copy(alpha = 0.09f)
+                                                )
+                                            )
+                                        )
+                                        drawRect(
+                                            androidx.compose.ui.graphics.Brush.horizontalGradient(
+                                                listOf(androidx.compose.ui.graphics.Color.Transparent, androidx.compose.ui.graphics.Color.White.copy(alpha = 0.10f)),
+                                                startX = size.width * 0.6f, endX = size.width
+                                            )
+                                        )
+                                    }
                                     .border(
-                                        1.dp,
+                                        1.2.dp,
                                         androidx.compose.ui.graphics.Brush.verticalGradient(
-                                            listOf(cardFrameColor.copy(alpha = 0.22f), cardFrameColor.copy(alpha = 0f))
+                                            listOf(
+                                                androidx.compose.ui.graphics.Color.White.copy(alpha = 0.45f),
+                                                androidx.compose.ui.graphics.Color.White.copy(alpha = 0.10f),
+                                                androidx.compose.ui.graphics.Color.White.copy(alpha = 0.25f)
+                                            )
                                         ),
-                                        androidx.compose.foundation.shape.RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
+                                        androidx.compose.foundation.shape.RoundedCornerShape(topEnd = 28.dp, bottomEnd = 28.dp)
                                     )
                                     .testTag("hamburger_drawer_sheet"),
-                                drawerContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f)
+                                drawerShape = androidx.compose.foundation.shape.RoundedCornerShape(topEnd = 28.dp, bottomEnd = 28.dp),
+                                drawerContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.30f)
                             ) {
                                 Column(
                                     modifier = Modifier
