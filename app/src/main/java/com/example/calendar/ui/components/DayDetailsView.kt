@@ -1500,7 +1500,7 @@ private fun SolarTimeItem(
             androidx.compose.foundation.Image(
                 painter = androidx.compose.ui.res.painterResource(id = art),
                 contentDescription = null,
-                modifier = Modifier.size(width = 30.dp, height = 23.dp)
+                modifier = Modifier.size(width = 40.dp, height = 24.dp)
             )
         } else Icon(
             imageVector = icon,
