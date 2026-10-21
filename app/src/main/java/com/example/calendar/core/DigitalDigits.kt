@@ -28,7 +28,7 @@ object DigitalDigits {
         val totalW = dw * n + gapBetween * (n - 1)
         var x0 = (widthPx - totalW) / 2f
         val y0 = (heightPx - dh) / 2f
-        val t = dw * 0.25f            // segment thickness (bold)
+        val t = dw * 0.14f            // segment thickness (slim)
         val g = t * 0.12f             // tiny gap between segments
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { this.color = color; style = Paint.Style.FILL }
         val r = t / 2f
