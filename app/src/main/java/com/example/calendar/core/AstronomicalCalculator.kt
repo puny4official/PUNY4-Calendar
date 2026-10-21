@@ -73,7 +73,7 @@ object AstronomicalCalculator {
         }
     }
 
-    val CITIES = listOf(
+    private val BASE_CITIES = listOf(
         CityLocation("tehran", "تهران", "Tehran", 35.6892, 51.3890, 3.5),
         CityLocation("mashhad", "مشهد", "Mashhad", 36.2605, 59.6168, 3.5),
         CityLocation("isfahan", "اصفهان", "Isfahan", 32.6546, 51.6680, 3.5),
@@ -532,6 +532,9 @@ object AstronomicalCalculator {
         CityLocation("dubai", "دبی", "Dubai", 25.2048, 55.2708, 4.0),
         CityLocation("istanbul", "استانبول", "Istanbul", 41.0082, 28.9784, 3.0)
     )
+
+    /** Main cities plus the extra small cities. */
+    val CITIES: List<CityLocation> by lazy { BASE_CITIES + ExtraCities.CITIES }
 
     /**
      * Calculates Moon information: Phase, Illumination %, Moon age, Moon Longitude, Moon Zodiac.

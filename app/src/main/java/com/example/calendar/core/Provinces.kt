@@ -6,7 +6,7 @@ import com.example.calendar.model.CityLocation
 data class Province(val namePersian: String, val nameEnglish: String, val cityIds: List<String>)
 
 object Provinces {
-    val ALL: List<Province> = listOf(
+    private val BASE: List<Province> = listOf(
     Province("تهران", "Tehran", listOf("tehran", "eslamshahr", "pakdasht", "qarchak", "shahriar", "robatkarim", "varamin", "damavand", "firuzkuh", "rey", "lavasan", "pardis", "malard", "nasimshahr", "qods", "parand", "shemiran", "bumehen", "rudehen", "baghershahr", "kahrizak", "pishva", "qiamdasht")),
     Province("البرز", "Alborz", listOf("karaj", "hashtgerd", "nazarabad", "taleghan", "eshtehard", "fardis", "mehrshahr", "kamalshahr", "mohammadshahr", "mahdasht")),
     Province("قزوین", "Qazvin", listOf("qazvin", "abyek", "buinzahra", "takestan", "avaj", "mohammadieh")),
@@ -40,12 +40,18 @@ object Provinces {
     Province("سیستان و بلوچستان", "Sistan and Baluchestan", listOf("zahedan", "zabol", "chabahar", "iranshahr", "khash", "nikshahr", "sarbaz", "konarak", "saravan", "mirjaveh", "rask", "qasreqand", "zahak", "hirmand"))
     )
 
+    val ALL: List<Province> by lazy {
+        BASE.map { it.copy(cityIds = it.cityIds + ExtraCities.idsFor(it.nameEnglish)) }
+    }
+
     private val byCity: Map<String, Province> by lazy {
         ALL.flatMap { p -> p.cityIds.map { it to p } }.toMap()
     }
 
+    private val byId: Map<String, CityLocation> by lazy { AstronomicalCalculator.CITIES.associateBy { it.id } }
+
     fun cities(province: Province): List<CityLocation> =
-        province.cityIds.mapNotNull { id -> AstronomicalCalculator.CITIES.find { it.id == id } }
+        province.cityIds.mapNotNull { byId[it] }
 
     fun provinceOf(cityId: String): Province? = byCity[cityId]
 }
