@@ -46,7 +46,7 @@ import com.example.R
 import kotlinx.coroutines.delay
 
 /** Total time the startup loading screen stays visible. */
-private const val LOADING_DURATION_MS = 5000L
+private const val LOADING_DURATION_MS = 2000L
 
 /**
  * Startup loading screen (black):
