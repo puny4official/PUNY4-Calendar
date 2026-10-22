@@ -1639,8 +1639,8 @@ private fun MoonDetailsDialog(
                     androidx.compose.ui.graphics.Brush.verticalGradient(
                         listOf(
                             Color.White.copy(alpha = 0.20f),
-                            MaterialTheme.colorScheme.surface.copy(alpha = 0.80f),
-                            MaterialTheme.colorScheme.surface.copy(alpha = 0.88f)
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.42f),
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.55f)
                         )
                     )
                 )
