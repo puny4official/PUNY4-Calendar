@@ -697,11 +697,18 @@ fun AstronomyCard(
                     SolarTimeItem("نیمه‌شب خورشیدی", DigitFormatter.toSystemDigits(dayInfo.solarTimes.midnight, renderFaDigits), Icons.Default.NightsStay, art = R.drawable.ic_midnight_art)
                 }
 
+                }
+
                 Spacer(modifier = Modifier.height(10.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                // Day / night length in their own frame, night length under day length
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .border(1.dp, cardFrameColor, RoundedCornerShape(16.dp))
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text(
                         text = "طول روز: ${DigitFormatter.toSystemDigits(dayInfo.solarTimes.dayLengthFormatted, renderFaDigits)}",
@@ -715,7 +722,6 @@ fun AstronomyCard(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                }
                 }
 
                 // ----------------------------------------------------
