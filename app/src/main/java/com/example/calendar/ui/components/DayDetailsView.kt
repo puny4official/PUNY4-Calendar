@@ -1441,15 +1441,16 @@ private fun CalendarDateRow(
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 )
+                // Subtitle sits under the date so a larger font scale can never make them collide
+                Spacer(modifier = Modifier.height(3.dp))
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp, fontFamily = FontFamily.Default),
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
-
-        Text(
-            text = subtitle,
-            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }
 
