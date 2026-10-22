@@ -665,6 +665,13 @@ fun AstronomyCard(
                 // ----------------------------------------------------
                 // کل اوقات خورشیدی (بدون اوقات اذان)
                 // ----------------------------------------------------
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .border(1.dp, cardFrameColor, RoundedCornerShape(16.dp))
+                        .padding(12.dp)
+                ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -708,6 +715,7 @@ fun AstronomyCard(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+                }
                 }
 
                 // ----------------------------------------------------
