@@ -48,6 +48,7 @@ fun SunArcCard(
     sunrise: String,
     noon: String,
     sunset: String,
+    isToday: Boolean,
     modifier: Modifier = Modifier
 ) {
     var nowMin by remember { mutableDoubleStateOf(currentMinutes()) }
@@ -61,6 +62,8 @@ fun SunArcCard(
     val rise = minutesOf(sunrise)
     val set = minutesOf(sunset)
     val noonMin = minutesOf(noon)
+    // Today: follow the real clock. Any other day: show that day's spectrum with the sun at solar noon.
+    val shownMin = if (isToday) nowMin else (noonMin ?: ((rise ?: 360.0) + (set ?: 1080.0)) / 2.0)
 
     BoxWithConstraints(modifier = modifier.fillMaxWidth().height(124.dp)) {
         val w = maxWidth
@@ -107,7 +110,7 @@ fun SunArcCard(
             if (rise == null || set == null) return@Canvas
             val dayLen = (set - rise).let { if (it <= 0) it + 1440.0 else it }
             val nightLen = 1440.0 - dayLen
-            val sinceRise = ((nowMin - rise) % 1440.0 + 1440.0) % 1440.0
+            val sinceRise = ((shownMin - rise) % 1440.0 + 1440.0) % 1440.0
 
             val sunX: Float
             val sunY: Float
@@ -137,20 +140,35 @@ fun SunArcCard(
                 sunX = nightX(p); sunY = nightY(p)
             }
 
-            // sun: glow + spikes + disc (dimmer under the horizon)
-            val a = if (isDay) 1f else 0.55f
-            val r = 11.dp.toPx()
-            drawCircle(Color(0xFFFFC857).copy(alpha = 0.22f * a), radius = r * 2.1f, center = Offset(sunX, sunY))
-            for (k in 0 until 14) {
-                val ang = 2 * PI * k / 14
-                drawLine(
-                    Color(0xFFD9A441).copy(alpha = a),
-                    Offset(sunX + (r * 0.95f * cos(ang)).toFloat(), sunY + (r * 0.95f * sin(ang)).toFloat()),
-                    Offset(sunX + (r * 1.45f * cos(ang)).toFloat(), sunY + (r * 1.45f * sin(ang)).toFloat()),
-                    strokeWidth = 2.dp.toPx(), cap = StrokeCap.Round
-                )
+            if (isDay) {
+                // Sun colour: pale yellow at sunrise -> gold at noon -> orange towards sunset
+                val p = (sinceRise / dayLen).coerceIn(0.0, 1.0).toFloat()
+                val yellow = Color(0xFFFFE9A8)
+                val gold = Color(0xFFFFC857)
+                val orange = Color(0xFFFF6A00)
+                val body = if (p < 0.5f) androidx.compose.ui.graphics.lerp(yellow, gold, p / 0.5f)
+                else androidx.compose.ui.graphics.lerp(gold, orange, (p - 0.5f) / 0.5f)
+                val spike = androidx.compose.ui.graphics.lerp(body, Color(0xFFB45309), 0.35f)
+                val r = 11.dp.toPx()
+                drawCircle(body.copy(alpha = 0.25f), radius = r * 2.2f, center = Offset(sunX, sunY))
+                for (k in 0 until 14) {
+                    val ang = 2 * PI * k / 14
+                    drawLine(
+                        spike,
+                        Offset(sunX + (r * 0.95f * cos(ang)).toFloat(), sunY + (r * 0.95f * sin(ang)).toFloat()),
+                        Offset(sunX + (r * 1.45f * cos(ang)).toFloat(), sunY + (r * 1.45f * sin(ang)).toFloat()),
+                        strokeWidth = 2.dp.toPx(), cap = StrokeCap.Round
+                    )
+                }
+                drawCircle(body, radius = r, center = Offset(sunX, sunY))
+            } else {
+                // Night: a white moon travelling under the horizon
+                val r = 10.dp.toPx()
+                drawCircle(Color.White.copy(alpha = 0.18f), radius = r * 2.2f, center = Offset(sunX, sunY))
+                drawCircle(Color(0xFFF4F6FA), radius = r, center = Offset(sunX, sunY))
+                drawCircle(Color(0xFFD5DAE4), radius = r * 0.28f, center = Offset(sunX - r * 0.35f, sunY - r * 0.25f))
+                drawCircle(Color(0xFFD5DAE4), radius = r * 0.20f, center = Offset(sunX + r * 0.38f, sunY + r * 0.30f))
             }
-            drawCircle(Color(0xFFFFD58A).copy(alpha = a), radius = r, center = Offset(sunX, sunY))
         }
 
         // labels above the sunrise / sunset ticks

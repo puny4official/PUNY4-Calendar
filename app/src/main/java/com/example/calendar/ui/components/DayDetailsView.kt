@@ -716,7 +716,8 @@ fun AstronomyCard(
                     SunArcCard(
                         sunrise = dayInfo.solarTimes.sunrise,
                         noon = dayInfo.solarTimes.noon,
-                        sunset = dayInfo.solarTimes.sunset
+                        sunset = dayInfo.solarTimes.sunset,
+                        isToday = dayInfo.gregorianDate == CalendarManager.getTodayGregorian()
                     )
                 }
 
