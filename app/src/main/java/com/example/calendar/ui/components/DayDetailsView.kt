@@ -403,12 +403,21 @@ fun AstronomyCard(
                 )
 
                 // Moon Phase Tile
+                var showMoonDetails by remember { mutableStateOf(false) }
+                if (showMoonDetails) {
+                    MoonDetailsDialog(
+                        dayInfo = dayInfo,
+                        renderFaDigits = renderFaDigits,
+                        onDismiss = { showMoonDetails = false }
+                    )
+                }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                         .border(1.dp, cardFrameColor, RoundedCornerShape(14.dp))
+                        .clickable { showMoonDetails = true }
                         .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -427,15 +436,9 @@ fun AstronomyCard(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "${dayInfo.moonInfo.phaseType.titleEnglish} • سن: ${DigitFormatter.toSystemDigits(dayInfo.moonInfo.ageDays, renderFaDigits)} روز",
+                                text = "سن: ${DigitFormatter.toSystemDigits(dayInfo.moonInfo.ageDays, renderFaDigits)} روز",
                                 style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Default),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "موقعیت در آسمان: برج ${dayInfo.moonInfo.moonZodiacName} (${DigitFormatter.toSystemDigits(dayInfo.moonInfo.moonZodiacDegree, renderFaDigits)}°)",
-                                style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, fontFamily = FontFamily.Default),
-                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
@@ -1598,6 +1601,93 @@ private fun AzanTimeCard(
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center
             )
+        }
+    }
+}
+
+
+/** Small glass dialog with the exact moon details of the selected day. */
+@Composable
+private fun MoonDetailsDialog(
+    dayInfo: FullDayInfo,
+    renderFaDigits: Boolean,
+    onDismiss: () -> Unit
+) {
+    val m = dayInfo.moonInfo
+    val synodic = 29.53058867
+    val toNewMoon = synodic - m.ageDays
+    val toFullMoon = (synodic / 2.0 - m.ageDays).let { if (it < 0) it + synodic else it }
+    fun n(v: Number) = DigitFormatter.toSystemDigits(v, renderFaDigits)
+    fun d1(v: Double) = n((Math.round(v * 10.0) / 10.0))
+    val i = dayInfo.islamicDate
+    val rows = listOf(
+        "فاز ماه" to "${m.phaseType.emoji} ${m.phaseType.titlePersian}",
+        "سن ماه" to "${d1(m.ageDays)} روز",
+        "درخشندگی" to "${n(m.illuminationPercent)}٪",
+        "زاویه فاز" to "${d1(m.phaseAngleDegrees)}°",
+        "برج ماه" to "${m.moonZodiacName} (${d1(m.moonZodiacDegree)}°)",
+        "تا ماه کامل (بدر)" to "${d1(toFullMoon)} روز",
+        "تا ماه نو (محاق)" to "${d1(toNewMoon)} روز",
+        "روز ماه قمری" to "${n(i.day)} ${IslamicCalendar.MONTH_NAMES_ARABIC[i.month - 1]} ${n(i.year)}"
+    )
+    androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(28.dp))
+                .background(
+                    androidx.compose.ui.graphics.Brush.verticalGradient(
+                        listOf(
+                            Color.White.copy(alpha = 0.20f),
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.80f),
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.88f)
+                        )
+                    )
+                )
+                .border(
+                    1.2.dp,
+                    androidx.compose.ui.graphics.Brush.verticalGradient(
+                        listOf(Color.White.copy(alpha = 0.50f), Color.White.copy(alpha = 0.10f), Color.White.copy(alpha = 0.25f))
+                    ),
+                    RoundedCornerShape(28.dp)
+                )
+                .padding(20.dp)
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                MoonPhaseCanvas(moonInfo = m, size = 84.dp)
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = "اطلاعات ماه امروز",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                rows.forEach { (label, value) ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 5.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = value,
+                            style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Default),
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    HorizontalDivider(color = Color.White.copy(alpha = 0.08f))
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                androidx.compose.material3.TextButton(onClick = onDismiss) { Text("بستن") }
+            }
         }
     }
 }
