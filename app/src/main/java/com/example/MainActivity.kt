@@ -101,7 +101,8 @@ class MainActivity : ComponentActivity() {
             val customDensity = remember(currentDensity, fontScalePercent) {
                 Density(
                     density = currentDensity.density,
-                    fontScale = currentDensity.fontScale * (fontScalePercent / 100f)
+                    // Ignore the phone's own font-size setting so 100% looks the same on every device
+                    fontScale = fontScalePercent / 100f
                 )
             }
 
