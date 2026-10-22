@@ -252,7 +252,7 @@ fun AllCalendarsCard(
                     else -> "th"
                 }
                 val centuryText = if (isFa) {
-                    if (centuryOrdinalFa.isNotEmpty()) "قرن $centuryNumberFa میلادی ($centuryOrdinalFa)" else "قرن $centuryNumberFa میلادی"
+                    "قرن $centuryNumberFa میلادی"
                 } else "$gregCentury$centurySuffixEn Century (CE)"
 
                 // محاسبه فاصله روز انتخابی با تاریخ جاری
