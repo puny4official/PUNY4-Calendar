@@ -222,7 +222,8 @@ fun AllCalendarsCard(
                     iconTint = PrimaryLight,
                     calendarName = "میلادی",
                     dateString = "${DigitFormatter.toSystemDigits(dayInfo.gregorianDate.day, renderFaDigits)} ${CalendarManager.GREGORIAN_MONTH_NAMES_PERSIAN[dayInfo.gregorianDate.month - 1]} ${DigitFormatter.toSystemDigits(dayInfo.gregorianDate.year, renderFaDigits)}",
-                    subtitle = "${dayInfo.gregorianDate.year}-${String.format(java.util.Locale.US, "%02d", dayInfo.gregorianDate.month)}-${String.format(java.util.Locale.US, "%02d", dayInfo.gregorianDate.day)} (${dayInfo.dayOfWeekEnglish})"
+                    subtitle = "${dayInfo.gregorianDate.year}-${String.format(java.util.Locale.US, "%02d", dayInfo.gregorianDate.month)}-${String.format(java.util.Locale.US, "%02d", dayInfo.gregorianDate.day)} (${dayInfo.dayOfWeekEnglish})",
+                    subtitleBelow = true
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -1409,7 +1410,8 @@ private fun CalendarDateRow(
     iconTint: Color,
     calendarName: String,
     dateString: String,
-    subtitle: String
+    subtitle: String,
+    subtitleBelow: Boolean = false
 ) {
     Row(
         modifier = Modifier
@@ -1447,15 +1449,26 @@ private fun CalendarDateRow(
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                // Subtitle sits under the date so a larger font scale can never make them collide
-                Spacer(modifier = Modifier.height(3.dp))
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp, fontFamily = FontFamily.Default),
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                if (subtitleBelow) {
+                    // Subtitle sits under the date so a larger font scale can never make them collide
+                    Spacer(modifier = Modifier.height(3.dp))
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp, fontFamily = FontFamily.Default),
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
+        }
+
+        if (!subtitleBelow) {
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
