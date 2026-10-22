@@ -1628,7 +1628,7 @@ private fun MoonDetailsDialog(
         "برج ماه" to "${m.moonZodiacName} (${d1(m.moonZodiacDegree)}°)",
         "تا ماه کامل (بدر)" to "${d1(toFullMoon)} روز",
         "تا ماه نو (محاق)" to "${d1(toNewMoon)} روز",
-        "روز ماه قمری" to "${n(i.day)} ${IslamicCalendar.MONTH_NAMES_ARABIC[i.month - 1]} ${n(i.year)}"
+        "روز ماه قمری" to "${n(i.day)} ${com.example.calendar.core.IslamicCalendar.MONTH_NAMES_ARABIC[i.month - 1]} ${n(i.year)}"
     )
     androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
         Box(
