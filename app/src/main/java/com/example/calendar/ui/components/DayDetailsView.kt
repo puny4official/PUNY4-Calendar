@@ -705,6 +705,23 @@ fun AstronomyCard(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
+                // Live sun path: moves with the real clock from sunrise through the day and night
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .border(1.dp, cardFrameColor, RoundedCornerShape(16.dp))
+                        .padding(vertical = 8.dp, horizontal = 4.dp)
+                ) {
+                    SunArcCard(
+                        sunrise = dayInfo.solarTimes.sunrise,
+                        noon = dayInfo.solarTimes.noon,
+                        sunset = dayInfo.solarTimes.sunset
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
                 // Day / night length in their own frame, night length under day length
                 Column(
                     modifier = Modifier
