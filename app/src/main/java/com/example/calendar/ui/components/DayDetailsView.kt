@@ -253,7 +253,7 @@ fun AllCalendarsCard(
                 }
                 val centuryText = if (isFa) {
                     "قرن $centuryNumberFa میلادی"
-                } else "$gregCentury$centurySuffixEn Century (CE)"
+                } else "$gregCentury Century (CE)"
 
                 // محاسبه فاصله روز انتخابی با تاریخ جاری
                 val todayG = CalendarManager.getTodayGregorian()
