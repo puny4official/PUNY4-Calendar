@@ -542,7 +542,6 @@ class MainActivity : ComponentActivity() {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .background(MaterialTheme.colorScheme.surface)
                                         .clipToBounds()
                                 ) {
                                     TopAppBar(
