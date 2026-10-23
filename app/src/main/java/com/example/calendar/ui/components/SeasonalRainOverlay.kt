@@ -101,9 +101,9 @@ fun SeasonalRainOverlay(
             val speedY = if (isDrop) {
                 with(density) {
                     when (layer) {
-                        0 -> Random.nextInt(280, 350)
-                        1 -> Random.nextInt(430, 520)
-                        else -> Random.nextInt(650, 800)
+                        0 -> Random.nextInt(480, 580)
+                        1 -> Random.nextInt(750, 900)
+                        else -> Random.nextInt(1100, 1350)
                     }.dp.toPx()
                 }
             } else {
