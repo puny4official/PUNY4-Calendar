@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -177,14 +177,14 @@ fun SunArcCard(
             color = Color(0xFFF59E0B),
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
-            modifier = Modifier.offset(x = xRightDp - 18.dp, y = 8.dp)
+            modifier = Modifier.absoluteOffset(x = xRightDp - 18.dp, y = 8.dp)
         )
         Text(
             text = "غروب",
             color = Color(0xFFEF4444),
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
-            modifier = Modifier.offset(x = xLeftDp - 18.dp, y = 8.dp)
+            modifier = Modifier.absoluteOffset(x = xLeftDp - 18.dp, y = 8.dp)
         )
     }
 }
