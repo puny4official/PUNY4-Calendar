@@ -52,7 +52,7 @@ fun SeasonalRainOverlay(
         season.equals("Spring", ignoreCase = true) ||
         season.equals("Autumn", ignoreCase = true) ||
         season.equals("Fall", ignoreCase = true)
-    ) 64 else 32,
+    ) 100 else 50,
     animationRunning: Boolean = true
 ) {
     val density = LocalDensity.current
@@ -114,9 +114,9 @@ fun SeasonalRainOverlay(
 
             val rainLength = with(density) {
                 when (layer) {
-                    0 -> Random.nextInt(6, 9)
-                    1 -> Random.nextInt(10, 14)
-                    else -> Random.nextInt(16, 22)
+                    0 -> Random.nextInt(12, 18)
+                    1 -> Random.nextInt(20, 28)
+                    else -> Random.nextInt(30, 42)
                 }.dp.toPx()
             }
             val swayPhase = Random.nextFloat() * (2f * PI.toFloat())
@@ -186,31 +186,20 @@ fun SeasonalRainOverlay(
 
     // Rain paints per depth layer: far (thin, faint) -> near (thick, bright), each with a thin bright "glass" core.
     val rainPaints = remember(density) {
-        val widths = floatArrayOf(with(density) { 0.5.dp.toPx() }, with(density) { 0.8.dp.toPx() }, with(density) { 1.1.dp.toPx() })
-        val alphas = intArrayOf(45, 80, 120)
+        val alphas = intArrayOf(70, 110, 155)
         Array(3) { l ->
             Paint().apply {
                 isAntiAlias = true
-                color = android.graphics.Color.argb(alphas[l], 96, 180, 245)
-                style = Paint.Style.STROKE
-                strokeCap = Paint.Cap.ROUND
-                strokeWidth = widths[l]
+                color = android.graphics.Color.argb(alphas[l], 120, 172, 215)
+                style = Paint.Style.FILL
             }
         }
     }
-    val corePaints = remember(density) {
-        val widths = floatArrayOf(0f, with(density) { 0.35.dp.toPx() }, with(density) { 0.55.dp.toPx() })
-        val alphas = intArrayOf(0, 140, 230)
-        Array(3) { l ->
-            Paint().apply {
-                isAntiAlias = true
-                color = android.graphics.Color.argb(alphas[l], 235, 248, 255)
-                style = Paint.Style.STROKE
-                strokeCap = Paint.Cap.ROUND
-                strokeWidth = widths[l]
-            }
-        }
+    // Half width of each streak at its bottom end (the streak tapers to a point at the top)
+    val rainHalfWidths = remember(density) {
+        floatArrayOf(with(density) { 0.5.dp.toPx() }, with(density) { 0.8.dp.toPx() }, with(density) { 1.1.dp.toPx() })
     }
+    val rainPath = remember { android.graphics.Path() }
 
     // Bright round "water bead" at the leading end of each streak (drawn as batched points)
     val headPaints = remember(density) {
@@ -379,11 +368,23 @@ fun SeasonalRainOverlay(
             }
         }
 
-        // Far -> near, so close drops overlap distant ones; each layer is one batched call plus a bright core.
+        // Far -> near. Each layer is one tapered path (sharp at the top, widest at the bottom) plus a round bead.
         for (l in 0..2) {
             val n = rainCounts[l]
             if (n > 0) {
-                nativeCanvas.drawLines(rainBuffers[l], 0, n, rainPaints[l])
+                val buf = rainBuffers[l]
+                val hw = rainHalfWidths[l]
+                rainPath.rewind()
+                var k = 0
+                while (k < n) {
+                    val x1 = buf[k]; val y1 = buf[k + 1]; val x2 = buf[k + 2]; val y2 = buf[k + 3]
+                    rainPath.moveTo(x1, y1)
+                    rainPath.lineTo(x2 - hw, y2)
+                    rainPath.lineTo(x2 + hw, y2)
+                    rainPath.close()
+                    k += 4
+                }
+                nativeCanvas.drawPath(rainPath, rainPaints[l])
                 nativeCanvas.drawPoints(headBuffers[l], 0, n / 2, headPaints[l])
             }
         }

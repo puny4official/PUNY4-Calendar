@@ -522,17 +522,6 @@ class MainActivity : ComponentActivity() {
                                 .fillMaxSize()
                                 .background(MaterialTheme.colorScheme.background)
                         ) {
-                        // Seasonal animation sits BEHIND the content, so it shows through the glass calendar card
-                        if (showSeasonalRain && selectedTab == MainTab.CALENDAR) {
-                            SeasonalRainOverlay(
-                                season = currentSeason,
-                                animationRunning = drawerState.isClosed,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .blur(drawerBlur, androidx.compose.ui.draw.BlurredEdgeTreatment.Unbounded)
-                                    .clipToBounds()
-                            )
-                        }
                         Scaffold(
                             containerColor = Color.Transparent,
                             modifier = Modifier
@@ -672,9 +661,30 @@ class MainActivity : ComponentActivity() {
                                         modifier = Modifier.fillMaxSize()
                                     )
                                 }
+                                // Soft fade where the content slides under the header, so header and page look like one surface
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(18.dp)
+                                        .background(
+                                            androidx.compose.ui.graphics.Brush.verticalGradient(
+                                                listOf(MaterialTheme.colorScheme.background, Color.Transparent)
+                                            )
+                                        )
+                                )
                             }
                         }
 
+                        // Seasonal animation over the whole page (touch-transparent), like a real rainfall
+                        if (showSeasonalRain && selectedTab == MainTab.CALENDAR) {
+                            SeasonalRainOverlay(
+                                season = currentSeason,
+                                animationRunning = drawerState.isClosed,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clipToBounds()
+                            )
+                        }
                         }
                     }
 
