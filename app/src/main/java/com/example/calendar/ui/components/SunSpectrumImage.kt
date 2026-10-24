@@ -68,7 +68,7 @@ fun SunSpectrumImage(
     val set = mins(ssS) ?: 1080.0
     val t = now
 
-    Box(modifier = modifier.fillMaxWidth().aspectRatio(2172f / 724f).clip(RoundedCornerShape(12.dp))) {
+    Box(modifier = modifier.fillMaxWidth().aspectRatio(1776f / 592f).clip(RoundedCornerShape(12.dp))) {
         Image(
             painter = painterResource(R.drawable.sun_spectrum),
             contentDescription = null,
@@ -113,30 +113,52 @@ fun SunSpectrumImage(
     }
 }
 
-private const val X_RISE = 0.0801f
+private const val X_RISE = 0.0794f
 private const val X_SET = 0.9139f
-private const val Y_HOR = 0.5028f
-private val UP = floatArrayOf(0.0f, -0.005f, -0.0096f, -0.0165f, -0.0276f, -0.0411f, -0.0573f, -0.0756f, -0.0962f, -0.117f, -0.1379f, -0.159f, -0.1786f, -0.1974f, -0.2144f, -0.2298f, -0.2426f, -0.2534f, -0.2614f, -0.2691f, -0.2663f, -0.2712f, -0.2648f, -0.2567f, -0.2471f, -0.2346f, -0.2191f, -0.2021f, -0.1829f, -0.1624f, -0.1403f, -0.118f, -0.0953f, -0.073f, -0.0535f, -0.0373f, -0.0235f, -0.0137f, -0.0089f, -0.0075f, 0.0f)
-private val LOW = floatArrayOf(0.0f, 0.0055f, 0.0111f, 0.0235f, 0.0395f, 0.0579f, 0.078f, 0.0994f, 0.122f, 0.1433f, 0.1636f, 0.1831f, 0.2009f, 0.2168f, 0.231f, 0.2433f, 0.2533f, 0.2612f, 0.267f, 0.2704f, 0.2702f, 0.2701f, 0.2675f, 0.2627f, 0.2551f, 0.2453f, 0.2336f, 0.2201f, 0.2047f, 0.1873f, 0.1678f, 0.1471f, 0.1256f, 0.1025f, 0.0798f, 0.0582f, 0.0387f, 0.0224f, 0.0099f, 0.005f, 0.0f)
+private const val Y_HOR = 0.5017f
+private val UP = floatArrayOf(0.0f, -0.0085f, -0.0092f, -0.015f, -0.026f, -0.0397f, -0.0557f, -0.0746f, -0.0946f, -0.1155f, -0.1367f, -0.1574f, -0.1777f, -0.1963f, -0.2139f, -0.2291f, -0.2422f, -0.2534f, -0.261f, -0.2664f, -0.2671f, -0.2677f, -0.2639f, -0.2573f, -0.2475f, -0.2348f, -0.2197f, -0.2026f, -0.1836f, -0.1627f, -0.1408f, -0.1184f, -0.0955f, -0.0734f, -0.0537f, -0.0371f, -0.0232f, -0.014f, -0.0088f, -0.0085f, 0.0f)
+private val LOW = floatArrayOf(0.0f, 0.0068f, 0.011f, 0.0241f, 0.0397f, 0.0577f, 0.0782f, 0.0998f, 0.1217f, 0.1434f, 0.1639f, 0.1835f, 0.2011f, 0.2176f, 0.2317f, 0.2438f, 0.254f, 0.2621f, 0.2682f, 0.2719f, 0.2721f, 0.2724f, 0.2692f, 0.2639f, 0.2565f, 0.2467f, 0.2352f, 0.2219f, 0.2063f, 0.1891f, 0.1698f, 0.149f, 0.127f, 0.1047f, 0.0814f, 0.0596f, 0.0402f, 0.0237f, 0.0108f, 0.0054f, 0.0f)
 
 private fun lerpColor(a: Color, b: Color, f: Float) = androidx.compose.ui.graphics.lerp(a, b, f.coerceIn(0f, 1f))
 
 private fun DrawScope.sun(c: Offset, col: Color) {
-    val r = 7.dp.toPx()
-    drawCircle(Brush.radialGradient(listOf(col.copy(alpha = 0.55f), Color.Transparent), c, r * 3.2f), r * 3.2f, c)
-    for (i in 0 until 12) {
-        val a = i * PI / 6
+    val r = size.width * 0.0105f
+    // layered soft glow
+    drawCircle(Brush.radialGradient(listOf(col.copy(alpha = 0.40f), Color.Transparent), c, r * 4.6f), r * 4.6f, c)
+    drawCircle(Brush.radialGradient(listOf(Color.White.copy(alpha = 0.35f), Color.Transparent), c, r * 2.2f), r * 2.2f, c)
+    // 16 rays, long and short alternating, round caps
+    for (i in 0 until 16) {
+        val a = i * PI / 8
         val d = Offset(cos(a).toFloat(), sin(a).toFloat())
-        drawLine(col, c + d * (r * 1.35f), c + d * (r * 1.9f), strokeWidth = 1.4.dp.toPx())
+        val long = i % 2 == 0
+        drawLine(
+            col.copy(alpha = if (long) 0.95f else 0.7f),
+            c + d * (r * 1.45f), c + d * (r * if (long) 2.35f else 1.9f),
+            strokeWidth = r * if (long) 0.20f else 0.14f,
+            cap = androidx.compose.ui.graphics.StrokeCap.Round
+        )
     }
-    drawCircle(col, r, c)
-    drawCircle(Color.White.copy(alpha = 0.6f), r * 0.45f, c - Offset(r * 0.2f, r * 0.2f))
+    // body: warm gradient disc with a bright core and a thin rim
+    drawCircle(Brush.radialGradient(listOf(Color.White, Color(0xFFFFF3B0), col), c - Offset(r * 0.25f, r * 0.25f), r * 1.3f), r, c)
+    drawCircle(Color.White.copy(alpha = 0.55f), r, c, style = androidx.compose.ui.graphics.drawscope.Stroke(width = r * 0.08f))
 }
 
 private fun DrawScope.moon(c: Offset) {
-    val r = 7.dp.toPx()
-    drawCircle(Brush.radialGradient(listOf(Color(0xFF9FB4FF).copy(alpha = 0.5f), Color.Transparent), c, r * 3f), r * 3f, c)
-    drawCircle(Color.White, r, c)
-    drawCircle(Color(0xFFD5DAF2), r * 0.22f, c + Offset(-r * 0.3f, -r * 0.2f))
-    drawCircle(Color(0xFFD5DAF2), r * 0.16f, c + Offset(r * 0.3f, r * 0.25f))
+    val r = size.width * 0.0115f
+    val tint = Color(0xFF8E9CFF)
+    drawCircle(Brush.radialGradient(listOf(tint.copy(alpha = 0.45f), Color.Transparent), c, r * 4.4f), r * 4.4f, c)
+    val crescent = androidx.compose.ui.graphics.Path.combine(
+        androidx.compose.ui.graphics.PathOperation.Difference,
+        androidx.compose.ui.graphics.Path().apply { addOval(androidx.compose.ui.geometry.Rect(c, r)) },
+        androidx.compose.ui.graphics.Path().apply { addOval(androidx.compose.ui.geometry.Rect(c + Offset(r * 0.62f, -r * 0.22f), r * 0.88f)) }
+    )
+    drawPath(crescent, Brush.verticalGradient(listOf(Color.White, Color(0xFFC9D2FF)), c.y - r, c.y + r))
+    // twinkling stars (4-point)
+    val stars = listOf(Triple(-1.9f, -1.3f, 0.42f), Triple(1.9f, -1.5f, 0.34f), Triple(2.1f, 1.0f, 0.3f), Triple(-1.5f, 1.6f, 0.26f))
+    for ((dx, dy, k) in stars) {
+        val sc = c + Offset(dx * r, dy * r)
+        val kk = k * r
+        drawLine(Color.White.copy(alpha = 0.9f), sc - Offset(kk, 0f), sc + Offset(kk, 0f), strokeWidth = r * 0.09f, cap = androidx.compose.ui.graphics.StrokeCap.Round)
+        drawLine(Color.White.copy(alpha = 0.9f), sc - Offset(0f, kk), sc + Offset(0f, kk), strokeWidth = r * 0.09f, cap = androidx.compose.ui.graphics.StrokeCap.Round)
+    }
 }
