@@ -100,7 +100,6 @@ fun SunSpectrumImage(
                 x = xSet - (xSet - xRise) * p.toFloat()
                 y = curveY(LOW, 1.0 - p)
             }
-            drawStaticIcons()
             val c = Offset(x, y)
             if (isDay) {
                 val p = ((t - rise) / (set - rise)).coerceIn(0.0, 1.0).toFloat()
