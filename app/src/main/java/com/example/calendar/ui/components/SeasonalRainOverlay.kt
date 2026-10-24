@@ -52,7 +52,7 @@ fun SeasonalRainOverlay(
         season.equals("Spring", ignoreCase = true) ||
         season.equals("Autumn", ignoreCase = true) ||
         season.equals("Fall", ignoreCase = true)
-    ) 46 else 18,
+    ) 64 else 14,
     animationRunning: Boolean = true
 ) {
     val density = LocalDensity.current
@@ -85,14 +85,14 @@ fun SeasonalRainOverlay(
     val hasRainlines = isSpring || isAutumn
 
     // Pre-calculated fixed pixel metrics to avoid runtime density lookups
-    val foliageTextSizePx = remember(density) { with(density) { 20.sp.toPx() } }
+    val foliageTextSizePx = remember(density) { with(density) { 12.sp.toPx() } }
     val rainStrokeWidthPx = remember(density) { with(density) { 2.dp.toPx() } }
     val gustMaxPx = remember(density) { with(density) { 170.dp.toPx() } }
 
     // Pre-allocated particles array
     val particles = remember(particleCount, foliageEmojis, hasRainlines, density) {
         Array(particleCount) { i ->
-            val isDrop = hasRainlines && (i % 5 >= 2) // ~60% drops, ~40% leaves/flowers
+            val isDrop = hasRainlines && (i % 8 >= 1) // ~88% drops, few small leaves/flowers
             val emoji = if (isDrop) "" else foliageEmojis[i % foliageEmojis.size]
 
             // Depth layer: 0 = far (small, slow, faint), 1 = middle, 2 = near (long, fast, bright)
@@ -101,9 +101,9 @@ fun SeasonalRainOverlay(
             val speedY = if (isDrop) {
                 with(density) {
                     when (layer) {
-                        0 -> Random.nextInt(280, 350)
-                        1 -> Random.nextInt(430, 520)
-                        else -> Random.nextInt(650, 800)
+                        0 -> Random.nextInt(520, 640)
+                        1 -> Random.nextInt(820, 980)
+                        else -> Random.nextInt(1250, 1500)
                     }.dp.toPx()
                 }
             } else {
@@ -114,9 +114,9 @@ fun SeasonalRainOverlay(
 
             val rainLength = with(density) {
                 when (layer) {
-                    0 -> Random.nextInt(6, 9)
-                    1 -> Random.nextInt(10, 14)
-                    else -> Random.nextInt(16, 22)
+                    0 -> Random.nextInt(10, 14)
+                    1 -> Random.nextInt(18, 24)
+                    else -> Random.nextInt(30, 40)
                 }.dp.toPx()
             }
             val swayPhase = Random.nextFloat() * (2f * PI.toFloat())
@@ -159,7 +159,7 @@ fun SeasonalRainOverlay(
 
     // Rasterize emoji glyphs once per depth layer. Far leaves are drawn at half resolution and scaled up (soft focus),
     // near leaves are larger and sharp.
-    val layerScale = remember { floatArrayOf(0.62f, 1f, 1.6f) }
+    val layerScale = remember { floatArrayOf(0.7f, 1f, 1.35f) }
     val emojiSprites = remember(foliageEmojis, foliageTextSizePx) {
         Array(3) { l ->
             val renderScale = if (l == 0) 0.5f else 1f
@@ -186,8 +186,8 @@ fun SeasonalRainOverlay(
 
     // Rain paints per depth layer: far (thin, faint) -> near (thick, bright), each with a thin bright "glass" core.
     val rainPaints = remember(density) {
-        val widths = floatArrayOf(with(density) { 0.5.dp.toPx() }, with(density) { 0.8.dp.toPx() }, with(density) { 1.1.dp.toPx() })
-        val alphas = intArrayOf(45, 80, 120)
+        val widths = floatArrayOf(with(density) { 0.6.dp.toPx() }, with(density) { 1.1.dp.toPx() }, with(density) { 1.7.dp.toPx() })
+        val alphas = intArrayOf(70, 120, 175)
         Array(3) { l ->
             Paint().apply {
                 isAntiAlias = true
@@ -199,8 +199,8 @@ fun SeasonalRainOverlay(
         }
     }
     val corePaints = remember(density) {
-        val widths = floatArrayOf(0f, with(density) { 0.35.dp.toPx() }, with(density) { 0.55.dp.toPx() })
-        val alphas = intArrayOf(0, 140, 230)
+        val widths = floatArrayOf(0f, with(density) { 0.45.dp.toPx() }, with(density) { 0.75.dp.toPx() })
+        val alphas = intArrayOf(0, 170, 255)
         Array(3) { l ->
             Paint().apply {
                 isAntiAlias = true
