@@ -75,7 +75,7 @@ fun SeasonalRainOverlay(
     val foliageEmojis = remember(isSpring, isSummer, isAutumn, isWinter) {
         when {
             isSpring -> listOf("🌸", "💐", "🌺")
-            isSummer -> listOf("🌻", "☀️", "🌼")
+            isSummer -> listOf("☀️")
             isAutumn -> listOf("🍁", "🍂")
             isWinter -> listOf("❄️")
             else -> listOf("🌸", "💐", "🌺")
