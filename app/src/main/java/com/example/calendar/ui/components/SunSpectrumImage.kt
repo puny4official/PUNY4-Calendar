@@ -76,14 +76,15 @@ fun SunSpectrumImage(
             modifier = Modifier.fillMaxSize()
         )
         Canvas(modifier = Modifier.fillMaxSize()) {
-            // Geometry measured on the picture (fractions of its width / height)
-            val xRise = 0.0737f * size.width
-            val xSet = 0.8416f * size.width
-            val xMid = 0.4581f * size.width
-            val yHor = 0.4627f * size.height
-            val ampDay = 0.2459f * size.height
-            val ampNight = 0.2514f * size.height
-            fun bell(u: Double) = ((1 + cos(PI * u)) / 2).toFloat() // 1 at centre, 0 at the horizon ends
+            // Curve geometry measured from the picture: x from sunrise to sunset, y offset from the horizon (fraction of height)
+            val xRise = X_RISE * size.width
+            val xSet = X_SET * size.width
+            val yHor = Y_HOR * size.height
+            fun curveY(tab: FloatArray, p: Double): Float {
+                val f = (p.coerceIn(0.0, 1.0) * (tab.size - 1)).toFloat()
+                val i = f.toInt().coerceAtMost(tab.size - 2)
+                return yHor + (tab[i] + (tab[i + 1] - tab[i]) * (f - i)) * size.height
+            }
 
             val isDay = t in rise..set
             val x: Float
@@ -91,13 +92,13 @@ fun SunSpectrumImage(
             if (isDay) {
                 val p = ((t - rise) / (set - rise)).coerceIn(0.0, 1.0)
                 x = xRise + (xSet - xRise) * p.toFloat()
-                y = yHor - ampDay * bell(2 * p - 1)
+                y = curveY(UP, p)
             } else {
                 val len = 1440.0 - (set - rise)
                 val since = if (t >= set) t - set else t + 1440.0 - set
                 val p = (since / len).coerceIn(0.0, 1.0)
                 x = xSet - (xSet - xRise) * p.toFloat()
-                y = yHor + ampNight * bell(2 * p - 1)
+                y = curveY(LOW, 1.0 - p)
             }
             val c = Offset(x, y)
             if (isDay) {
@@ -111,6 +112,12 @@ fun SunSpectrumImage(
         }
     }
 }
+
+private const val X_RISE = 0.0801f
+private const val X_SET = 0.9139f
+private const val Y_HOR = 0.5028f
+private val UP = floatArrayOf(0.0f, -0.005f, -0.0096f, -0.0165f, -0.0276f, -0.0411f, -0.0573f, -0.0756f, -0.0962f, -0.117f, -0.1379f, -0.159f, -0.1786f, -0.1974f, -0.2144f, -0.2298f, -0.2426f, -0.2534f, -0.2614f, -0.2691f, -0.2663f, -0.2712f, -0.2648f, -0.2567f, -0.2471f, -0.2346f, -0.2191f, -0.2021f, -0.1829f, -0.1624f, -0.1403f, -0.118f, -0.0953f, -0.073f, -0.0535f, -0.0373f, -0.0235f, -0.0137f, -0.0089f, -0.0075f, 0.0f)
+private val LOW = floatArrayOf(0.0f, 0.0055f, 0.0111f, 0.0235f, 0.0395f, 0.0579f, 0.078f, 0.0994f, 0.122f, 0.1433f, 0.1636f, 0.1831f, 0.2009f, 0.2168f, 0.231f, 0.2433f, 0.2533f, 0.2612f, 0.267f, 0.2704f, 0.2702f, 0.2701f, 0.2675f, 0.2627f, 0.2551f, 0.2453f, 0.2336f, 0.2201f, 0.2047f, 0.1873f, 0.1678f, 0.1471f, 0.1256f, 0.1025f, 0.0798f, 0.0582f, 0.0387f, 0.0224f, 0.0099f, 0.005f, 0.0f)
 
 private fun lerpColor(a: Color, b: Color, f: Float) = androidx.compose.ui.graphics.lerp(a, b, f.coerceIn(0f, 1f))
 
