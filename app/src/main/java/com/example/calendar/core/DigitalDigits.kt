@@ -15,6 +15,27 @@ object DigitalDigits {
 
     fun render(text: String, widthPx: Int, heightPx: Int, color: Int = Color.WHITE, glow: Boolean = false,
                aspect: Float = 0.58f, padFrac: Float = 0.04f, gapFrac: Float = 0.10f): Bitmap {
+        val raw = renderRaw(text, widthPx, heightPx, color, glow, aspect, padFrac, gapFrac)
+        // Re-centre by the real ink bounds so every number sits exactly in the middle (e.g. a lone "1")
+        val px = IntArray(widthPx * heightPx)
+        raw.getPixels(px, 0, widthPx, 0, 0, widthPx, heightPx)
+        var minX = widthPx; var maxX = -1; var minY = heightPx; var maxY = -1
+        for (y in 0 until heightPx) for (x in 0 until widthPx) {
+            if ((px[y * widthPx + x] ushr 24) > 8) {
+                if (x < minX) minX = x; if (x > maxX) maxX = x
+                if (y < minY) minY = y; if (y > maxY) maxY = y
+            }
+        }
+        if (maxX < 0) return raw
+        val dx = (widthPx - 1 - (minX + maxX)) / 2f
+        val dy = (heightPx - 1 - (minY + maxY)) / 2f
+        val out = Bitmap.createBitmap(widthPx, heightPx, Bitmap.Config.ARGB_8888)
+        Canvas(out).drawBitmap(raw, dx, dy, Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG))
+        return out
+    }
+
+    private fun renderRaw(text: String, widthPx: Int, heightPx: Int, color: Int = Color.WHITE, glow: Boolean = false,
+               aspect: Float = 0.58f, padFrac: Float = 0.04f, gapFrac: Float = 0.10f): Bitmap {
         val bmp = Bitmap.createBitmap(widthPx, heightPx, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bmp)
         val digits = text.filter { it in '0'..'9' }.ifEmpty { "0" }
@@ -35,8 +56,7 @@ object DigitalDigits {
 
         for (ch in digits) {
             val on = MAP[ch - '0']
-            // A "1" only lights the right-hand bars; slide it so the bar sits in the middle of its cell
-            val x0 = if (ch == '1') cellX - (dw - t) / 2f else cellX
+            val x0 = cellX
             val x1 = x0 + dw
             val ym = y0 + dh / 2f
             fun seg(c: Char, rect: RectF) {
