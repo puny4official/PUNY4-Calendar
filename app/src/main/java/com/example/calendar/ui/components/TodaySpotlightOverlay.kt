@@ -274,7 +274,7 @@ fun TodaySpotlightOverlay(
                     shape = RoundedCornerShape(18.dp),
                     border = BorderStroke(1.dp, Color(0xFF06B6D4).copy(alpha = 0.5f)),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 1f)
                     )
                 ) {
                     Column(
@@ -332,7 +332,7 @@ fun TodaySpotlightOverlay(
 
                         HorizontalDivider(
                             modifier = Modifier.padding(vertical = 6.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 1f)
                         )
 
                         // ONLY Official Holidays and Global & Iranian Occasions (بدون نمایش تایم)
@@ -414,7 +414,7 @@ fun TodaySpotlightOverlay(
                                 .fillMaxWidth()
                                 .height(4.dp)
                                 .clip(RoundedCornerShape(2.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f))
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 1f))
                                 .testTag("story_progress_bar_track")
                         ) {
                             Box(
