@@ -104,7 +104,11 @@ fun SunSpectrumImage(
             if (isDay) {
                 val p = ((t - rise) / (set - rise)).coerceIn(0.0, 1.0).toFloat()
                 // yellow until noon, then towards orange / red-orange at sunset
-                val col = if (p < 0.5f) Color(0xFFFFE066) else lerpColor(Color(0xFFFFE066), Color(0xFFFF7043), (p - 0.5f) * 2f)
+                val orange = Color(0xFFFF9A2E)
+                val yellow = Color(0xFFFFE45C)
+                val red = Color(0xFFFF4D4D)
+                // sunrise orange -> full yellow at noon -> sunset red
+                val col = if (p < 0.5f) lerpColor(orange, yellow, p * 2f) else lerpColor(yellow, red, (p - 0.5f) * 2f)
                 sun(c, col)
             } else {
                 moon(c)
