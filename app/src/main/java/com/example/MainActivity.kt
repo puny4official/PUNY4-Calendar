@@ -518,30 +518,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(MaterialTheme.colorScheme.background)
-                        ) {
-                        // Seasonal animation sits behind all text; cards are translucent so it shows through
-                        // Fades out while the hamburger menu is open or opening, so nothing shows through the glass drawer
-                        val rainAlpha by androidx.compose.animation.core.animateFloatAsState(
-                            targetValue = if (drawerState.targetValue == DrawerValue.Closed) 1f else 0f,
-                            animationSpec = tween(220),
-                            label = "rainAlpha"
-                        )
-                        if (showSeasonalRain && selectedTab == MainTab.CALENDAR && rainAlpha > 0.01f) {
-                            SeasonalRainOverlay(
-                                season = currentSeason,
-                                animationRunning = drawerState.isClosed,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .graphicsLayer { alpha = rainAlpha }
-                                    .clipToBounds()
-                            )
-                        }
                         Scaffold(
-                            containerColor = Color.Transparent,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .blur(drawerBlur, androidx.compose.ui.draw.BlurredEdgeTreatment.Unbounded)
@@ -550,6 +527,7 @@ class MainActivity : ComponentActivity() {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
+                                        .background(MaterialTheme.colorScheme.surface)
                                         .clipToBounds()
                                 ) {
                                     TopAppBar(
@@ -647,6 +625,16 @@ class MainActivity : ComponentActivity() {
                                         )
                                     )
 
+                                    // Seasonal falling emoji rain overlay across every point of the top header
+                                    if (showSeasonalRain && selectedTab == MainTab.CALENDAR) {
+                                        SeasonalRainOverlay(
+                                            season = currentSeason,
+                                            animationRunning = drawerState.isClosed,
+                                            modifier = Modifier
+                                                .matchParentSize()
+                                                .clipToBounds()
+                                        )
+                                    }
                                 }
                             }
                             // Note: bottomBar is intentionally completely omitted as requested:
@@ -658,16 +646,7 @@ class MainActivity : ComponentActivity() {
                                     .padding(innerPadding)
                             ) {
                                 when (selectedTab) {
-                                    MainTab.CALENDAR -> MaterialTheme(
-                                        colorScheme = MaterialTheme.colorScheme.let { cs ->
-                                            cs.copy(
-                                                surface = cs.surface.copy(alpha = 0.55f),
-                                                surfaceVariant = cs.surfaceVariant.copy(alpha = 0.55f)
-                                            )
-                                        },
-                                        typography = MaterialTheme.typography,
-                                        shapes = MaterialTheme.shapes
-                                    ) { CalendarScreen(
+                                    MainTab.CALENDAR -> CalendarScreen(
                                         userSettings = userSettings,
                                         targetJdn = targetJdnFromSearch,
                                         listState = calendarListState,
@@ -675,7 +654,7 @@ class MainActivity : ComponentActivity() {
                                         autoShowSpotlight = !isAppInitializing && spotlightPending,
                                         onAutoSpotlightShown = { spotlightPending = false },
                                         modifier = Modifier.fillMaxSize()
-                                    ) }
+                                    )
                                     MainTab.ASTRONOMY -> AstronomyScreen(
                                         userSettings = userSettings,
                                         modifier = Modifier.fillMaxSize()
@@ -688,20 +667,7 @@ class MainActivity : ComponentActivity() {
                                         modifier = Modifier.fillMaxSize()
                                     )
                                 }
-                                // Soft fade where the content slides under the header, so header and page look like one surface
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(18.dp)
-                                        .background(
-                                            androidx.compose.ui.graphics.Brush.verticalGradient(
-                                                listOf(MaterialTheme.colorScheme.background, Color.Transparent)
-                                            )
-                                        )
-                                )
                             }
-                        }
-
                         }
                     }
 
