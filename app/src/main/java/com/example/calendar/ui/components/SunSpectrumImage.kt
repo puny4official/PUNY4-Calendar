@@ -68,11 +68,11 @@ fun SunSpectrumImage(
     val set = mins(ssS) ?: 1080.0
     val t = now
 
-    Box(modifier = modifier.fillMaxWidth().aspectRatio(1776f / 592f).clip(RoundedCornerShape(12.dp))) {
+    Box(modifier = modifier.fillMaxWidth().aspectRatio(2.25f).clip(RoundedCornerShape(12.dp))) {
         Image(
             painter = painterResource(R.drawable.sun_spectrum),
             contentDescription = null,
-            contentScale = ContentScale.FillWidth,
+            contentScale = ContentScale.FillBounds,
             modifier = Modifier.fillMaxSize()
         )
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -117,8 +117,8 @@ fun SunSpectrumImage(
     }
 }
 
-private const val X_RISE = 0.0794f
-private const val X_SET = 0.9139f
+private const val X_RISE = 0.0230f
+private const val X_SET = 0.9693f
 private const val Y_HOR = 0.5017f
 private val UP = floatArrayOf(0.0f, -0.0085f, -0.0092f, -0.015f, -0.026f, -0.0397f, -0.0557f, -0.0746f, -0.0946f, -0.1155f, -0.1367f, -0.1574f, -0.1777f, -0.1963f, -0.2139f, -0.2291f, -0.2422f, -0.2534f, -0.261f, -0.2664f, -0.2671f, -0.2677f, -0.2639f, -0.2573f, -0.2475f, -0.2348f, -0.2197f, -0.2026f, -0.1836f, -0.1627f, -0.1408f, -0.1184f, -0.0955f, -0.0734f, -0.0537f, -0.0371f, -0.0232f, -0.014f, -0.0088f, -0.0085f, 0.0f)
 private val LOW = floatArrayOf(0.0f, 0.0068f, 0.011f, 0.0241f, 0.0397f, 0.0577f, 0.0782f, 0.0998f, 0.1217f, 0.1434f, 0.1639f, 0.1835f, 0.2011f, 0.2176f, 0.2317f, 0.2438f, 0.254f, 0.2621f, 0.2682f, 0.2719f, 0.2721f, 0.2724f, 0.2692f, 0.2639f, 0.2565f, 0.2467f, 0.2352f, 0.2219f, 0.2063f, 0.1891f, 0.1698f, 0.149f, 0.127f, 0.1047f, 0.0814f, 0.0596f, 0.0402f, 0.0237f, 0.0108f, 0.0054f, 0.0f)
