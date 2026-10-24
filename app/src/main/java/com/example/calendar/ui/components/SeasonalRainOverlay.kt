@@ -92,7 +92,7 @@ fun SeasonalRainOverlay(
     // Pre-allocated particles array
     val particles = remember(particleCount, foliageEmojis, hasRainlines, density) {
         Array(particleCount) { i ->
-            val isDrop = hasRainlines && (i % 8 >= 1) // ~88% drops, few small leaves/flowers
+            val isDrop = hasRainlines && (i % 5 >= 1) // ~80% drops, 20% small leaves/flowers
             val emoji = if (isDrop) "" else foliageEmojis[i % foliageEmojis.size]
 
             // Depth layer: 0 = far (small, slow, faint), 1 = middle, 2 = near (long, fast, bright)
