@@ -26,7 +26,7 @@ object DigitalDigits {
         val dh = minOf(heightPx - 2 * pad, availW / n / aspect)
         val dw = dh * aspect
         val totalW = dw * n + gapBetween * (n - 1)
-        var x0 = (widthPx - totalW) / 2f
+        var cellX = (widthPx - totalW) / 2f
         val y0 = (heightPx - dh) / 2f
         val t = dw * 0.14f            // segment thickness (slim)
         val g = t * 0.12f             // tiny gap between segments
@@ -35,6 +35,8 @@ object DigitalDigits {
 
         for (ch in digits) {
             val on = MAP[ch - '0']
+            // A "1" only lights the right-hand bars; slide it so the bar sits in the middle of its cell
+            val x0 = if (ch == '1') cellX - (dw - t) / 2f else cellX
             val x1 = x0 + dw
             val ym = y0 + dh / 2f
             fun seg(c: Char, rect: RectF) {
@@ -47,7 +49,7 @@ object DigitalDigits {
             seg('b', RectF(x1 - t, y0 + t * 0.55f + g, x1, ym - t * 0.45f - g))
             seg('e', RectF(x0, ym + t * 0.45f + g, x0 + t, y0 + dh - t * 0.55f - g))
             seg('c', RectF(x1 - t, ym + t * 0.45f + g, x1, y0 + dh - t * 0.55f - g))
-            x0 += dw + gapBetween
+            cellX += dw + gapBetween
         }
         return bmp
     }
