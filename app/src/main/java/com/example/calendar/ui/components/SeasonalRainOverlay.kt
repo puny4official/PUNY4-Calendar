@@ -52,7 +52,7 @@ fun SeasonalRainOverlay(
         season.equals("Spring", ignoreCase = true) ||
         season.equals("Autumn", ignoreCase = true) ||
         season.equals("Fall", ignoreCase = true)
-    ) 64 else 14,
+    ) 38 else 12,
     animationRunning: Boolean = true
 ) {
     val density = LocalDensity.current
