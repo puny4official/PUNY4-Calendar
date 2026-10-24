@@ -120,7 +120,7 @@ fun SeasonalRainOverlay(
                 }.dp.toPx()
             }
             val swayPhase = Random.nextFloat() * (2f * PI.toFloat())
-            val swayAmp = with(density) { (if (isDrop) 4.dp else 13.dp).toPx() }
+            val swayAmp = with(density) { (if (isDrop) 0.dp else 9.dp).toPx() }
 
             val windSens = if (isDrop) {
                 Random.nextFloat() * 0.2f + 0.55f
@@ -130,7 +130,7 @@ fun SeasonalRainOverlay(
 
             SeasonalParticle(
                 baseSpeedY = speedY,
-                driftSpeedX = with(density) { Random.nextInt(-8, 12).dp.toPx() },
+                driftSpeedX = with(density) { (if (isDrop) 0 else Random.nextInt(-6, 8)).dp.toPx() },
                 windSensitivity = windSens,
                 sinPhase = sin(swayPhase),
                 cosPhase = cos(swayPhase),
@@ -260,14 +260,10 @@ fun SeasonalRainOverlay(
                     val gustPeriod = 4.2f
                     val cyclePos = totalTimeSec % gustPeriod
                     val gustDuration = 1.6f
-                    val gustActive = cyclePos < gustDuration
+                    val gustActive = false
 
-                    val gustIntensity = if (gustActive) {
-                        val progress = cyclePos / gustDuration
-                        sin(progress * PI.toFloat()) * gustMaxPx
-                    } else {
-                        0f
-                    }
+                    // No wind: gusts removed
+                    val gustIntensity = 0f
 
                     // Global harmonic oscillation computed ONCE per frame
                     val swayAngle = totalTimeSec * 3f
