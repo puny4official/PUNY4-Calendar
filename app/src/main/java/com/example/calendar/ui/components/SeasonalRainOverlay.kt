@@ -101,9 +101,9 @@ fun SeasonalRainOverlay(
             val speedY = if (isDrop) {
                 with(density) {
                     when (layer) {
-                        0 -> Random.nextInt(520, 640)
-                        1 -> Random.nextInt(820, 980)
-                        else -> Random.nextInt(1250, 1500)
+                        0 -> Random.nextInt(330, 400)
+                        1 -> Random.nextInt(520, 620)
+                        else -> Random.nextInt(800, 950)
                     }.dp.toPx()
                 }
             } else {
@@ -187,11 +187,11 @@ fun SeasonalRainOverlay(
     // Rain paints per depth layer: far (thin, faint) -> near (thick, bright), each with a thin bright "glass" core.
     val rainPaints = remember(density) {
         val widths = floatArrayOf(with(density) { 0.6.dp.toPx() }, with(density) { 1.1.dp.toPx() }, with(density) { 1.7.dp.toPx() })
-        val alphas = intArrayOf(70, 120, 175)
+        val alphas = intArrayOf(40, 70, 105)
         Array(3) { l ->
             Paint().apply {
                 isAntiAlias = true
-                color = android.graphics.Color.argb(alphas[l], 96, 180, 245)
+                color = android.graphics.Color.argb(alphas[l], 40, 130, 255)
                 style = Paint.Style.STROKE
                 strokeCap = Paint.Cap.ROUND
                 strokeWidth = widths[l]
@@ -200,11 +200,11 @@ fun SeasonalRainOverlay(
     }
     val corePaints = remember(density) {
         val widths = floatArrayOf(0f, with(density) { 0.45.dp.toPx() }, with(density) { 0.75.dp.toPx() })
-        val alphas = intArrayOf(0, 170, 255)
+        val alphas = intArrayOf(0, 90, 150)
         Array(3) { l ->
             Paint().apply {
                 isAntiAlias = true
-                color = android.graphics.Color.argb(alphas[l], 235, 248, 255)
+                color = android.graphics.Color.argb(alphas[l], 150, 205, 255)
                 style = Paint.Style.STROKE
                 strokeCap = Paint.Cap.ROUND
                 strokeWidth = widths[l]
@@ -215,11 +215,11 @@ fun SeasonalRainOverlay(
     // Bright round "water bead" at the leading end of each streak (drawn as batched points)
     val headPaints = remember(density) {
         val sizes = floatArrayOf(with(density) { 1.1.dp.toPx() }, with(density) { 1.7.dp.toPx() }, with(density) { 2.4.dp.toPx() })
-        val alphas = intArrayOf(120, 190, 245)
+        val alphas = intArrayOf(70, 110, 150)
         Array(3) { l ->
             Paint().apply {
                 isAntiAlias = true
-                color = android.graphics.Color.argb(alphas[l], 215, 238, 255)
+                color = android.graphics.Color.argb(alphas[l], 130, 190, 255)
                 style = Paint.Style.STROKE
                 strokeCap = Paint.Cap.ROUND
                 strokeWidth = sizes[l]
