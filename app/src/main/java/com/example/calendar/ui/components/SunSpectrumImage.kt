@@ -159,7 +159,7 @@ private fun DrawScope.sun(c: Offset, col: Color, pulse: Float, spin: Float) {
 }
 
 private fun DrawScope.moon(c: Offset, pulse: Float) {
-    val r = size.width * 0.0125f
+    val r = size.width * 0.019f
     val tint = Color(0xFF8E9CFF)
     val k = 0.85f + 0.3f * pulse
     // breathing blue-white halo
