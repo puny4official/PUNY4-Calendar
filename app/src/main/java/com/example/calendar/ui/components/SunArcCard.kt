@@ -107,6 +107,18 @@ fun SunArcCard(
             drawLine(lineColor, Offset(xr, 36.dp.toPx()), Offset(xr, base), strokeWidth = 1.2.dp.toPx())
             drawLine(lineColor, Offset(xl, 36.dp.toPx()), Offset(xl, base), strokeWidth = 1.2.dp.toPx())
 
+            // labels above the ticks: sunrise on the right, sunset on the left
+            val labelPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+                textAlign = android.graphics.Paint.Align.CENTER
+                textSize = 14.sp.toPx()
+                isFakeBoldText = true
+            }
+            val ny = 24.dp.toPx()
+            labelPaint.color = android.graphics.Color.rgb(245, 158, 11)
+            drawContext.canvas.nativeCanvas.drawText("طلوع", xr, ny, labelPaint)
+            labelPaint.color = android.graphics.Color.rgb(239, 68, 68)
+            drawContext.canvas.nativeCanvas.drawText("غروب", xl, ny, labelPaint)
+
             if (rise == null || set == null) return@Canvas
             val dayLen = (set - rise).let { if (it <= 0) it + 1440.0 else it }
             val nightLen = 1440.0 - dayLen
@@ -171,21 +183,6 @@ fun SunArcCard(
             }
         }
 
-        // labels above the sunrise / sunset ticks
-        Text(
-            text = "طلوع",
-            color = Color(0xFFF59E0B),
-            fontWeight = FontWeight.Bold,
-            fontSize = 14.sp,
-            modifier = Modifier.absoluteOffset(x = xRightDp - 18.dp, y = 8.dp)
-        )
-        Text(
-            text = "غروب",
-            color = Color(0xFFEF4444),
-            fontWeight = FontWeight.Bold,
-            fontSize = 14.sp,
-            modifier = Modifier.absoluteOffset(x = xLeftDp - 18.dp, y = 8.dp)
-        )
     }
 }
 
