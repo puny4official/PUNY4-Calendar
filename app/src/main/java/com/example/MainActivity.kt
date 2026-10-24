@@ -12,6 +12,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -523,14 +524,19 @@ class MainActivity : ComponentActivity() {
                                 .background(MaterialTheme.colorScheme.background)
                         ) {
                         // Seasonal animation sits behind all text; cards are translucent so it shows through
-                        // Hidden while the hamburger menu is open or opening, so nothing shows through the glass drawer
-                        if (showSeasonalRain && selectedTab == MainTab.CALENDAR &&
-                            drawerState.isClosed && drawerState.targetValue == DrawerValue.Closed) {
+                        // Fades out while the hamburger menu is open or opening, so nothing shows through the glass drawer
+                        val rainAlpha by androidx.compose.animation.core.animateFloatAsState(
+                            targetValue = if (drawerState.targetValue == DrawerValue.Closed) 1f else 0f,
+                            animationSpec = tween(220),
+                            label = "rainAlpha"
+                        )
+                        if (showSeasonalRain && selectedTab == MainTab.CALENDAR && rainAlpha > 0.01f) {
                             SeasonalRainOverlay(
                                 season = currentSeason,
                                 animationRunning = drawerState.isClosed,
                                 modifier = Modifier
                                     .fillMaxSize()
+                                    .graphicsLayer { alpha = rainAlpha }
                                     .clipToBounds()
                             )
                         }
