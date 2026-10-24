@@ -322,7 +322,7 @@ fun SettingsScreen(
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = if (isFa) "بارش ملایم در سربرگ (بهار: 🌸💐🌺، تابستان: 🌼🌻☀️، پاییز: 🍁🍂، زمستان: ❄️☃️)" else "Gentle seasonal rain in top header (Spring: 🌸💐🌺, Summer: 🌼🌻☀️, Autumn: 🍁🍂, Winter: ❄️☃️)",
+                                text = if (isFa) "بارش ملایم در سربرگ (بهار: 🌸💐🌺 با باران، تابستان: ☀️، پاییز: 🍁🍂 با باران، زمستان: ❄️)" else "Gentle seasonal rain in top header (Spring: 🌸💐🌺 with rain, Summer: ☀️, Autumn: 🍁🍂 with rain, Winter: ❄️)",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
