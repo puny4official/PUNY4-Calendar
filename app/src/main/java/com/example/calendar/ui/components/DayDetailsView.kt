@@ -713,12 +713,7 @@ fun AstronomyCard(
                         .border(1.dp, cardFrameColor, RoundedCornerShape(16.dp))
                         .padding(vertical = 8.dp, horizontal = 4.dp)
                 ) {
-                    SunSpectrumImage(
-                        sunrise = dayInfo.solarTimes.sunrise,
-                        noon = dayInfo.solarTimes.noon,
-                        sunset = dayInfo.solarTimes.sunset,
-                        isToday = dayInfo.gregorianDate == CalendarManager.getTodayGregorian()
-                    )
+                    SunSpectrumImage(city = currentCity)
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))

@@ -44,8 +44,6 @@ private fun mins(hhmm: String): Double? {
     return h * 60.0 + m
 }
 
-private var lastToday: Triple<String, String, String>? = null
-
 private fun nowMinutes(): Double {
     val t = LocalTime.now(CalendarManager.IRAN_ZONE)
     return t.hour * 60.0 + t.minute + t.second / 60.0
@@ -57,19 +55,25 @@ private fun nowMinutes(): Double {
  */
 @Composable
 fun SunSpectrumImage(
-    sunrise: String,
-    noon: String,
-    sunset: String,
-    isToday: Boolean,
+    city: com.example.calendar.model.CityLocation,
     modifier: Modifier = Modifier
 ) {
     var now by remember { mutableDoubleStateOf(nowMinutes()) }
     LaunchedEffect(Unit) {
         while (true) { now = nowMinutes(); delay(1000) }
     }
-    // The spectrum always shows today: other days keep the last times seen for today and follow the live clock
-    if (isToday) lastToday = Triple(sunrise, noon, sunset)
-    val (srS, noonS, ssS) = lastToday ?: Triple(sunrise, noon, sunset)
+    // Always today's real solar times for the selected city (Iran date), recomputed when the city or the date changes
+    val todayIran = java.time.LocalDate.now(CalendarManager.IRAN_ZONE)
+    val times = remember(city, todayIran) {
+        com.example.calendar.core.AstronomicalCalculator.calculateSolarTimes(
+            com.example.calendar.core.JalaliCalendar.gregorianToJdn(todayIran.year, todayIran.monthValue, todayIran.dayOfMonth),
+            city
+        )
+    }
+    val srS = times.sunrise
+    val noonS = times.noon
+    val ssS = times.sunset
+    val midS = times.midnight
     val inf = rememberInfiniteTransition(label = "glow")
     val pulse by inf.animateFloat(0f, 1f, infiniteRepeatable(tween(2200, easing = LinearEasing), RepeatMode.Reverse), label = "pulse")
     val spin by inf.animateFloat(0f, 360f, infiniteRepeatable(tween(30000, easing = LinearEasing)), label = "spin")
@@ -77,7 +81,7 @@ fun SunSpectrumImage(
     val set = mins(ssS) ?: 1080.0
     val t = now
     val noonM = (mins(noonS) ?: ((rise + set) / 2.0)).coerceIn(rise + 1, set - 1)
-    val midM = (noonM + 720.0) % 1440.0
+    val midM = mins(midS) ?: ((noonM + 720.0) % 1440.0)
     fun mod(v: Double) = ((v % 1440.0) + 1440.0) % 1440.0
 
     Box(modifier = modifier.fillMaxWidth().aspectRatio(2.25f).clip(RoundedCornerShape(12.dp))) {
