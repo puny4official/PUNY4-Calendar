@@ -713,11 +713,13 @@ fun AstronomyCard(
                         .border(1.dp, cardFrameColor, RoundedCornerShape(16.dp))
                         .padding(vertical = 8.dp, horizontal = 4.dp)
                 ) {
-                    SunArcCard(
-                        sunrise = dayInfo.solarTimes.sunrise,
-                        noon = dayInfo.solarTimes.noon,
-                        sunset = dayInfo.solarTimes.sunset,
-                        isToday = dayInfo.gregorianDate == CalendarManager.getTodayGregorian()
+                    androidx.compose.foundation.Image(
+                        painter = androidx.compose.ui.res.painterResource(R.drawable.sun_spectrum),
+                        contentDescription = null,
+                        contentScale = androidx.compose.ui.layout.ContentScale.FillWidth,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
                     )
                 }
 
