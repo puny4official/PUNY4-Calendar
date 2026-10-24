@@ -69,13 +69,16 @@ fun SunSpectrumImage(
     }
     // The spectrum always shows today: other days keep the last times seen for today and follow the live clock
     if (isToday) lastToday = Triple(sunrise, noon, sunset)
-    val (srS, _, ssS) = lastToday ?: Triple(sunrise, noon, sunset)
+    val (srS, noonS, ssS) = lastToday ?: Triple(sunrise, noon, sunset)
     val inf = rememberInfiniteTransition(label = "glow")
     val pulse by inf.animateFloat(0f, 1f, infiniteRepeatable(tween(2200, easing = LinearEasing), RepeatMode.Reverse), label = "pulse")
     val spin by inf.animateFloat(0f, 360f, infiniteRepeatable(tween(30000, easing = LinearEasing)), label = "spin")
     val rise = mins(srS) ?: 360.0
     val set = mins(ssS) ?: 1080.0
     val t = now
+    val noonM = (mins(noonS) ?: ((rise + set) / 2.0)).coerceIn(rise + 1, set - 1)
+    val midM = (noonM + 720.0) % 1440.0
+    fun mod(v: Double) = ((v % 1440.0) + 1440.0) % 1440.0
 
     Box(modifier = modifier.fillMaxWidth().aspectRatio(2.25f).clip(RoundedCornerShape(12.dp))) {
         Image(
@@ -95,23 +98,25 @@ fun SunSpectrumImage(
                 return yHor + (tab[i] + (tab[i + 1] - tab[i]) * (f - i)) * size.height
             }
 
+            // Piecewise so the sun hits the sunrise / noon / sunset ends and the moon hits solar midnight exactly
             val isDay = t in rise..set
             val x: Float
             val y: Float
             if (isDay) {
-                val p = ((t - rise) / (set - rise)).coerceIn(0.0, 1.0)
+                val p = if (t <= noonM) 0.5 * (t - rise) / (noonM - rise) else 0.5 + 0.5 * (t - noonM) / (set - noonM)
                 x = xRise + (xSet - xRise) * p.toFloat()
                 y = curveY(UP, p)
             } else {
-                val len = 1440.0 - (set - rise)
-                val since = if (t >= set) t - set else t + 1440.0 - set
-                val p = (since / len).coerceIn(0.0, 1.0)
-                x = xSet - (xSet - xRise) * p.toFloat()
-                y = curveY(LOW, 1.0 - p)
+                val sNow = mod(t - set)
+                val sMid = mod(midM - set).coerceAtLeast(1.0)
+                val sLen = mod(rise - set).coerceAtLeast(sMid + 1.0)
+                val q = if (sNow <= sMid) 0.5 * sNow / sMid else 0.5 + 0.5 * (sNow - sMid) / (sLen - sMid)
+                x = xSet - (xSet - xRise) * q.toFloat()
+                y = curveY(LOW, 1.0 - q)
             }
             val c = Offset(x, y)
             if (isDay) {
-                val p = ((t - rise) / (set - rise)).coerceIn(0.0, 1.0).toFloat()
+                val p = (if (t <= noonM) 0.5 * (t - rise) / (noonM - rise) else 0.5 + 0.5 * (t - noonM) / (set - noonM)).coerceIn(0.0, 1.0).toFloat()
                 // yellow until noon, then towards orange / red-orange at sunset
                 val orange = Color(0xFFFF9A2E)
                 val yellow = Color(0xFFFFE45C)
