@@ -522,6 +522,16 @@ class MainActivity : ComponentActivity() {
                                 .fillMaxSize()
                                 .background(MaterialTheme.colorScheme.background)
                         ) {
+                        // Seasonal animation sits behind all text; cards are translucent so it shows through
+                        if (showSeasonalRain && selectedTab == MainTab.CALENDAR) {
+                            SeasonalRainOverlay(
+                                season = currentSeason,
+                                animationRunning = drawerState.isClosed,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clipToBounds()
+                            )
+                        }
                         Scaffold(
                             containerColor = Color.Transparent,
                             modifier = Modifier
@@ -640,7 +650,16 @@ class MainActivity : ComponentActivity() {
                                     .padding(innerPadding)
                             ) {
                                 when (selectedTab) {
-                                    MainTab.CALENDAR -> CalendarScreen(
+                                    MainTab.CALENDAR -> MaterialTheme(
+                                        colorScheme = MaterialTheme.colorScheme.let { cs ->
+                                            cs.copy(
+                                                surface = cs.surface.copy(alpha = 0.55f),
+                                                surfaceVariant = cs.surfaceVariant.copy(alpha = 0.55f)
+                                            )
+                                        },
+                                        typography = MaterialTheme.typography,
+                                        shapes = MaterialTheme.shapes
+                                    ) { CalendarScreen(
                                         userSettings = userSettings,
                                         targetJdn = targetJdnFromSearch,
                                         listState = calendarListState,
@@ -648,7 +667,7 @@ class MainActivity : ComponentActivity() {
                                         autoShowSpotlight = !isAppInitializing && spotlightPending,
                                         onAutoSpotlightShown = { spotlightPending = false },
                                         modifier = Modifier.fillMaxSize()
-                                    )
+                                    ) }
                                     MainTab.ASTRONOMY -> AstronomyScreen(
                                         userSettings = userSettings,
                                         modifier = Modifier.fillMaxSize()
@@ -675,16 +694,6 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
-                        // Seasonal animation over the whole page (touch-transparent), like a real rainfall
-                        if (showSeasonalRain && selectedTab == MainTab.CALENDAR) {
-                            SeasonalRainOverlay(
-                                season = currentSeason,
-                                animationRunning = drawerState.isClosed,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .clipToBounds()
-                            )
-                        }
                         }
                     }
 

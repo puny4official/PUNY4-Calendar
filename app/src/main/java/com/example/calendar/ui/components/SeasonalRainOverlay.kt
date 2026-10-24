@@ -71,16 +71,16 @@ fun SeasonalRainOverlay(
         season.contains("زمستان") || season.equals("Winter", ignoreCase = true)
     }
 
-    // Foliage Emojis for each season
-    val foliageEmojis = remember(isSpring, isSummer, isAutumn, isWinter) {
+    // Leaf / petal colours per season (drawn as simple soft shapes, not emoji)
+    val palette = remember(isSpring, isSummer, isAutumn, isWinter) {
         when {
-            isSpring -> listOf("🌸", "💐", "🌺")
-            isSummer -> listOf("🌻", "☀️", "🌼")
-            isAutumn -> listOf("🍁", "🍂")
-            isWinter -> listOf("🌧️", "❄️", "☃️")
-            else -> listOf("🌸", "💐", "🌺")
+            isAutumn -> intArrayOf(0xFFE8731A.toInt(), 0xFFC8321E.toInt(), 0xFFF2B01E.toInt(), 0xFFB5651D.toInt())
+            isSummer -> intArrayOf(0xFFFFD54A.toInt(), 0xFFFFA928.toInt(), 0xFFFFF1A8.toInt())
+            isWinter -> intArrayOf(0xFFFFFFFF.toInt(), 0xFFDCEBFF.toInt(), 0xFFBFD8FF.toInt())
+            else -> intArrayOf(0xFFFF9EC4.toInt(), 0xFFFFC2DA.toInt(), 0xFFFFE3EE.toInt())
         }
     }
+    val foliageEmojis = remember(palette) { palette.indices.map { it.toString() } }
 
     val hasRainlines = isSpring || isAutumn
 
@@ -120,7 +120,7 @@ fun SeasonalRainOverlay(
                 }.dp.toPx()
             }
             val swayPhase = Random.nextFloat() * (2f * PI.toFloat())
-            val swayAmp = with(density) { (if (isDrop) 4.dp else 13.dp).toPx() }
+            val swayAmp = with(density) { (if (isDrop) 0.dp else 5.dp).toPx() }
 
             val windSens = if (isDrop) {
                 Random.nextFloat() * 0.2f + 0.55f
@@ -130,7 +130,7 @@ fun SeasonalRainOverlay(
 
             SeasonalParticle(
                 baseSpeedY = speedY,
-                driftSpeedX = with(density) { Random.nextInt(-8, 12).dp.toPx() },
+                driftSpeedX = with(density) { Random.nextInt(-4, 5).dp.toPx() },
                 windSensitivity = windSens,
                 sinPhase = sin(swayPhase),
                 cosPhase = cos(swayPhase),
@@ -160,15 +160,29 @@ fun SeasonalRainOverlay(
     // Rasterize emoji glyphs once per depth layer. Far leaves are drawn at half resolution and scaled up (soft focus),
     // near leaves are larger and sharp.
     val layerScale = remember { floatArrayOf(0.62f, 1f, 1.6f) }
-    val emojiSprites = remember(foliageEmojis, foliageTextSizePx) {
+    val emojiSprites = remember(foliageEmojis, foliageTextSizePx, palette, isWinter) {
         Array(3) { l ->
             val renderScale = if (l == 0) 0.5f else 1f
-            val paint = Paint(textPaint).apply { textSize = foliageTextSizePx * layerScale[l] * renderScale }
-            val side = ceil(paint.textSize * 1.8f).toInt().coerceAtLeast(1)
-            foliageEmojis.associateWith { emoji ->
+            val side = ceil(foliageTextSizePx * layerScale[l] * renderScale * 1.8f).toInt().coerceAtLeast(4)
+            foliageEmojis.associateWith { key ->
                 Bitmap.createBitmap(side, side, Bitmap.Config.ARGB_8888).also { bitmap ->
-                    val baseline = side / 2f - (paint.ascent() + paint.descent()) / 2f
-                    android.graphics.Canvas(bitmap).drawText(emoji, side / 2f, baseline, paint)
+                    val c = android.graphics.Canvas(bitmap)
+                    val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = palette[key.toInt()]; style = Paint.Style.FILL }
+                    val cx = side / 2f
+                    val cy = side / 2f
+                    if (isWinter) {
+                        c.drawCircle(cx, cy, side * 0.16f, paint)
+                    } else {
+                        val h = side * 0.36f
+                        val w = side * 0.16f
+                        val leaf = android.graphics.Path().apply {
+                            moveTo(cx, cy - h)
+                            quadTo(cx + w * 1.7f, cy, cx, cy + h)
+                            quadTo(cx - w * 1.7f, cy, cx, cy - h)
+                            close()
+                        }
+                        c.drawPath(leaf, paint)
+                    }
                 }
             }
         }
@@ -177,7 +191,7 @@ fun SeasonalRainOverlay(
         FloatArray(3) { l -> ceil(foliageTextSizePx * layerScale[l] * 1.8f) }
     }
     val spritePaints = remember {
-        val alphas = intArrayOf(120, 215, 255)
+        val alphas = intArrayOf(60, 105, 150)
         Array(3) { l ->
             Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG).apply { alpha = alphas[l] }
         }
@@ -186,7 +200,7 @@ fun SeasonalRainOverlay(
 
     // Rain paints per depth layer: far (thin, faint) -> near (thick, bright), each with a thin bright "glass" core.
     val rainPaints = remember(density) {
-        val alphas = intArrayOf(70, 110, 155)
+        val alphas = intArrayOf(40, 95, 175)
         Array(3) { l ->
             Paint().apply {
                 isAntiAlias = true
@@ -197,7 +211,7 @@ fun SeasonalRainOverlay(
     }
     // Half width of each streak at its bottom end (the streak tapers to a point at the top)
     val rainHalfWidths = remember(density) {
-        floatArrayOf(with(density) { 0.5.dp.toPx() }, with(density) { 0.8.dp.toPx() }, with(density) { 1.1.dp.toPx() })
+        floatArrayOf(with(density) { 0.35.dp.toPx() }, with(density) { 0.7.dp.toPx() }, with(density) { 1.2.dp.toPx() })
     }
     val rainPath = remember { android.graphics.Path() }
 
@@ -249,9 +263,9 @@ fun SeasonalRainOverlay(
                     val gustPeriod = 4.2f
                     val cyclePos = totalTimeSec % gustPeriod
                     val gustDuration = 1.6f
-                    val gustActive = cyclePos < gustDuration
+                    val gustActive = false
 
-                    val gustIntensity = if (gustActive) {
+                    val gustIntensity = if (false) {
                         val progress = cyclePos / gustDuration
                         sin(progress * PI.toFloat()) * gustMaxPx
                     } else {
