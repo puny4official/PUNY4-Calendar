@@ -114,9 +114,9 @@ fun SeasonalRainOverlay(
 
             val rainLength = with(density) {
                 when (layer) {
-                    0 -> Random.nextInt(10, 14)
-                    1 -> Random.nextInt(18, 24)
-                    else -> Random.nextInt(30, 40)
+                    0 -> Random.nextInt(8, 11)
+                    1 -> Random.nextInt(14, 19)
+                    else -> Random.nextInt(24, 32)
                 }.dp.toPx()
             }
             val swayPhase = Random.nextFloat() * (2f * PI.toFloat())
@@ -186,7 +186,7 @@ fun SeasonalRainOverlay(
 
     // Rain paints per depth layer: far (thin, faint) -> near (thick, bright), each with a thin bright "glass" core.
     val rainPaints = remember(density) {
-        val widths = floatArrayOf(with(density) { 0.6.dp.toPx() }, with(density) { 1.1.dp.toPx() }, with(density) { 1.7.dp.toPx() })
+        val widths = floatArrayOf(with(density) { 0.45.dp.toPx() }, with(density) { 0.8.dp.toPx() }, with(density) { 1.25.dp.toPx() })
         val alphas = intArrayOf(40, 70, 105)
         Array(3) { l ->
             Paint().apply {
@@ -199,7 +199,7 @@ fun SeasonalRainOverlay(
         }
     }
     val corePaints = remember(density) {
-        val widths = floatArrayOf(0f, with(density) { 0.45.dp.toPx() }, with(density) { 0.75.dp.toPx() })
+        val widths = floatArrayOf(0f, with(density) { 0.35.dp.toPx() }, with(density) { 0.55.dp.toPx() })
         val alphas = intArrayOf(0, 90, 150)
         Array(3) { l ->
             Paint().apply {
@@ -214,7 +214,7 @@ fun SeasonalRainOverlay(
 
     // Bright round "water bead" at the leading end of each streak (drawn as batched points)
     val headPaints = remember(density) {
-        val sizes = floatArrayOf(with(density) { 1.1.dp.toPx() }, with(density) { 1.7.dp.toPx() }, with(density) { 2.4.dp.toPx() })
+        val sizes = floatArrayOf(with(density) { 0.9.dp.toPx() }, with(density) { 1.3.dp.toPx() }, with(density) { 1.8.dp.toPx() })
         val alphas = intArrayOf(70, 110, 150)
         Array(3) { l ->
             Paint().apply {
