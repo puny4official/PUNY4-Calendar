@@ -523,7 +523,9 @@ class MainActivity : ComponentActivity() {
                                 .background(MaterialTheme.colorScheme.background)
                         ) {
                         // Seasonal animation sits behind all text; cards are translucent so it shows through
-                        if (showSeasonalRain && selectedTab == MainTab.CALENDAR) {
+                        // Hidden while the hamburger menu is open or opening, so nothing shows through the glass drawer
+                        if (showSeasonalRain && selectedTab == MainTab.CALENDAR &&
+                            drawerState.isClosed && drawerState.targetValue == DrawerValue.Closed) {
                             SeasonalRainOverlay(
                                 season = currentSeason,
                                 animationRunning = drawerState.isClosed,
