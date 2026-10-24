@@ -1,5 +1,11 @@
 package com.example.calendar.ui.components
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -64,6 +70,9 @@ fun SunSpectrumImage(
     // The spectrum always shows today: other days keep the last times seen for today and follow the live clock
     if (isToday) lastToday = Triple(sunrise, noon, sunset)
     val (srS, _, ssS) = lastToday ?: Triple(sunrise, noon, sunset)
+    val inf = rememberInfiniteTransition(label = "glow")
+    val pulse by inf.animateFloat(0f, 1f, infiniteRepeatable(tween(2200, easing = LinearEasing), RepeatMode.Reverse), label = "pulse")
+    val spin by inf.animateFloat(0f, 360f, infiniteRepeatable(tween(30000, easing = LinearEasing)), label = "spin")
     val rise = mins(srS) ?: 360.0
     val set = mins(ssS) ?: 1080.0
     val t = now
@@ -109,9 +118,9 @@ fun SunSpectrumImage(
                 val red = Color(0xFFFF4D4D)
                 // sunrise orange -> full yellow at noon -> sunset red
                 val col = if (p < 0.5f) lerpColor(orange, yellow, p * 2f) else lerpColor(yellow, red, (p - 0.5f) * 2f)
-                sun(c, col)
+                sun(c, col, pulse, spin)
             } else {
-                moon(c)
+                moon(c, pulse)
             }
         }
     }
@@ -125,44 +134,54 @@ private val LOW = floatArrayOf(0.0f, 0.0068f, 0.011f, 0.0241f, 0.0397f, 0.0577f,
 
 private fun lerpColor(a: Color, b: Color, f: Float) = androidx.compose.ui.graphics.lerp(a, b, f.coerceIn(0f, 1f))
 
-private fun DrawScope.sun(c: Offset, col: Color) {
+private fun DrawScope.sun(c: Offset, col: Color, pulse: Float, spin: Float) {
     val r = size.width * 0.0105f
-    // layered soft glow
-    drawCircle(Brush.radialGradient(listOf(col.copy(alpha = 0.40f), Color.Transparent), c, r * 4.6f), r * 4.6f, c)
-    drawCircle(Brush.radialGradient(listOf(Color.White.copy(alpha = 0.35f), Color.Transparent), c, r * 2.2f), r * 2.2f, c)
-    // 16 rays, long and short alternating, round caps
+    val k = 0.85f + 0.3f * pulse // breathing glow
+    // wide breathing halo + bright inner glow
+    drawCircle(Brush.radialGradient(listOf(col.copy(alpha = 0.50f * k), Color.Transparent), c, r * 5.4f * k), r * 5.4f * k, c)
+    drawCircle(Brush.radialGradient(listOf(Color.White.copy(alpha = 0.45f * k), Color.Transparent), c, r * 2.5f), r * 2.5f, c)
+    // 16 slowly rotating rays that shimmer
     for (i in 0 until 16) {
-        val a = i * PI / 8
+        val a = Math.toRadians(spin.toDouble()) + i * PI / 8
         val d = Offset(cos(a).toFloat(), sin(a).toFloat())
         val long = i % 2 == 0
+        val shimmer = 0.65f + 0.35f * sin((pulse * 2f + i * 0.4f) * PI.toFloat()).let { (it + 1f) / 2f }
+        val len = (if (long) 2.4f else 1.95f) * (0.92f + 0.12f * pulse)
         drawLine(
-            col.copy(alpha = if (long) 0.95f else 0.7f),
-            c + d * (r * 1.45f), c + d * (r * if (long) 2.35f else 1.9f),
+            col.copy(alpha = shimmer),
+            c + d * (r * 1.45f), c + d * (r * len),
             strokeWidth = r * if (long) 0.20f else 0.14f,
             cap = androidx.compose.ui.graphics.StrokeCap.Round
         )
     }
-    // body: warm gradient disc with a bright core and a thin rim
     drawCircle(Brush.radialGradient(listOf(Color.White, Color(0xFFFFF3B0), col), c - Offset(r * 0.25f, r * 0.25f), r * 1.3f), r, c)
     drawCircle(Color.White.copy(alpha = 0.55f), r, c, style = androidx.compose.ui.graphics.drawscope.Stroke(width = r * 0.08f))
 }
 
-private fun DrawScope.moon(c: Offset) {
-    val r = size.width * 0.0115f
+private fun DrawScope.moon(c: Offset, pulse: Float) {
+    val r = size.width * 0.0125f
     val tint = Color(0xFF8E9CFF)
-    drawCircle(Brush.radialGradient(listOf(tint.copy(alpha = 0.45f), Color.Transparent), c, r * 4.4f), r * 4.4f, c)
-    val crescent = androidx.compose.ui.graphics.Path.combine(
-        androidx.compose.ui.graphics.PathOperation.Difference,
-        androidx.compose.ui.graphics.Path().apply { addOval(androidx.compose.ui.geometry.Rect(c, r)) },
-        androidx.compose.ui.graphics.Path().apply { addOval(androidx.compose.ui.geometry.Rect(c + Offset(r * 0.62f, -r * 0.22f), r * 0.88f)) }
-    )
-    drawPath(crescent, Brush.verticalGradient(listOf(Color.White, Color(0xFFC9D2FF)), c.y - r, c.y + r))
-    // twinkling stars (4-point)
-    val stars = listOf(Triple(-1.9f, -1.3f, 0.42f), Triple(1.9f, -1.5f, 0.34f), Triple(2.1f, 1.0f, 0.3f), Triple(-1.5f, 1.6f, 0.26f))
-    for ((dx, dy, k) in stars) {
+    val k = 0.85f + 0.3f * pulse
+    // breathing blue-white halo
+    drawCircle(Brush.radialGradient(listOf(tint.copy(alpha = 0.50f * k), Color.Transparent), c, r * 5f * k), r * 5f * k, c)
+    drawCircle(Brush.radialGradient(listOf(Color.White.copy(alpha = 0.30f * k), Color.Transparent), c, r * 2.6f), r * 2.6f, c)
+    // full moon body with soft shading
+    drawCircle(Brush.radialGradient(listOf(Color.White, Color(0xFFE4E8FF), Color(0xFFB9C3F5)), c - Offset(r * 0.3f, r * 0.3f), r * 1.5f), r, c)
+    // craters
+    val crater = Color(0xFF9AA6DD).copy(alpha = 0.45f)
+    drawCircle(crater, r * 0.24f, c + Offset(-r * 0.35f, -r * 0.30f))
+    drawCircle(crater, r * 0.16f, c + Offset(r * 0.38f, r * 0.05f))
+    drawCircle(crater, r * 0.20f, c + Offset(-r * 0.10f, r * 0.45f))
+    drawCircle(crater, r * 0.10f, c + Offset(r * 0.25f, -r * 0.50f))
+    drawCircle(Color.White.copy(alpha = 0.5f), r, c, style = androidx.compose.ui.graphics.drawscope.Stroke(width = r * 0.07f))
+    // twinkling stars: each fades in and out at its own phase
+    val stars = listOf(Triple(-2.0f, -1.4f, 0.0f), Triple(2.0f, -1.6f, 0.33f), Triple(2.3f, 1.0f, 0.66f), Triple(-1.7f, 1.6f, 0.5f))
+    for ((dx, dy, ph) in stars) {
+        val tw = (sin((pulse + ph) * 2f * PI.toFloat()) + 1f) / 2f
         val sc = c + Offset(dx * r, dy * r)
-        val kk = k * r
-        drawLine(Color.White.copy(alpha = 0.9f), sc - Offset(kk, 0f), sc + Offset(kk, 0f), strokeWidth = r * 0.09f, cap = androidx.compose.ui.graphics.StrokeCap.Round)
-        drawLine(Color.White.copy(alpha = 0.9f), sc - Offset(0f, kk), sc + Offset(0f, kk), strokeWidth = r * 0.09f, cap = androidx.compose.ui.graphics.StrokeCap.Round)
+        val kk = (0.22f + 0.28f * tw) * r
+        val col = Color.White.copy(alpha = 0.35f + 0.65f * tw)
+        drawLine(col, sc - Offset(kk, 0f), sc + Offset(kk, 0f), strokeWidth = r * 0.09f, cap = androidx.compose.ui.graphics.StrokeCap.Round)
+        drawLine(col, sc - Offset(0f, kk), sc + Offset(0f, kk), strokeWidth = r * 0.09f, cap = androidx.compose.ui.graphics.StrokeCap.Round)
     }
 }
