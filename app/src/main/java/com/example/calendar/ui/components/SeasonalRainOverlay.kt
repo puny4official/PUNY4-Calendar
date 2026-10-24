@@ -77,7 +77,7 @@ fun SeasonalRainOverlay(
             isSpring -> listOf("🌸", "💐", "🌺")
             isSummer -> listOf("🌻", "☀️", "🌼")
             isAutumn -> listOf("🍁", "🍂")
-            isWinter -> listOf("🌧️", "❄️", "☃️")
+            isWinter -> listOf("❄️")
             else -> listOf("🌸", "💐", "🌺")
         }
     }
