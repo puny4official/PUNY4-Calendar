@@ -38,6 +38,8 @@ private fun mins(hhmm: String): Double? {
     return h * 60.0 + m
 }
 
+private var lastToday: Triple<String, String, String>? = null
+
 private fun nowMinutes(): Double {
     val t = LocalTime.now(CalendarManager.IRAN_ZONE)
     return t.hour * 60.0 + t.minute + t.second / 60.0
@@ -59,10 +61,12 @@ fun SunSpectrumImage(
     LaunchedEffect(Unit) {
         while (true) { now = nowMinutes(); delay(1000) }
     }
-    val rise = mins(sunrise) ?: 360.0
-    val set = mins(sunset) ?: 1080.0
-    val noonM = mins(noon) ?: ((rise + set) / 2.0)
-    val t = if (isToday) now else noonM
+    // The spectrum always shows today: other days keep the last times seen for today and follow the live clock
+    if (isToday) lastToday = Triple(sunrise, noon, sunset)
+    val (srS, _, ssS) = lastToday ?: Triple(sunrise, noon, sunset)
+    val rise = mins(srS) ?: 360.0
+    val set = mins(ssS) ?: 1080.0
+    val t = now
 
     Box(modifier = modifier.fillMaxWidth().aspectRatio(2172f / 724f).clip(RoundedCornerShape(12.dp))) {
         Image(
