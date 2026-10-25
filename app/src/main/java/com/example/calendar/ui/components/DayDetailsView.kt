@@ -1,6 +1,10 @@
 package com.example.calendar.ui.components
 
 import com.example.ui.theme.cardFrameColor
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
@@ -61,8 +65,19 @@ fun DayDetailsView(
             .testTag("day_details_container"),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        AllCalendarsCard(dayInfo, renderFaDigits, onJumpToToday)
-        AstronomyCard(dayInfo, currentCity, renderFaDigits, isFa, onOpenCityPicker = { showCityPicker = true })
+        // The chosen tab is remembered (also after closing the app) and only changes when the user taps another one
+        val ctx = androidx.compose.ui.platform.LocalContext.current
+        val prefs = remember { ctx.getSharedPreferences("day_details_ui", android.content.Context.MODE_PRIVATE) }
+        var selectedTab by remember { mutableIntStateOf(prefs.getInt("selected_tab", 0).coerceIn(0, 2)) }
+        DetailsTabs(selected = selectedTab, onSelect = {
+            selectedTab = it
+            prefs.edit().putInt("selected_tab", it).apply()
+        })
+        when (selectedTab) {
+            0 -> AllCalendarsCard(dayInfo, renderFaDigits, onJumpToToday)
+            1 -> AstronomyCard(dayInfo, currentCity, renderFaDigits, isFa, onOpenCityPicker = { showCityPicker = true }, part = 0)
+            else -> AstronomyCard(dayInfo, currentCity, renderFaDigits, isFa, onOpenCityPicker = { showCityPicker = true }, part = 1)
+        }
         val officialHolidays = dayInfo.events.filter { it.isHoliday }
         val isFriday = (dayInfo.dayOfWeekPersian == "جمعه")
         if (officialHolidays.isNotEmpty() || isFriday) {
@@ -87,6 +102,33 @@ fun DayDetailsView(
             },
             onDismiss = { showCityPicker = false }
         )
+    }
+}
+
+@Composable
+private fun DetailsTabs(selected: Int, onSelect: (Int) -> Unit) {
+    // RTL layout: first item is on the right -> day info, then astronomy, then prayer/solar times (as in the design)
+    val items = listOf(R.drawable.tab_shari to 2, R.drawable.tab_astro to 1, R.drawable.tab_day to 0)
+    Row(
+        modifier = Modifier.fillMaxWidth().testTag("details_tabs"),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items.forEach { (res, idx) ->
+            val on = selected == idx
+            val a by androidx.compose.animation.core.animateFloatAsState(if (on) 1f else 0.45f, label = "tabAlpha")
+            val sc by androidx.compose.animation.core.animateFloatAsState(if (on) 1f else 0.94f, label = "tabScale")
+            Image(
+                painter = painterResource(res),
+                contentDescription = null,
+                contentScale = ContentScale.FillBounds,
+                modifier = Modifier
+                    .weight(1f)
+                    .aspectRatio(1.9f)
+                    .graphicsLayer { alpha = a; scaleX = sc; scaleY = sc }
+                    .clip(RoundedCornerShape(14.dp))
+                    .clickable { onSelect(idx) }
+            )
+        }
     }
 }
 
@@ -352,7 +394,8 @@ fun AstronomyCard(
     renderFaDigits: Boolean,
     isFa: Boolean,
     onOpenCityPicker: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    part: Int = 0 // 0 = astronomy info, 1 = solar times + prayer times
 ) {
     Card(
         modifier = modifier
@@ -370,6 +413,7 @@ fun AstronomyCard(
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
+                if (part == 0) {
                 // Section Title
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -664,7 +708,8 @@ fun AstronomyCard(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                }
+                if (part == 1) {
 
                 // ----------------------------------------------------
                 // کل اوقات خورشیدی (بدون اوقات اذان)
@@ -845,6 +890,7 @@ fun AstronomyCard(
                         icon = Icons.Default.NightsStay,
                         modifier = Modifier.weight(1f)
                     )
+                }
                 }
             }
         }
