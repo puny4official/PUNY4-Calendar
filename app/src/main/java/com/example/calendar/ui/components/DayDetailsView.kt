@@ -144,7 +144,7 @@ private fun DetailsTabs(selected: Int, onSelect: (Int) -> Unit) {
     ) {
         items.forEach { (res, idx) ->
             val on = selected == idx
-            val a by androidx.compose.animation.core.animateFloatAsState(if (on) 1f else 0.45f, label = "tabAlpha")
+            val a by androidx.compose.animation.core.animateFloatAsState(if (on) 1f else 0.78f, label = "tabAlpha")
             val sc by androidx.compose.animation.core.animateFloatAsState(if (on) 1f else 0.98f, label = "tabScale")
             Image(
                 painter = painterResource(res),
