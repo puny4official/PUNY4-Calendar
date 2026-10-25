@@ -169,6 +169,12 @@ object EventsRepository {
         )
     )
 
+    private val ABAN_1405_FIRST_DAY: Map<String, Int> by lazy {
+        val m = HashMap<String, Int>()
+        ABAN_1405_EVENTS.toSortedMap().forEach { (day, evs) -> evs.forEach { m.putIfAbsent(it.title, day) } }
+        m
+    }
+
     fun getEvents(
         jalali: JalaliDate,
         islamic: IslamicDate,
@@ -178,7 +184,8 @@ object EventsRepository {
 
         // Aban 1405: exact, source-checked list replaces the generic recurring events
         if (jalali.year == 1405 && jalali.month == 8) {
-            ABAN_1405_EVENTS[jalali.day]?.let { list.addAll(it) }
+            // Multi-day items (weeks, university periods) are shown only on the day they start
+            ABAN_1405_EVENTS[jalali.day]?.filter { ABAN_1405_FIRST_DAY[it.title] == jalali.day }?.let { list.addAll(it) }
             ASTRONOMICAL_EVENTS[Pair(jalali.month, jalali.day)]?.let { list.add(it) }
             return list
         }
