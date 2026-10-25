@@ -224,8 +224,33 @@ object EventsRepository {
     fun getAllSearchableEvents(): List<SearchableCalendarEvent> {
         val list = mutableListOf<SearchableCalendarEvent>()
 
+        // In 1405 the exact Aban list replaces the generic Aban / overlapping lunar and global entries
+        val todayG = CalendarManager.getTodayGregorian()
+        val is1405 = JalaliCalendar.jdnToJalali(JalaliCalendar.gregorianToJdn(todayG.year, todayG.month, todayG.day)).year == 1405
+        if (is1405) {
+            val seen = HashSet<String>()
+            ABAN_1405_EVENTS.toSortedMap().forEach { (day, events) ->
+                events.forEach { ev ->
+                    if (seen.add(ev.title)) { // multi-day ranges are listed once, on their first day
+                        list.add(
+                            SearchableCalendarEvent(
+                                title = ev.title,
+                                isHoliday = ev.isHoliday,
+                                eventType = ev.type,
+                                calendarCategory = CalendarCategory.SOLAR,
+                                month = 8,
+                                day = day,
+                                formattedDate = "$day آبان (شمسی)"
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
         SOLAR_EVENTS.forEach { (key, events) ->
             val (month, day) = key
+            if (is1405 && month == 8) return@forEach
             val monthName = JalaliCalendar.MONTH_NAMES_PERSIAN.getOrElse(month - 1) { "" }
             events.forEach { ev ->
                 list.add(
@@ -244,6 +269,7 @@ object EventsRepository {
 
         ISLAMIC_EVENTS.forEach { (key, events) ->
             val (month, day) = key
+            if (is1405 && ((month == 5 && day >= 12) || (month == 6 && day <= 11))) return@forEach
             val monthName = IslamicCalendar.MONTH_NAMES_ARABIC.getOrElse(month - 1) { "" }
             events.forEach { ev ->
                 list.add(
@@ -262,6 +288,8 @@ object EventsRepository {
 
         GLOBAL_EVENTS.forEach { (key, events) ->
             val (month, day) = key
+            // Aban 1405 spans 23 Oct - 21 Nov 2026
+            if (is1405 && ((month == 10 && day >= 23) || (month == 11 && day <= 21))) return@forEach
             val monthName = CalendarManager.GREGORIAN_MONTH_NAMES_PERSIAN.getOrElse(month - 1) { "" }
             events.forEach { ev ->
                 list.add(
