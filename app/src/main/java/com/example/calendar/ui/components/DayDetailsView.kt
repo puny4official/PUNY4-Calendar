@@ -152,7 +152,7 @@ private fun DetailsTabs(selected: Int, onSelect: (Int) -> Unit) {
                 contentScale = ContentScale.FillBounds,
                 modifier = Modifier
                     .weight(1f)
-                    .aspectRatio(1.9f)
+                    .aspectRatio(1.78f)
                     .graphicsLayer { alpha = a; scaleX = sc; scaleY = sc }
                     .clip(RoundedCornerShape(14.dp))
                     .clickable { onSelect(idx) }
