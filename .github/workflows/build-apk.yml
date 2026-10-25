@@ -39,7 +39,17 @@ jobs:
             -dname "CN=Android Debug,O=Android,C=US"
 
       - name: Build release APK
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            export KEYSTORE_PATH="$RUNNER_TEMP/release.jks"
+          else
+            unset STORE_PASSWORD KEY_PASSWORD
+          fi
           set +e
           gradle --no-daemon --console=plain assembleRelease 2>&1 | tee build.log
           code=${PIPESTATUS[0]}
