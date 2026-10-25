@@ -10,12 +10,178 @@ import com.example.calendar.model.SearchableCalendarEvent
 
 object EventsRepository {
 
+    /**
+     * مناسبت‌های دقیق آبان ۱۴۰۵ (از فایل تقویم آبان ۱۴۰۵؛ منابع: تقویم رسمی دانشگاه تهران و تقویم سازمان ملل).
+     * کلید: روز ماه آبان. برای آبان ۱۴۰۵ فقط همین فهرست نمایش داده می‌شود.
+     */
+    private val ABAN_1405_EVENTS: Map<Int, List<CalendarEvent>> = mapOf(
+        1 to listOf(
+            CalendarEvent("ابوالفضل بیهقی", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("سالروز شهادت سید مصطفی خمینی", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("روز آمار و برنامه‌ریزی", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("روز صنعت ساختمان", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("روز جهانی پلنگ برفی", isHoliday = false, EventType.INTERNATIONAL, "")
+        ),
+        2 to listOf(
+            CalendarEvent("شهادت حضرت فاطمه زهرا (به یک روایت)", isHoliday = false, EventType.RELIGIOUS, "نکته: انتساب شهادت حضرت فاطمه زهرا در این روز بر پایهٔ یک روایت است؛ تعطیل رسمی آبان در تقویم ۱۴۰۵ روز ۲۲ است. بازه‌های مرتبط: هفته خلع سلاح سازمان ملل، ۲۴ تا ۳۰ اکتبر؛ هفته جهانی سواد رسانه‌ای و اطلاعاتی، ۲۴ تا ۳۱ اکتبر."),
+            CalendarEvent("روز ملل متحد", isHoliday = false, EventType.INTERNATIONAL, ""),
+            CalendarEvent("روز جهانی اطلاعات توسعه", isHoliday = false, EventType.INTERNATIONAL, ""),
+            CalendarEvent("هفته خلع سلاح سازمان ملل", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۲ تا ۸ آبان ۱۴۰۵ — بازه: ۲۴ تا ۳۰ اکتبر ۲۰۲۶، شامل هر دو روز."),
+            CalendarEvent("هفته جهانی سواد رسانه‌ای و اطلاعاتی", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۲ تا ۹ آبان ۱۴۰۵ — بازه: ۲۴ تا ۳۱ اکتبر ۲۰۲۶، شامل هر دو روز."),
+            CalendarEvent("دانشگاه تهران — ثبت‌نام الکترونیکی ورودی‌های جدید کارشناسی ارشد", isHoliday = false, EventType.NATIONAL, "تاریخ شمسی: ۲ تا ۵ آبان ۱۴۰۵ — بازه: ۲۴ تا ۲۷ اکتبر ۲۰۲۶، شامل هر دو روز. — محدودیت شمول: این اطلاعیه فقط برای ورودی‌های جدید کارشناسی ارشد است.")
+        ),
+        3 to listOf(
+            CalendarEvent("هفته خلع سلاح سازمان ملل", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۲ تا ۸ آبان ۱۴۰۵ — بازه: ۲۴ تا ۳۰ اکتبر ۲۰۲۶، شامل هر دو روز."),
+            CalendarEvent("هفته جهانی سواد رسانه‌ای و اطلاعاتی", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۲ تا ۹ آبان ۱۴۰۵ — بازه: ۲۴ تا ۳۱ اکتبر ۲۰۲۶، شامل هر دو روز."),
+            CalendarEvent("دانشگاه تهران — ثبت‌نام الکترونیکی ورودی‌های جدید کارشناسی ارشد", isHoliday = false, EventType.NATIONAL, "تاریخ شمسی: ۲ تا ۵ آبان ۱۴۰۵ — بازه: ۲۴ تا ۲۷ اکتبر ۲۰۲۶، شامل هر دو روز. — محدودیت شمول: این اطلاعیه فقط برای ورودی‌های جدید کارشناسی ارشد است.")
+        ),
+        4 to listOf(
+            CalendarEvent("اعتراض امام خمینی به کاپیتولاسیون در سال ۱۳۴۳", isHoliday = false, EventType.NATIONAL, "نکتهٔ گاه‌شماری: آبانگان در گاه‌شماری فصلی زرتشتی در ۲۶ اکتبر/آبان ۴ است، زیرا روز آبان در ماه آبان، روز دهم آن گاه‌شماری است؛ آن را با آبان ۱۰ هجری خورشیدی اشتباه نگیرید. گاه‌شماری‌های فصلی، شهنشاهی و قدیمی با هم تفاوت دارند."),
+            CalendarEvent("آبانگان در گاه‌شماری زرتشتی فصلی", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("هفته خلع سلاح سازمان ملل", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۲ تا ۸ آبان ۱۴۰۵ — بازه: ۲۴ تا ۳۰ اکتبر ۲۰۲۶، شامل هر دو روز."),
+            CalendarEvent("هفته جهانی سواد رسانه‌ای و اطلاعاتی", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۲ تا ۹ آبان ۱۴۰۵ — بازه: ۲۴ تا ۳۱ اکتبر ۲۰۲۶، شامل هر دو روز."),
+            CalendarEvent("دانشگاه تهران — ثبت‌نام الکترونیکی ورودی‌های جدید کارشناسی ارشد", isHoliday = false, EventType.NATIONAL, "تاریخ شمسی: ۲ تا ۵ آبان ۱۴۰۵ — بازه: ۲۴ تا ۲۷ اکتبر ۲۰۲۶، شامل هر دو روز. — محدودیت شمول: این اطلاعیه فقط برای ورودی‌های جدید کارشناسی ارشد است.")
+        ),
+        5 to listOf(
+            CalendarEvent("روز زعفران", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("روز جهانی میراث دیداری‌ـ‌شنیداری", isHoliday = false, EventType.INTERNATIONAL, ""),
+            CalendarEvent("هفته خلع سلاح سازمان ملل", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۲ تا ۸ آبان ۱۴۰۵ — بازه: ۲۴ تا ۳۰ اکتبر ۲۰۲۶، شامل هر دو روز."),
+            CalendarEvent("هفته جهانی سواد رسانه‌ای و اطلاعاتی", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۲ تا ۹ آبان ۱۴۰۵ — بازه: ۲۴ تا ۳۱ اکتبر ۲۰۲۶، شامل هر دو روز."),
+            CalendarEvent("دانشگاه تهران — ثبت‌نام الکترونیکی ورودی‌های جدید کارشناسی ارشد", isHoliday = false, EventType.NATIONAL, "تاریخ شمسی: ۲ تا ۵ آبان ۱۴۰۵ — بازه: ۲۴ تا ۲۷ اکتبر ۲۰۲۶، شامل هر دو روز. — محدودیت شمول: این اطلاعیه فقط برای ورودی‌های جدید کارشناسی ارشد است."),
+            CalendarEvent("دانشگاه تهران — ثبت‌نام حضوری ورودی‌های جدید کارشناسی ارشد", isHoliday = false, EventType.NATIONAL, "تاریخ شمسی: ۵ تا ۶ آبان ۱۴۰۵ — بازه: ۲۷ تا ۲۸ اکتبر ۲۰۲۶، شامل هر دو روز. — محدودیت شمول: این اطلاعیه فقط برای ورودی‌های جدید کارشناسی ارشد است.")
+        ),
+        6 to listOf(
+            CalendarEvent("هفته خلع سلاح سازمان ملل", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۲ تا ۸ آبان ۱۴۰۵ — بازه: ۲۴ تا ۳۰ اکتبر ۲۰۲۶، شامل هر دو روز."),
+            CalendarEvent("هفته جهانی سواد رسانه‌ای و اطلاعاتی", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۲ تا ۹ آبان ۱۴۰۵ — بازه: ۲۴ تا ۳۱ اکتبر ۲۰۲۶، شامل هر دو روز."),
+            CalendarEvent("دانشگاه تهران — ثبت‌نام حضوری ورودی‌های جدید کارشناسی ارشد", isHoliday = false, EventType.NATIONAL, "تاریخ شمسی: ۵ تا ۶ آبان ۱۴۰۵ — بازه: ۲۷ تا ۲۸ اکتبر ۲۰۲۶، شامل هر دو روز. — محدودیت شمول: این اطلاعیه فقط برای ورودی‌های جدید کارشناسی ارشد است.")
+        ),
+        7 to listOf(
+            CalendarEvent("روز انار", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("روز ملل متحد برای مراقبت و حمایت", isHoliday = false, EventType.INTERNATIONAL, ""),
+            CalendarEvent("روز کوروش", isHoliday = false, EventType.NATIONAL, "نکته: «روز کوروش» یک یادبود غیررسمی معاصر است و تعطیل یا مناسبت رسمی تقویم ایران نیست."),
+            CalendarEvent("هفته خلع سلاح سازمان ملل", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۲ تا ۸ آبان ۱۴۰۵ — بازه: ۲۴ تا ۳۰ اکتبر ۲۰۲۶، شامل هر دو روز."),
+            CalendarEvent("هفته جهانی سواد رسانه‌ای و اطلاعاتی", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۲ تا ۹ آبان ۱۴۰۵ — بازه: ۲۴ تا ۳۱ اکتبر ۲۰۲۶، شامل هر دو روز.")
+        ),
+        8 to listOf(
+            CalendarEvent("سالروز شهادت محمدحسین فهمیده", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("روز نوجوان و بسیج دانش‌آموزی", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("روز پدافند غیرعامل", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("روز محیط‌بان", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("هفته خلع سلاح سازمان ملل", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۲ تا ۸ آبان ۱۴۰۵ — بازه: ۲۴ تا ۳۰ اکتبر ۲۰۲۶، شامل هر دو روز."),
+            CalendarEvent("هفته جهانی سواد رسانه‌ای و اطلاعاتی", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۲ تا ۹ آبان ۱۴۰۵ — بازه: ۲۴ تا ۳۱ اکتبر ۲۰۲۶، شامل هر دو روز.")
+        ),
+        9 to listOf(
+            CalendarEvent("روز جهانی شهرها", isHoliday = false, EventType.INTERNATIONAL, ""),
+            CalendarEvent("هالووین (مناسبت فرهنگیِ گاه‌شماری میلادی)", isHoliday = false, EventType.INTERNATIONAL, ""),
+            CalendarEvent("هفته جهانی سواد رسانه‌ای و اطلاعاتی", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۲ تا ۹ آبان ۱۴۰۵ — بازه: ۲۴ تا ۳۱ اکتبر ۲۰۲۶، شامل هر دو روز."),
+            CalendarEvent("دانشگاه تهران — آغاز کلاس‌های ورودی‌های جدید کارشناسی ارشد", isHoliday = false, EventType.NATIONAL, "تاریخ شمسی: ۹ آبان ۱۴۰۵")
+        ),
+        10 to listOf(
+            CalendarEvent("سالروز شهادت آیت‌الله قاضی طباطبایی", isHoliday = false, EventType.NATIONAL, "")
+        ),
+        11 to listOf(
+            CalendarEvent("روز جهانی پایان‌دادن به مصونیت از مجازاتِ جرائم علیه روزنامه‌نگاران", isHoliday = false, EventType.INTERNATIONAL, "")
+        ),
+        13 to listOf(
+            CalendarEvent("سالروز تسخیر سفارت آمریکا", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("روز ملی مبارزه با استکبار جهانی", isHoliday = false, EventType.INTERNATIONAL, ""),
+            CalendarEvent("روز دانش‌آموز", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("سالروز تبعید امام خمینی به ترکیه در ۱۳۴۳", isHoliday = false, EventType.NATIONAL, "")
+        ),
+        14 to listOf(
+            CalendarEvent("روز فرهنگ عمومی", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("روز مازندران", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("روز جهانی آگاهی از سونامی", isHoliday = false, EventType.INTERNATIONAL, "")
+        ),
+        15 to listOf(
+            CalendarEvent("روز جهانی سازمان ملل برای پیشگیری از بهره‌کشی از محیط زیست در جنگ و درگیری مسلحانه", isHoliday = false, EventType.INTERNATIONAL, "نکته: برخی رسانه‌ها «میانهٔ پاییز» یا «آیاثرم» را برای این روز ذکر می‌کنند؛ این انتساب در تقویم رسمی نیامده و نامطمئن است.")
+        ),
+        18 to listOf(
+            CalendarEvent("روز کیفیت", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("آغاز هفتهٔ جهانی علم و صلح (تا ۱۵ نوامبر)", isHoliday = false, EventType.INTERNATIONAL, ""),
+            CalendarEvent("هفته جهانی علم و صلح", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۱۸ تا ۲۴ آبان ۱۴۰۵ — بازه: ۹ تا ۱۵ نوامبر ۲۰۲۶، شامل هر دو روز."),
+            CalendarEvent("دانشگاه تهران — آماده‌شدن کارت دانشجویی ورودی‌های جدید کارشناسی ارشد", isHoliday = false, EventType.NATIONAL, "تاریخ شمسی: ۱۸ آبان ۱۴۰۵")
+        ),
+        19 to listOf(
+            CalendarEvent("روز جهانی علم در خدمت صلح و توسعه", isHoliday = false, EventType.INTERNATIONAL, ""),
+            CalendarEvent("هفته جهانی علم و صلح", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۱۸ تا ۲۴ آبان ۱۴۰۵ — بازه: ۹ تا ۱۵ نوامبر ۲۰۲۶، شامل هر دو روز.")
+        ),
+        20 to listOf(
+            CalendarEvent("هفته جهانی علم و صلح", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۱۸ تا ۲۴ آبان ۱۴۰۵ — بازه: ۹ تا ۱۵ نوامبر ۲۰۲۶، شامل هر دو روز.")
+        ),
+        21 to listOf(
+            CalendarEvent("روز هوافضا", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("هفته جهانی علم و صلح", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۱۸ تا ۲۴ آبان ۱۴۰۵ — بازه: ۹ تا ۱۵ نوامبر ۲۰۲۶، شامل هر دو روز.")
+        ),
+        22 to listOf(
+            CalendarEvent("شهادت حضرت فاطمه زهرا", isHoliday = true, EventType.RELIGIOUS, "این روز در سال ۱۴۰۵ با جمعه مصادف است."),
+            CalendarEvent("هفته جهانی علم و صلح", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۱۸ تا ۲۴ آبان ۱۴۰۵ — بازه: ۹ تا ۱۵ نوامبر ۲۰۲۶، شامل هر دو روز.")
+        ),
+        23 to listOf(
+            CalendarEvent("روز جهانی دیابت", isHoliday = false, EventType.INTERNATIONAL, ""),
+            CalendarEvent("آغاز بازهٔ امتحانات میان‌ترم عمومی دانشگاه تهران (تا ۵ آذر / ۲۶ نوامبر)", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("هفته جهانی علم و صلح", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۱۸ تا ۲۴ آبان ۱۴۰۵ — بازه: ۹ تا ۱۵ نوامبر ۲۰۲۶، شامل هر دو روز."),
+            CalendarEvent("دانشگاه تهران — بازه عمومی امتحانات میان‌ترم", isHoliday = false, EventType.NATIONAL, "تاریخ شمسی: ۲۳ آبان تا ۵ آذر ۱۴۰۵ — بازهٔ اعلام‌شده در تقویم آموزشی دانشگاه تهران؛ این بازه عمومی است.")
+        ),
+        24 to listOf(
+            CalendarEvent("روز کتاب، کتاب‌خوانی و کتابدار", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("بزرگداشت علامه طباطبایی", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("روز جهانی یادبود قربانیان سوانح رانندگی", isHoliday = false, EventType.INTERNATIONAL, ""),
+            CalendarEvent("روز جهانی پیشگیری از جرائم سازمان‌یافتهٔ فراملی", isHoliday = false, EventType.INTERNATIONAL, ""),
+            CalendarEvent("هفته جهانی علم و صلح", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۱۸ تا ۲۴ آبان ۱۴۰۵ — بازه: ۹ تا ۱۵ نوامبر ۲۰۲۶، شامل هر دو روز."),
+            CalendarEvent("دانشگاه تهران — بازه عمومی امتحانات میان‌ترم", isHoliday = false, EventType.NATIONAL, "تاریخ شمسی: ۲۳ آبان تا ۵ آذر ۱۴۰۵ — بازهٔ اعلام‌شده در تقویم آموزشی دانشگاه تهران؛ این بازه عمومی است.")
+        ),
+        25 to listOf(
+            CalendarEvent("روز اصفهان", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("روز صنعت نوشت‌افزار", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("روز جهانی مدارا", isHoliday = false, EventType.INTERNATIONAL, ""),
+            CalendarEvent("روز رژیم غذایی مدیترانه‌ای", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("دانشگاه تهران — بازه عمومی امتحانات میان‌ترم", isHoliday = false, EventType.NATIONAL, "تاریخ شمسی: ۲۳ آبان تا ۵ آذر ۱۴۰۵ — بازهٔ اعلام‌شده در تقویم آموزشی دانشگاه تهران؛ این بازه عمومی است.")
+        ),
+        26 to listOf(
+            CalendarEvent("دانشگاه تهران — بازه عمومی امتحانات میان‌ترم", isHoliday = false, EventType.NATIONAL, "تاریخ شمسی: ۲۳ آبان تا ۵ آذر ۱۴۰۵ — بازهٔ اعلام‌شده در تقویم آموزشی دانشگاه تهران؛ این بازه عمومی است.")
+        ),
+        27 to listOf(
+            CalendarEvent("روز جهانی پیشگیری و بهبود از سوءاستفاده، بهره‌کشی و خشونت جنسی علیه کودکان", isHoliday = false, EventType.INTERNATIONAL, ""),
+            CalendarEvent("آغاز هفتهٔ جهانی آگاهی از مقاومت میکروبی (تا ۲۵ نوامبر)", isHoliday = false, EventType.INTERNATIONAL, ""),
+            CalendarEvent("هفته جهانی آگاهی از مقاومت میکروبی", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۲۷ آبان تا ۴ آذر ۱۴۰۵ — بازه: ۱۸ تا ۲۵ نوامبر ۲۰۲۶، شامل هر دو روز."),
+            CalendarEvent("دانشگاه تهران — بازه عمومی امتحانات میان‌ترم", isHoliday = false, EventType.NATIONAL, "تاریخ شمسی: ۲۳ آبان تا ۵ آذر ۱۴۰۵ — بازهٔ اعلام‌شده در تقویم آموزشی دانشگاه تهران؛ این بازه عمومی است.")
+        ),
+        28 to listOf(
+            CalendarEvent("روز جهانی فلسفه", isHoliday = false, EventType.INTERNATIONAL, ""),
+            CalendarEvent("روز جهانی توالت", isHoliday = false, EventType.INTERNATIONAL, ""),
+            CalendarEvent("هفته جهانی آگاهی از مقاومت میکروبی", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۲۷ آبان تا ۴ آذر ۱۴۰۵ — بازه: ۱۸ تا ۲۵ نوامبر ۲۰۲۶، شامل هر دو روز."),
+            CalendarEvent("دانشگاه تهران — بازه عمومی امتحانات میان‌ترم", isHoliday = false, EventType.NATIONAL, "تاریخ شمسی: ۲۳ آبان تا ۵ آذر ۱۴۰۵ — بازهٔ اعلام‌شده در تقویم آموزشی دانشگاه تهران؛ این بازه عمومی است.")
+        ),
+        29 to listOf(
+            CalendarEvent("روز جهانی کودک", isHoliday = false, EventType.INTERNATIONAL, "یادداشت تاریخیِ پنج روز پایانی آبان: در برخی دوره‌های تاریخی، از سدهٔ پنجم تا اوایل سدهٔ یازدهم، این پنج روز را «فروردگان کوچک» می‌گرفتند؛ این یادکرد تاریخی، مناسبت ثابتِ امروز نیست."),
+            CalendarEvent("روز صنعتی‌شدن آفریقا", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("هفته جهانی آگاهی از مقاومت میکروبی", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۲۷ آبان تا ۴ آذر ۱۴۰۵ — بازه: ۱۸ تا ۲۵ نوامبر ۲۰۲۶، شامل هر دو روز."),
+            CalendarEvent("دانشگاه تهران — بازه عمومی امتحانات میان‌ترم", isHoliday = false, EventType.NATIONAL, "تاریخ شمسی: ۲۳ آبان تا ۵ آذر ۱۴۰۵ — بازهٔ اعلام‌شده در تقویم آموزشی دانشگاه تهران؛ این بازه عمومی است.")
+        ),
+        30 to listOf(
+            CalendarEvent("روز ملی قهرمانان", isHoliday = false, EventType.NATIONAL, "یادداشت تاریخی: پنج روز پایانی آبان در برخی دوره‌های تاریخی (از سدهٔ پنجم تا اوایل سدهٔ یازدهم) «فروردگان کوچک» شمرده می‌شدند؛ این امر یک مناسبت ثابتِ امروزی نیست."),
+            CalendarEvent("بزرگداشت ابونصر فارابی", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("روز حکمت و فلسفه", isHoliday = false, EventType.NATIONAL, ""),
+            CalendarEvent("روز جهانی تلویزیون", isHoliday = false, EventType.INTERNATIONAL, ""),
+            CalendarEvent("هفته جهانی آگاهی از مقاومت میکروبی", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۲۷ آبان تا ۴ آذر ۱۴۰۵ — بازه: ۱۸ تا ۲۵ نوامبر ۲۰۲۶، شامل هر دو روز."),
+            CalendarEvent("دانشگاه تهران — بازه عمومی امتحانات میان‌ترم", isHoliday = false, EventType.NATIONAL, "تاریخ شمسی: ۲۳ آبان تا ۵ آذر ۱۴۰۵ — بازهٔ اعلام‌شده در تقویم آموزشی دانشگاه تهران؛ این بازه عمومی است.")
+        )
+    )
+
     fun getEvents(
         jalali: JalaliDate,
         islamic: IslamicDate,
         gregorian: GregorianDate
     ): List<CalendarEvent> {
         val list = mutableListOf<CalendarEvent>()
+
+        // Aban 1405: exact, source-checked list replaces the generic recurring events
+        if (jalali.year == 1405 && jalali.month == 8) {
+            ABAN_1405_EVENTS[jalali.day]?.let { list.addAll(it) }
+            ASTRONOMICAL_EVENTS[Pair(jalali.month, jalali.day)]?.let { list.add(it) }
+            return list
+        }
 
         // 1. Solar Hijri events (National and Iranian holidays)
         val solarEvents = SOLAR_EVENTS[Pair(jalali.month, jalali.day)]
