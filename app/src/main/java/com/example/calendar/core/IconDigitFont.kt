@@ -8,13 +8,13 @@ import android.graphics.Paint
 import android.graphics.Typeface
 
 /** Font choices for the day number drawn in the widget, notification small icon and quick-settings tile. */
-enum class IconDigitFont(val id: String, val fa: String, val en: String) {
+enum class IconDigitFont(val id: String, val fa: String, val en: String, val asset: String? = null) {
     DIGITAL("digital", "دیجیتالی", "Digital"),
-    SANS("sans", "ساده", "Sans"),
-    CONDENSED("condensed", "فشرده", "Condensed"),
-    SERIF("serif", "سریف", "Serif"),
-    MONO("mono", "مونو", "Mono"),
-    BLACK("black", "ضخیم", "Black");
+    POPPINS("poppins", "پاپینز", "Poppins", "fonts/poppins_bold.ttf"),
+    LIGHT("light", "باریک", "Light", "fonts/poppins_light.ttf"),
+    ITALIC("italic", "مورب", "Italic", "fonts/poppins_italic.ttf"),
+    GEOMETRIC("geometric", "هندسی", "Geometric", "fonts/adventor.otf"),
+    BLACK("black", "ضخیم", "Black", "fonts/inter_black.otf");
 
     companion object {
         fun fromId(id: String?): IconDigitFont = values().firstOrNull { it.id == id } ?: DIGITAL
@@ -30,13 +30,8 @@ enum class IconDigitFont(val id: String, val fa: String, val en: String) {
         ): Bitmap {
             val font = current(context)
             if (font == DIGITAL) return DigitalDigits.render(text, w, h, aspect = aspect, padFrac = padFrac, gapFrac = gapFrac)
-            val tf = when (font) {
-                SANS -> Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
-                CONDENSED -> Typeface.create("sans-serif-condensed", Typeface.BOLD)
-                SERIF -> Typeface.create(Typeface.SERIF, Typeface.BOLD)
-                MONO -> Typeface.create(Typeface.MONOSPACE, Typeface.BOLD)
-                else -> Typeface.create("sans-serif-black", Typeface.NORMAL)
-            }
+            val tf = runCatching { Typeface.createFromAsset(context.applicationContext.assets, font.asset!!) }
+                .getOrDefault(Typeface.DEFAULT_BOLD)
             val latin = text.map { c ->
                 when (c) {
                     in '۰'..'۹' -> '0' + (c - '۰')

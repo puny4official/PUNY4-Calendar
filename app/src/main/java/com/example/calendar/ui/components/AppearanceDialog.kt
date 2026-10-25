@@ -764,11 +764,6 @@ fun AppearanceDialog(
                                                     modifier = Modifier.padding(vertical = 8.dp).fillMaxWidth(),
                                                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                                                     fontSize = 12.sp,
-                                                    fontFamily = when (f) {
-                                                        IconDigitFont.SERIF -> androidx.compose.ui.text.font.FontFamily.Serif
-                                                        IconDigitFont.MONO -> androidx.compose.ui.text.font.FontFamily.Monospace
-                                                        else -> androidx.compose.ui.text.font.FontFamily.SansSerif
-                                                    },
                                                     fontWeight = if (sel) FontWeight.ExtraBold else FontWeight.Medium,
                                                     color = if (sel) Color.White else MaterialTheme.colorScheme.onSurface
                                                 )
