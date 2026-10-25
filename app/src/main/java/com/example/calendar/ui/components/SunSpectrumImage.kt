@@ -106,7 +106,11 @@ fun SunSpectrumImage(
             val isDay = t in rise..set
             val x: Float
             val y: Float
+            val fadeMin = 30.0 // minutes to fade in / out around sunrise and sunset
+            fun smooth(v: Double): Float { val k = v.coerceIn(0.0, 1.0); return (k * k * (3 - 2 * k)).toFloat() }
+            var shownAlpha = 1f
             if (isDay) {
+                shownAlpha = smooth(minOf(t - rise, set - t) / fadeMin)
                 val p = if (t <= noonM) 0.5 * (t - rise) / (noonM - rise) else 0.5 + 0.5 * (t - noonM) / (set - noonM)
                 x = xRise + (xSet - xRise) * p.toFloat()
                 y = curveY(UP, p)
@@ -114,6 +118,7 @@ fun SunSpectrumImage(
                 val sNow = mod(t - set)
                 val sMid = mod(midM - set).coerceAtLeast(1.0)
                 val sLen = mod(rise - set).coerceAtLeast(sMid + 1.0)
+                shownAlpha = smooth(minOf(sNow, sLen - sNow) / fadeMin)
                 val q = if (sNow <= sMid) 0.5 * sNow / sMid else 0.5 + 0.5 * (sNow - sMid) / (sLen - sMid)
                 x = xSet - (xSet - xRise) * q.toFloat()
                 y = curveY(LOW, 1.0 - q)
@@ -127,9 +132,9 @@ fun SunSpectrumImage(
                 val red = Color(0xFFFF4D4D)
                 // sunrise orange -> full yellow at noon -> sunset red
                 val col = if (p < 0.5f) lerpColor(orange, yellow, p * 2f) else lerpColor(yellow, red, (p - 0.5f) * 2f)
-                sun(c, col, pulse, spin)
+                fadedLayer(shownAlpha) { sun(c, col, pulse, spin) }
             } else {
-                moon(c, pulse)
+                fadedLayer(shownAlpha) { moon(c, pulse) }
             }
         }
     }
@@ -140,6 +145,16 @@ private const val X_SET = 0.9693f
 private const val Y_HOR = 0.5017f
 private val UP = floatArrayOf(0.0f, -0.0085f, -0.0092f, -0.015f, -0.026f, -0.0397f, -0.0557f, -0.0746f, -0.0946f, -0.1155f, -0.1367f, -0.1574f, -0.1777f, -0.1963f, -0.2139f, -0.2291f, -0.2422f, -0.2534f, -0.261f, -0.2664f, -0.2671f, -0.2677f, -0.2639f, -0.2573f, -0.2475f, -0.2348f, -0.2197f, -0.2026f, -0.1836f, -0.1627f, -0.1408f, -0.1184f, -0.0955f, -0.0734f, -0.0537f, -0.0371f, -0.0232f, -0.014f, -0.0088f, -0.0085f, 0.0f)
 private val LOW = floatArrayOf(0.0f, 0.0068f, 0.011f, 0.0241f, 0.0397f, 0.0577f, 0.0782f, 0.0998f, 0.1217f, 0.1434f, 0.1639f, 0.1835f, 0.2011f, 0.2176f, 0.2317f, 0.2438f, 0.254f, 0.2621f, 0.2682f, 0.2719f, 0.2721f, 0.2724f, 0.2692f, 0.2639f, 0.2565f, 0.2467f, 0.2352f, 0.2219f, 0.2063f, 0.1891f, 0.1698f, 0.149f, 0.127f, 0.1047f, 0.0814f, 0.0596f, 0.0402f, 0.0237f, 0.0108f, 0.0054f, 0.0f)
+
+/** Draws [block] into an offscreen layer with the given alpha so the whole sun / moon fades smoothly. */
+private fun DrawScope.fadedLayer(alpha: Float, block: DrawScope.() -> Unit) {
+    if (alpha >= 0.995f) { block(); return }
+    if (alpha <= 0.01f) return
+    val paint = androidx.compose.ui.graphics.Paint().apply { this.alpha = alpha }
+    drawContext.canvas.saveLayer(androidx.compose.ui.geometry.Rect(0f, 0f, size.width, size.height), paint)
+    block()
+    drawContext.canvas.restore()
+}
 
 private fun lerpColor(a: Color, b: Color, f: Float) = androidx.compose.ui.graphics.lerp(a, b, f.coerceIn(0f, 1f))
 
