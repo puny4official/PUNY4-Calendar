@@ -140,12 +140,12 @@ private fun DetailsTabs(selected: Int, onSelect: (Int) -> Unit) {
     val items = listOf(R.drawable.tab_shari to 2, R.drawable.tab_astro to 1, R.drawable.tab_day to 0)
     Row(
         modifier = Modifier.fillMaxWidth().testTag("details_tabs"),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         items.forEach { (res, idx) ->
             val on = selected == idx
             val a by androidx.compose.animation.core.animateFloatAsState(if (on) 1f else 0.45f, label = "tabAlpha")
-            val sc by androidx.compose.animation.core.animateFloatAsState(if (on) 1f else 0.94f, label = "tabScale")
+            val sc by androidx.compose.animation.core.animateFloatAsState(if (on) 1f else 0.98f, label = "tabScale")
             Image(
                 painter = painterResource(res),
                 contentDescription = null,
