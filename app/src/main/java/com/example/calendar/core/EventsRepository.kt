@@ -14,7 +14,7 @@ object EventsRepository {
      * مناسبت‌های دقیق آبان ۱۴۰۵ (از فایل تقویم آبان ۱۴۰۵؛ منابع: تقویم رسمی دانشگاه تهران و تقویم سازمان ملل).
      * کلید: روز ماه آبان. برای آبان ۱۴۰۵ فقط همین فهرست نمایش داده می‌شود.
      */
-    private val ABAN_1405_EVENTS: Map<Int, List<CalendarEvent>> = mapOf(
+    private val ABAN_1405_ICS: Map<Int, List<CalendarEvent>> = mapOf(
         1 to listOf(
             CalendarEvent("ابوالفضل بیهقی", isHoliday = false, EventType.NATIONAL, ""),
             CalendarEvent("سالروز شهادت سید مصطفی خمینی", isHoliday = false, EventType.NATIONAL, ""),
@@ -58,7 +58,7 @@ object EventsRepository {
         7 to listOf(
             CalendarEvent("روز انار", isHoliday = false, EventType.NATIONAL, ""),
             CalendarEvent("روز ملل متحد برای مراقبت و حمایت", isHoliday = false, EventType.INTERNATIONAL, ""),
-            CalendarEvent("روز کوروش", isHoliday = false, EventType.NATIONAL, "نکته: «روز کوروش» یک یادبود غیررسمی معاصر است و تعطیل یا مناسبت رسمی تقویم ایران نیست."),
+            CalendarEvent("روز کوروش کبیر", isHoliday = false, EventType.NATIONAL, "نکته: «روز کوروش» یک یادبود غیررسمی معاصر است و تعطیل یا مناسبت رسمی تقویم ایران نیست."),
             CalendarEvent("هفته خلع سلاح سازمان ملل", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۲ تا ۸ آبان ۱۴۰۵ — بازه: ۲۴ تا ۳۰ اکتبر ۲۰۲۶، شامل هر دو روز."),
             CalendarEvent("هفته جهانی سواد رسانه‌ای و اطلاعاتی", isHoliday = false, EventType.INTERNATIONAL, "تاریخ شمسی: ۲ تا ۹ آبان ۱۴۰۵ — بازه: ۲۴ تا ۳۱ اکتبر ۲۰۲۶، شامل هر دو روز.")
         ),
@@ -168,6 +168,26 @@ object EventsRepository {
             CalendarEvent("دانشگاه تهران — بازه عمومی امتحانات میان‌ترم", isHoliday = false, EventType.NATIONAL, "تاریخ شمسی: ۲۳ آبان تا ۵ آذر ۱۴۰۵ — بازهٔ اعلام‌شده در تقویم آموزشی دانشگاه تهران؛ این بازه عمومی است.")
         )
     )
+
+    /** مناسبت‌های افزوده‌ی دستی برای آبان ۱۴۰۵ (به درخواست کاربر). */
+    private val ABAN_1405_EXTRA: Map<Int, List<CalendarEvent>> = mapOf(
+        3 to listOf(CalendarEvent("هنرمند", isHoliday = false, EventType.NATIONAL)),
+        5 to listOf(CalendarEvent("روز جهانی کار درمانی", isHoliday = false, EventType.INTERNATIONAL)),
+        9 to listOf(CalendarEvent("جشن پاییزانه", isHoliday = false, EventType.NATIONAL)),
+        19 to listOf(CalendarEvent("روز حسابداری", isHoliday = false, EventType.NATIONAL)),
+        21 to listOf(CalendarEvent("جشن گالشی", isHoliday = false, EventType.NATIONAL)),
+        26 to listOf(CalendarEvent("سالروز آزادسازی سوسنگرد", isHoliday = false, EventType.NATIONAL)),
+        28 to listOf(CalendarEvent("روز جهانی مرد", isHoliday = false, EventType.INTERNATIONAL))
+    )
+
+    /** فهرست نهایی آبان ۱۴۰۵: فایل تقویم + مناسبت‌های افزوده. */
+    private val ABAN_1405_EVENTS: Map<Int, List<CalendarEvent>> by lazy {
+        val m = HashMap<Int, List<CalendarEvent>>()
+        (ABAN_1405_ICS.keys + ABAN_1405_EXTRA.keys).forEach { d ->
+            m[d] = (ABAN_1405_ICS[d] ?: emptyList()) + (ABAN_1405_EXTRA[d] ?: emptyList())
+        }
+        m
+    }
 
     private val ABAN_1405_FIRST_DAY: Map<String, Int> by lazy {
         val m = HashMap<String, Int>()
