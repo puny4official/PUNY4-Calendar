@@ -69,14 +69,14 @@ fun DayDetailsView(
         DetailsSection(dayInfo, currentCity, renderFaDigits, isFa, onJumpToToday, onOpenCityPicker = { showCityPicker = true }, tabState = tabState)
         val officialHolidays = dayInfo.events.filter { it.isHoliday }
         val isFriday = (dayInfo.dayOfWeekPersian == "جمعه")
-        if (officialHolidays.isNotEmpty() || isFriday) {
+        if ((officialHolidays.isNotEmpty() || isFriday) && tabState.selected == 0) {
             OfficialHolidaysCard(dayInfo, holidayColor)
         }
         val globalEvents = dayInfo.events.filter { it.type == EventType.INTERNATIONAL }
         if (globalEvents.isNotEmpty() && tabState.selected == 0) {
             GlobalEventsCard(dayInfo)
         }
-        NationalOccasionsCard(dayInfo)
+        if (tabState.selected == 0) NationalOccasionsCard(dayInfo)
         NotesCard(userNote, dayInfo, isFa, onSaveNote)
     }
 
@@ -740,6 +740,19 @@ fun AstronomyCard(
                 }
                 if (part == 1) {
 
+                // Live sun path: moves with the real clock from sunrise through the day and night
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .border(1.dp, cardFrameColor, RoundedCornerShape(16.dp))
+                        .padding(vertical = 8.dp, horizontal = 4.dp)
+                ) {
+                    SunSpectrumImage(city = currentCity)
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
                 // ----------------------------------------------------
                 // کل اوقات خورشیدی (بدون اوقات اذان)
                 // ----------------------------------------------------
@@ -775,19 +788,6 @@ fun AstronomyCard(
                     SolarTimeItem("نیمه‌شب خورشیدی", DigitFormatter.toSystemDigits(dayInfo.solarTimes.midnight, renderFaDigits), Icons.Default.NightsStay, art = R.drawable.ic_midnight_art)
                 }
 
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // Live sun path: moves with the real clock from sunrise through the day and night
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .border(1.dp, cardFrameColor, RoundedCornerShape(16.dp))
-                        .padding(vertical = 8.dp, horizontal = 4.dp)
-                ) {
-                    SunSpectrumImage(city = currentCity)
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))

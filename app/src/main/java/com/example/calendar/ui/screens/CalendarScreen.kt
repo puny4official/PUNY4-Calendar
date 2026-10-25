@@ -307,7 +307,7 @@ fun CalendarScreen(
             // Section 3: Official Holidays Card (rendered if holiday or Friday)
             val officialHolidays = selectedDayInfo.events.filter { it.isHoliday }
             val isFriday = (selectedDayInfo.dayOfWeekPersian == "جمعه")
-            if (officialHolidays.isNotEmpty() || isFriday) {
+            if ((officialHolidays.isNotEmpty() || isFriday) && detailsTabState.selected == 0) {
                 item(key = "official_holidays") {
                     OfficialHolidaysCard(
                         dayInfo = selectedDayInfo,
@@ -328,7 +328,7 @@ fun CalendarScreen(
 
                 // Section 5: National Occasions Card
                 val nationalAndAstroEvents = selectedDayInfo.events.filter { !it.isHoliday && it.type != EventType.INTERNATIONAL }
-                if (nationalAndAstroEvents.isNotEmpty()) {
+                if (nationalAndAstroEvents.isNotEmpty() && detailsTabState.selected == 0) {
                 item(key = "national_occasions") {
                     NationalOccasionsCard(
                         dayInfo = selectedDayInfo
