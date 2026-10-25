@@ -599,6 +599,13 @@ private fun DayCellView(
                     Modifier
                 }
             )
+            .then(
+                if (isSelected && onIndicatorPositioned != null) {
+                    Modifier.onGloballyPositioned { onIndicatorPositioned(it) }
+                } else {
+                    Modifier
+                }
+            )
             .combinedClickable(onClick = { onDateSelected(cell.jdn) }, onLongClick = { onDateLongPressed(cell.jdn) })
             .testTag("day_cell_${cell.primaryNumber}"),
         contentAlignment = Alignment.Center

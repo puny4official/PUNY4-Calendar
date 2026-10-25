@@ -128,8 +128,8 @@ fun CalendarScreen(
     var addEventJdn by remember { mutableStateOf<Long?>(null) }
     var personalVersion by remember { mutableIntStateOf(0) }
     val spotlightScope = rememberCoroutineScope()
-    // [0] = this screen, [1] = today's cell. Plain holder (not state) so scrolling never triggers recomposition.
-    val coordsHolder = remember { arrayOfNulls<LayoutCoordinates>(2) }
+    // [0] = this screen, [1] = today's cell, [2] = the selected (long-pressed) cell. Plain holder (not state) so scrolling never triggers recomposition.
+    val coordsHolder = remember { arrayOfNulls<LayoutCoordinates>(3) }
 
     // Shows the card; the arrow is anchored once, to where today's cell is at this moment.
     val triggerSpotlight: () -> Unit = {
@@ -137,13 +137,13 @@ fun CalendarScreen(
             delay(150)
             var tries = 0
             while (tries < 10) {
-                val cell = coordsHolder[1]
+                val cell = coordsHolder[2]?.takeIf { it.isAttached } ?: coordsHolder[1]
                 val screen = coordsHolder[0]
                 if (cell != null && cell.isAttached && screen != null && screen.isAttached) break
                 delay(50)
                 tries++
             }
-            val cell = coordsHolder[1]
+            val cell = coordsHolder[2]?.takeIf { it.isAttached } ?: coordsHolder[1]
             val screen = coordsHolder[0]
             if (cell != null && screen != null && cell.isAttached && screen.isAttached) {
                 todayCenterOffset = screen.localPositionOf(
@@ -285,6 +285,7 @@ fun CalendarScreen(
                     },
                     onShowTodaySpotlight = { triggerSpotlight() },
                     onTodayPositioned = { coordsHolder[1] = it },
+                    onIndicatorPositioned = { coordsHolder[2] = it },
                     appLanguage = appLanguage,
                     holidayColor = holidayColor
                 )
