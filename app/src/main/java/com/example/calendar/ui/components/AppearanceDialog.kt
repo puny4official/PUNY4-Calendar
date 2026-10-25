@@ -1,9 +1,9 @@
 package com.example.calendar.ui.components
 
 import com.example.calendar.core.IconDigitFont
-import import com.example.calendar.core.DailyNotificationHelper
-import import com.example.calendar.core.DayWidgetProvider
-import import com.example.calendar.core.CalendarTileService
+import com.example.calendar.core.DailyNotificationHelper
+import com.example.calendar.core.DayWidgetProvider
+import com.example.calendar.core.CalendarTileService
 import com.example.ui.theme.cardFrameColor
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
