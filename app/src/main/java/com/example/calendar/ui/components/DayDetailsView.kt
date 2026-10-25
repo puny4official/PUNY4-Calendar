@@ -68,7 +68,7 @@ fun DayDetailsView(
         // The chosen tab is remembered (also after closing the app) and only changes when the user taps another one
         val ctx = androidx.compose.ui.platform.LocalContext.current
         val prefs = remember { ctx.getSharedPreferences("day_details_ui", android.content.Context.MODE_PRIVATE) }
-        var selectedTab by remember { mutableIntStateOf(prefs.getInt("selected_tab", 0).coerceIn(0, 2)) }
+        var selectedTab by remember { mutableIntStateOf(prefs.getInt("selected_tab", 2).coerceIn(0, 2)) }
         DetailsTabs(selected = selectedTab, onSelect = {
             selectedTab = it
             prefs.edit().putInt("selected_tab", it).apply()
