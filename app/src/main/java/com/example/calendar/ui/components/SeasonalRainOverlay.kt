@@ -114,9 +114,9 @@ fun SeasonalRainOverlay(
 
             val rainLength = with(density) {
                 when (layer) {
-                    0 -> Random.nextInt(8, 11)
-                    1 -> Random.nextInt(14, 19)
-                    else -> Random.nextInt(24, 32)
+                    0 -> Random.nextInt(6, 8)
+                    1 -> Random.nextInt(11, 14)
+                    else -> Random.nextInt(18, 24)
                 }.dp.toPx()
             }
             val swayPhase = Random.nextFloat() * (2f * PI.toFloat())
@@ -192,8 +192,7 @@ fun SeasonalRainOverlay(
             Paint().apply {
                 isAntiAlias = true
                 color = android.graphics.Color.argb(alphas[l], 40, 130, 255)
-                style = Paint.Style.STROKE
-                strokeCap = Paint.Cap.ROUND
+                style = Paint.Style.FILL
                 strokeWidth = widths[l]
             }
         }
@@ -231,6 +230,7 @@ fun SeasonalRainOverlay(
     // One float buffer per depth layer (4 floats per line: x1, y1, x2, y2)
     val rainBuffers = remember(particleCount) { Array(3) { FloatArray(particleCount * 4) } }
     val rainCounts = remember { IntArray(3) }
+    val dropPath = remember { android.graphics.Path() }
 
     // Draw-phase trigger state
     var frameTick by remember { mutableLongStateOf(0L) }
@@ -379,7 +379,20 @@ fun SeasonalRainOverlay(
         for (l in 0..2) {
             val n = rainCounts[l]
             if (n > 0) {
-                nativeCanvas.drawLines(rainBuffers[l], 0, n, rainPaints[l])
+                // Each drop: sharp pointed tail at the top widening to a rounded head at the bottom
+                val halfW = rainPaints[l].strokeWidth * 0.5f
+                dropPath.rewind()
+                var k = 0
+                while (k + 3 < n) {
+                    val tx = rainBuffers[l][k]; val ty = rainBuffers[l][k + 1]
+                    val hx = rainBuffers[l][k + 2]; val hy = rainBuffers[l][k + 3]
+                    dropPath.moveTo(tx, ty)
+                    dropPath.lineTo(hx - halfW, hy)
+                    dropPath.lineTo(hx + halfW, hy)
+                    dropPath.close()
+                    k += 4
+                }
+                nativeCanvas.drawPath(dropPath, rainPaints[l])
                 nativeCanvas.drawPoints(headBuffers[l], 0, n / 2, headPaints[l])
             }
         }
