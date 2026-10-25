@@ -144,7 +144,7 @@ private val LOW = floatArrayOf(0.0f, 0.0068f, 0.011f, 0.0241f, 0.0397f, 0.0577f,
 private fun lerpColor(a: Color, b: Color, f: Float) = androidx.compose.ui.graphics.lerp(a, b, f.coerceIn(0f, 1f))
 
 private fun DrawScope.sun(c: Offset, col: Color, pulse: Float, spin: Float) {
-    val r = size.width * 0.017f
+    val r = size.width * 0.026f
     val k = 0.85f + 0.3f * pulse // breathing glow
     // wide breathing halo + bright inner glow
     drawCircle(Brush.radialGradient(listOf(col.copy(alpha = 0.50f * k), Color.Transparent), c, r * 5.4f * k), r * 5.4f * k, c)
@@ -168,7 +168,7 @@ private fun DrawScope.sun(c: Offset, col: Color, pulse: Float, spin: Float) {
 }
 
 private fun DrawScope.moon(c: Offset, pulse: Float) {
-    val r = size.width * 0.019f
+    val r = size.width * 0.029f
     val tint = Color(0xFF8E9CFF)
     val k = 0.85f + 0.3f * pulse
     // breathing blue-white halo
