@@ -47,7 +47,7 @@ object IslamicCalendar {
                 Math.ceil(29.5 * (month - 1)).toLong() +
                 (year - 1L) * 354L +
                 floor((3L + (11L * year)) / 30.0).toLong() +
-                1948440L) - 385L - IRAN_OFFSET_DAYS
+                1948440L) - 1L - IRAN_OFFSET_DAYS
     }
 
     fun isLeapYear(year: Int): Boolean {
