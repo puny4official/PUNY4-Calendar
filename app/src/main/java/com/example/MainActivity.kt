@@ -138,9 +138,10 @@ class MainActivity : ComponentActivity() {
                     val selectedCity by userSettings.selectedCity.collectAsState()
                     val useEnglishDayNumbers by userSettings.useEnglishDayNumbers.collectAsState()
                     val context = LocalContext.current
+                    val notifHolidayColor by userSettings.holidayColorLong.collectAsState()
 
                     // Sync pinned daily notification state with user preference and updates on background dispatcher
-                    LaunchedEffect(showPinnedNotification, appLanguage, useEnglishDayNumbers, selectedCity, todayG) {
+                    LaunchedEffect(showPinnedNotification, appLanguage, useEnglishDayNumbers, selectedCity, todayG, notifHolidayColor) {
                         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
                             if (showPinnedNotification) {
                                 DailyNotificationHelper.showPinnedDailyNotification(

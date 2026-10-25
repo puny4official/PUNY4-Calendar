@@ -122,7 +122,20 @@ object DailyNotificationHelper {
             if (isFa) "فصل: ${dayInfo.seasonPersian} ${dayInfo.seasonEmoji}" else "Season: ${dayInfo.seasonPersian} ${dayInfo.seasonEmoji}"
         }
 
-        val bigText = "$title\n$secDateStr\n$holidayOrEvent"
+        val bigTextBase = "$title\n$secDateStr\n"
+        val bigText = android.text.SpannableStringBuilder(bigTextBase).apply {
+            val start = length
+            append(holidayOrEvent)
+            if (holidayEvent != null) {
+                val colorLong = context.applicationContext
+                    .getSharedPreferences("app_calendar_prefs", Context.MODE_PRIVATE)
+                    .getLong("holiday_color_long", 0xFF8B5CF6L)
+                setSpan(
+                    android.text.style.ForegroundColorSpan(colorLong.toInt()),
+                    start, length, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }
+        }
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(dayIconCompat)
