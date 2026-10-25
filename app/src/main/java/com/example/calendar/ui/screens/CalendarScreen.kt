@@ -290,22 +290,14 @@ fun CalendarScreen(
 
             }
 
-            // Section 1: All Calendars Card
-            item(key = "all_calendars") {
-                    AllCalendarsCard(
-                    dayInfo = selectedDayInfo,
-                    renderFaDigits = (appLanguage == AppLanguage.PERSIAN && !useEnglishDayNumbers),
-                    onJumpToToday = handleGoToToday
-                )
-            }
-
-            // Section 2: Astronomy & Prayer Times Card
-            item(key = "astronomy") {
-                    AstronomyCard(
+            // Sections 1-2: tabs (day info / astronomy / solar + prayer times) with the selected card
+            item(key = "details_section") {
+                DetailsSection(
                     dayInfo = selectedDayInfo,
                     currentCity = currentCity,
                     renderFaDigits = (appLanguage == AppLanguage.PERSIAN && !useEnglishDayNumbers),
                     isFa = (appLanguage == AppLanguage.PERSIAN),
+                    onJumpToToday = handleGoToToday,
                     onOpenCityPicker = { showCityPicker = true }
                 )
             }

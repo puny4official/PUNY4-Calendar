@@ -65,19 +65,7 @@ fun DayDetailsView(
             .testTag("day_details_container"),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // The chosen tab is remembered (also after closing the app) and only changes when the user taps another one
-        val ctx = androidx.compose.ui.platform.LocalContext.current
-        val prefs = remember { ctx.getSharedPreferences("day_details_ui", android.content.Context.MODE_PRIVATE) }
-        var selectedTab by remember { mutableIntStateOf(prefs.getInt("selected_tab", 2).coerceIn(0, 2)) }
-        DetailsTabs(selected = selectedTab, onSelect = {
-            selectedTab = it
-            prefs.edit().putInt("selected_tab", it).apply()
-        })
-        when (selectedTab) {
-            0 -> AllCalendarsCard(dayInfo, renderFaDigits, onJumpToToday)
-            1 -> AstronomyCard(dayInfo, currentCity, renderFaDigits, isFa, onOpenCityPicker = { showCityPicker = true }, part = 0)
-            else -> AstronomyCard(dayInfo, currentCity, renderFaDigits, isFa, onOpenCityPicker = { showCityPicker = true }, part = 1)
-        }
+        DetailsSection(dayInfo, currentCity, renderFaDigits, isFa, onJumpToToday, onOpenCityPicker = { showCityPicker = true })
         val officialHolidays = dayInfo.events.filter { it.isHoliday }
         val isFriday = (dayInfo.dayOfWeekPersian == "جمعه")
         if (officialHolidays.isNotEmpty() || isFriday) {
@@ -102,6 +90,32 @@ fun DayDetailsView(
             },
             onDismiss = { showCityPicker = false }
         )
+    }
+}
+
+/** Tabs (day info / astronomy / solar + prayer times) and the chosen card. The choice is remembered. */
+@Composable
+fun DetailsSection(
+    dayInfo: FullDayInfo,
+    currentCity: CityLocation,
+    renderFaDigits: Boolean,
+    isFa: Boolean,
+    onJumpToToday: (() -> Unit)?,
+    onOpenCityPicker: () -> Unit
+) {
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    val prefs = remember { ctx.getSharedPreferences("day_details_ui", android.content.Context.MODE_PRIVATE) }
+    var selectedTab by remember { mutableIntStateOf(prefs.getInt("selected_tab", 2).coerceIn(0, 2)) }
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        DetailsTabs(selected = selectedTab, onSelect = {
+            selectedTab = it
+            prefs.edit().putInt("selected_tab", it).apply()
+        })
+        when (selectedTab) {
+            0 -> AllCalendarsCard(dayInfo, renderFaDigits, onJumpToToday)
+            1 -> AstronomyCard(dayInfo, currentCity, renderFaDigits, isFa, onOpenCityPicker = onOpenCityPicker, part = 0)
+            else -> AstronomyCard(dayInfo, currentCity, renderFaDigits, isFa, onOpenCityPicker = onOpenCityPicker, part = 1)
+        }
     }
 }
 
