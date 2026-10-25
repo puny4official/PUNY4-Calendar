@@ -171,7 +171,7 @@ object EventsRepository {
 
     /** مناسبت‌های افزوده‌ی دستی برای آبان ۱۴۰۵ (به درخواست کاربر). */
     private val ABAN_1405_EXTRA: Map<Int, List<CalendarEvent>> = mapOf(
-        3 to listOf(CalendarEvent("هنرمند", isHoliday = false, EventType.NATIONAL)),
+        3 to listOf(CalendarEvent("روز هنرمند", isHoliday = false, EventType.NATIONAL)),
         5 to listOf(CalendarEvent("روز جهانی کار درمانی", isHoliday = false, EventType.INTERNATIONAL)),
         9 to listOf(CalendarEvent("جشن پاییزانه", isHoliday = false, EventType.NATIONAL)),
         19 to listOf(CalendarEvent("روز حسابداری", isHoliday = false, EventType.NATIONAL)),
