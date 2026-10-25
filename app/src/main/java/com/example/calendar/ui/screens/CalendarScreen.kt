@@ -214,6 +214,7 @@ fun CalendarScreen(
             .onGloballyPositioned { coordsHolder[0] = it }
             .testTag("calendar_screen_root")
     ) {
+        val detailsTabState = rememberDetailsTabState()
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -293,6 +294,7 @@ fun CalendarScreen(
             // Sections 1-2: tabs (day info / astronomy / solar + prayer times) with the selected card
             item(key = "details_section") {
                 DetailsSection(
+                    tabState = detailsTabState,
                     dayInfo = selectedDayInfo,
                     currentCity = currentCity,
                     renderFaDigits = (appLanguage == AppLanguage.PERSIAN && !useEnglishDayNumbers),
@@ -316,7 +318,7 @@ fun CalendarScreen(
 
                 // Section 4: Global Events Card
                 val globalEvents = selectedDayInfo.events.filter { it.type == EventType.INTERNATIONAL }
-                if (globalEvents.isNotEmpty()) {
+                if (globalEvents.isNotEmpty() && detailsTabState.selected == 0) {
                 item(key = "global_events") {
                     GlobalEventsCard(
                         dayInfo = selectedDayInfo

@@ -65,14 +65,15 @@ fun DayDetailsView(
             .testTag("day_details_container"),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        DetailsSection(dayInfo, currentCity, renderFaDigits, isFa, onJumpToToday, onOpenCityPicker = { showCityPicker = true })
+        val tabState = rememberDetailsTabState()
+        DetailsSection(dayInfo, currentCity, renderFaDigits, isFa, onJumpToToday, onOpenCityPicker = { showCityPicker = true }, tabState = tabState)
         val officialHolidays = dayInfo.events.filter { it.isHoliday }
         val isFriday = (dayInfo.dayOfWeekPersian == "جمعه")
         if (officialHolidays.isNotEmpty() || isFriday) {
             OfficialHolidaysCard(dayInfo, holidayColor)
         }
         val globalEvents = dayInfo.events.filter { it.type == EventType.INTERNATIONAL }
-        if (globalEvents.isNotEmpty()) {
+        if (globalEvents.isNotEmpty() && tabState.selected == 0) {
             GlobalEventsCard(dayInfo)
         }
         NationalOccasionsCard(dayInfo)
@@ -94,6 +95,24 @@ fun DayDetailsView(
 }
 
 /** Tabs (day info / astronomy / solar + prayer times) and the chosen card. The choice is remembered. */
+class DetailsTabState internal constructor(
+    private val prefs: android.content.SharedPreferences
+) {
+    var selected by mutableIntStateOf(prefs.getInt("selected_tab", 2).coerceIn(0, 2))
+        private set
+    fun select(i: Int) {
+        selected = i
+        prefs.edit().putInt("selected_tab", i).apply()
+    }
+}
+
+/** Remembered (also across app restarts) selection of the details tabs: 0 = day info, 1 = astronomy, 2 = solar + prayer times. */
+@Composable
+fun rememberDetailsTabState(): DetailsTabState {
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    return remember { DetailsTabState(ctx.getSharedPreferences("day_details_ui", android.content.Context.MODE_PRIVATE)) }
+}
+
 @Composable
 fun DetailsSection(
     dayInfo: FullDayInfo,
@@ -101,16 +120,12 @@ fun DetailsSection(
     renderFaDigits: Boolean,
     isFa: Boolean,
     onJumpToToday: (() -> Unit)?,
-    onOpenCityPicker: () -> Unit
+    onOpenCityPicker: () -> Unit,
+    tabState: DetailsTabState = rememberDetailsTabState()
 ) {
-    val ctx = androidx.compose.ui.platform.LocalContext.current
-    val prefs = remember { ctx.getSharedPreferences("day_details_ui", android.content.Context.MODE_PRIVATE) }
-    var selectedTab by remember { mutableIntStateOf(prefs.getInt("selected_tab", 2).coerceIn(0, 2)) }
+    val selectedTab = tabState.selected
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        DetailsTabs(selected = selectedTab, onSelect = {
-            selectedTab = it
-            prefs.edit().putInt("selected_tab", it).apply()
-        })
+        DetailsTabs(selected = selectedTab, onSelect = { tabState.select(it) })
         when (selectedTab) {
             0 -> AllCalendarsCard(dayInfo, renderFaDigits, onJumpToToday)
             1 -> AstronomyCard(dayInfo, currentCity, renderFaDigits, isFa, onOpenCityPicker = onOpenCityPicker, part = 0)
