@@ -41,6 +41,9 @@ class UserSettings(context: Context) {
     private val _dayNumberScalePercent = MutableStateFlow(prefs.getInt("day_number_scale_percent", 100))
     val dayNumberScalePercent: StateFlow<Int> = _dayNumberScalePercent.asStateFlow()
 
+    private val _iconDigitFont = MutableStateFlow(prefs.getString("icon_digit_font", "digital") ?: "digital")
+    val iconDigitFont: StateFlow<String> = _iconDigitFont.asStateFlow()
+
     private val _useEnglishDayNumbers = MutableStateFlow(prefs.getBoolean("use_english_day_numbers", true))
     val useEnglishDayNumbers: StateFlow<Boolean> = _useEnglishDayNumbers.asStateFlow()
 
@@ -124,6 +127,11 @@ class UserSettings(context: Context) {
         val clamped = percent.coerceIn(80, 160)
         prefs.edit().putInt("day_number_scale_percent", clamped).apply()
         _dayNumberScalePercent.value = clamped
+    }
+
+    fun setIconDigitFont(id: String) {
+        prefs.edit().putString("icon_digit_font", id).apply()
+        _iconDigitFont.value = id
     }
 
     fun setUseEnglishDayNumbers(enabled: Boolean) {

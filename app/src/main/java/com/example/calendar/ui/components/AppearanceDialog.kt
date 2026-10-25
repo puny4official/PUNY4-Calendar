@@ -1,5 +1,9 @@
 package com.example.calendar.ui.components
 
+import com.example.calendar.core.IconDigitFont
+import import com.example.calendar.core.DailyNotificationHelper
+import import com.example.calendar.core.DayWidgetProvider
+import import com.example.calendar.core.CalendarTileService
 import com.example.ui.theme.cardFrameColor
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
@@ -703,6 +707,74 @@ fun AppearanceDialog(
                                                 maxLines = 1
                                             )
                                         }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // ICON DIGIT FONT (widget / notification / status bar)
+                    run {
+                        val iconCtx = androidx.compose.ui.platform.LocalContext.current
+                        val iconFont by userSettings.iconDigitFont.collectAsState()
+                        Card(
+                            modifier = Modifier.fillMaxWidth().testTag("appearance_icon_digit_font_card"),
+                            shape = RoundedCornerShape(18.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+                            ),
+                            border = BorderStroke(1.dp, cardFrameColor)
+                        ) {
+                            Column(modifier = Modifier.padding(14.dp)) {
+                                Text(
+                                    text = if (isFa) "فونت اعداد ویجت، نوتیفیکیشن بار و استاتوس بار:" else "Digit font (widget, notification & status bar):",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(10.dp))
+                                IconDigitFont.values().toList().chunked(3).forEach { rowFonts ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        rowFonts.forEach { f ->
+                                            val sel = f.id == iconFont
+                                            Surface(
+                                                modifier = Modifier.weight(1f).clickable {
+                                                    userSettings.setIconDigitFont(f.id)
+                                                    Thread {
+                                                        runCatching { DailyNotificationHelper.refreshFromSettings(iconCtx) }
+                                                        runCatching { DayWidgetProvider.updateAll(iconCtx) }
+                                                        runCatching {
+                                                            android.service.quicksettings.TileService.requestListeningState(
+                                                                iconCtx, android.content.ComponentName(iconCtx, CalendarTileService::class.java)
+                                                            )
+                                                        }
+                                                    }.start()
+                                                },
+                                                shape = RoundedCornerShape(12.dp),
+                                                color = if (sel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
+                                                border = BorderStroke(1.dp, if (sel) MaterialTheme.colorScheme.primary else cardFrameColor)
+                                            ) {
+                                                Text(
+                                                    text = (if (isFa) f.fa else f.en) + "\n" + (if (isFa) "۲۴" else "24"),
+                                                    modifier = Modifier.padding(vertical = 8.dp).fillMaxWidth(),
+                                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                                    fontSize = 12.sp,
+                                                    fontFamily = when (f) {
+                                                        IconDigitFont.SERIF -> androidx.compose.ui.text.font.FontFamily.Serif
+                                                        IconDigitFont.MONO -> androidx.compose.ui.text.font.FontFamily.Monospace
+                                                        else -> androidx.compose.ui.text.font.FontFamily.SansSerif
+                                                    },
+                                                    fontWeight = if (sel) FontWeight.ExtraBold else FontWeight.Medium,
+                                                    color = if (sel) Color.White else MaterialTheme.colorScheme.onSurface
+                                                )
+                                            }
+                                        }
+                                        repeat(3 - rowFonts.size) { Spacer(Modifier.weight(1f)) }
                                     }
                                 }
                             }

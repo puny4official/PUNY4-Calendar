@@ -33,8 +33,8 @@ object DailyNotificationHelper {
      * Generates a freestanding, extra-large, extra-bold day number bitmap for the status bar icon.
      * Completely eliminates any outer circular ring as requested ("اون رو درشت کن عددش رو و از دایره خارج کن").
      */
-    fun createDayNumberBitmap(dayNumberStr: String): Bitmap =
-        DigitalDigits.render(dayNumberStr, 128, 128, aspect = 0.46f, padFrac = 0.0f, gapFrac = 0.07f)
+    fun createDayNumberBitmap(context: Context, dayNumberStr: String): Bitmap =
+        IconDigitFont.render(context, dayNumberStr, 128, 128, aspect = 0.46f, padFrac = 0.0f, gapFrac = 0.07f)
 
     fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -87,7 +87,7 @@ object DailyNotificationHelper {
         val renderFaDigits = isFa && !useEnglishDigits
 
         val dayNumberStr = DigitFormatter.toSystemDigits(j.day, renderFaDigits)
-        val dayIconBitmap = createDayNumberBitmap(dayNumberStr)
+        val dayIconBitmap = createDayNumberBitmap(context, dayNumberStr)
         val dayIconCompat = IconCompat.createWithBitmap(dayIconBitmap)
 
         val title = if (isFa) {
@@ -126,7 +126,6 @@ object DailyNotificationHelper {
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(dayIconCompat)
-            .setLargeIcon(dayIconBitmap)
             .setContentTitle(title)
             .setContentText(secDateStr)
             .setStyle(NotificationCompat.BigTextStyle().bigText(bigText))

@@ -26,7 +26,7 @@ class CalendarTileService : TileService() {
         val g = CalendarManager.getTodayGregorian()
         val jdn = JalaliCalendar.gregorianToJdn(g.year, g.month, g.day)
         val j = JalaliCalendar.jdnToJalali(jdn)
-        tile.icon = Icon.createWithBitmap(DailyNotificationHelper.createDayNumberBitmap(j.day.toString()))
+        tile.icon = Icon.createWithBitmap(DailyNotificationHelper.createDayNumberBitmap(this, j.day.toString()))
         tile.label = "${j.day} ${JalaliCalendar.MONTH_NAMES_PERSIAN[j.month - 1]}"
         if (Build.VERSION.SDK_INT >= 29) tile.subtitle = "${j.year}"
         tile.state = Tile.STATE_ACTIVE

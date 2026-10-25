@@ -27,7 +27,7 @@ class DayWidgetProvider : AppWidgetProvider() {
             val g = CalendarManager.getTodayGregorian()
             val j = JalaliCalendar.jdnToJalali(JalaliCalendar.gregorianToJdn(g.year, g.month, g.day))
             val views = RemoteViews(context.packageName, R.layout.widget_day)
-            views.setImageViewBitmap(R.id.widget_day, DigitalDigits.render(j.day.toString(), 160, 110))
+            views.setImageViewBitmap(R.id.widget_day, IconDigitFont.render(context, j.day.toString(), 160, 110))
             views.setTextViewText(R.id.widget_month, JalaliCalendar.MONTH_NAMES_PERSIAN[j.month - 1])
             val intent = Intent(context, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
