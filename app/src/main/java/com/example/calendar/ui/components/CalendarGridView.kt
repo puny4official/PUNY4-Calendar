@@ -217,20 +217,18 @@ Box(
                     CalendarType.LUNAR_HIJRI -> if (isFa) "قمری" else "Lunar"
                 }
 
+                // The chosen calendar always sits in the first slot; the other two slide out from the drawer
                 CalendarTypeChip(
-                    label = typeLabel(CalendarType.SOLAR_HIJRI),
-                    isSelected = calendarType == CalendarType.SOLAR_HIJRI,
-                    testTag = "calendar_chip_${CalendarType.SOLAR_HIJRI.name.lowercase()}",
+                    label = typeLabel(calendarType),
+                    isSelected = true,
+                    testTag = "calendar_chip_${calendarType.name.lowercase()}",
                     modifier = Modifier.weight(1f),
-                    onClick = {
-                        onCalendarTypeChanged(CalendarType.SOLAR_HIJRI)
-                        showMoreCalendars = false
-                    }
+                    onClick = { showMoreCalendars = false }
                 )
 
                 // The ( › ) button: points toward the hidden chips, flips when the drawer is open.
                 // It gets a purple outline while the active calendar is hidden inside the drawer.
-                val hiddenTypeActive = !showMoreCalendars && calendarType != CalendarType.SOLAR_HIJRI
+                val hiddenTypeActive = false // the active calendar is always visible in the first slot
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
@@ -268,10 +266,10 @@ Box(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            listOf(CalendarType.GREGORIAN, CalendarType.LUNAR_HIJRI).forEach { type ->
+                            listOf(CalendarType.SOLAR_HIJRI, CalendarType.GREGORIAN, CalendarType.LUNAR_HIJRI).filter { it != calendarType }.forEach { type ->
                                 CalendarTypeChip(
                                     label = typeLabel(type),
-                                    isSelected = type == calendarType,
+                                    isSelected = false,
                                     testTag = "calendar_chip_${type.name.lowercase()}",
                                     modifier = Modifier.weight(1f),
                                     onClick = {
