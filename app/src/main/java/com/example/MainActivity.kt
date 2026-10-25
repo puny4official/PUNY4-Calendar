@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -460,6 +461,88 @@ class MainActivity : ComponentActivity() {
                                     // ---------------------------------------------
                                     // DRAWER FOOTER (APP VERSION)
                                     // ---------------------------------------------
+                                    // CHECK UPDATE frame (in-app updates will be wired here later)
+                                    val updateCtx = androidx.compose.ui.platform.LocalContext.current
+                                    val updateGlow by androidx.compose.animation.core.rememberInfiniteTransition(label = "updGlow")
+                                        .animateFloat(0.35f, 0.9f, androidx.compose.animation.core.infiniteRepeatable(
+                                            androidx.compose.animation.core.tween(2200, easing = androidx.compose.animation.core.LinearEasing),
+                                            androidx.compose.animation.core.RepeatMode.Reverse), label = "updGlowAlpha")
+                                    val updateGold = Color(0xFFFFC857)
+                                    val updateViolet = Color(0xFF8B5CF6)
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 8.dp, vertical = 6.dp)
+                                            .clip(RoundedCornerShape(16.dp))
+                                            .background(
+                                                androidx.compose.ui.graphics.Brush.horizontalGradient(
+                                                    listOf(updateViolet.copy(alpha = 0.22f), updateGold.copy(alpha = 0.16f))
+                                                )
+                                            )
+                                            .border(
+                                                1.4.dp,
+                                                androidx.compose.ui.graphics.Brush.horizontalGradient(
+                                                    listOf(updateViolet.copy(alpha = updateGlow), updateGold.copy(alpha = updateGlow))
+                                                ),
+                                                RoundedCornerShape(16.dp)
+                                            )
+                                            .clickable {
+                                                android.widget.Toast.makeText(
+                                                    updateCtx,
+                                                    "بروزرسانی داخلی به‌زودی فعال می‌شود",
+                                                    android.widget.Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                            .testTag("drawer_check_update")
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                            ) {
+                                                Surface(
+                                                    shape = CircleShape,
+                                                    color = updateGold.copy(alpha = 0.18f),
+                                                    modifier = Modifier.size(34.dp)
+                                                ) {
+                                                    Box(contentAlignment = Alignment.Center) {
+                                                        Icon(
+                                                            imageVector = Icons.Default.Refresh,
+                                                            contentDescription = null,
+                                                            tint = updateGold,
+                                                            modifier = Modifier.size(20.dp)
+                                                        )
+                                                    }
+                                                }
+                                                Column {
+                                                    Text(
+                                                        text = "Check update",
+                                                        style = MaterialTheme.typography.titleSmall,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = MaterialTheme.colorScheme.onSurface
+                                                    )
+                                                    Text(
+                                                        text = "بررسی بروزرسانی",
+                                                        style = MaterialTheme.typography.labelSmall,
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                    )
+                                                }
+                                            }
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                                                contentDescription = null,
+                                                tint = updateGold,
+                                                modifier = Modifier.size(22.dp)
+                                            )
+                                        }
+                                    }
+
                                     HorizontalDivider(
                                         color = MaterialTheme.colorScheme.surfaceVariant,
                                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
