@@ -466,6 +466,27 @@ class MainActivity : ComponentActivity() {
                                     // ---------------------------------------------
                                     // CHECK UPDATE frame (in-app updates will be wired here later)
                                     val updateCtx = androidx.compose.ui.platform.LocalContext.current
+                                    val updateScope = androidx.compose.runtime.rememberCoroutineScope()
+                                    var updateResult by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<com.example.calendar.core.UpdateChecker.Result?>(null) }
+                                    if (updateResult != null) {
+                                        val r = updateResult!!
+                                        androidx.compose.material3.AlertDialog(
+                                            onDismissRequest = { updateResult = null },
+                                            title = { androidx.compose.material3.Text(if (r.hasUpdate) "نسخه‌ی جدید ${r.latest}" else "اپ شما به‌روز است") },
+                                            text = { androidx.compose.material3.Text(if (r.hasUpdate) r.notes.ifBlank { "نسخه‌ی جدید آماده‌ی دانلود است." } else "آخرین نسخه (${r.latest}) را دارید.") },
+                                            confirmButton = {
+                                                androidx.compose.material3.TextButton(onClick = {
+                                                    if (r.hasUpdate) runCatching {
+                                                        updateCtx.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(r.downloadUrl)))
+                                                    }
+                                                    updateResult = null
+                                                }) { androidx.compose.material3.Text(if (r.hasUpdate) "دانلود" else "باشه") }
+                                            },
+                                            dismissButton = if (r.hasUpdate) {
+                                                { androidx.compose.material3.TextButton(onClick = { updateResult = null }) { androidx.compose.material3.Text("بعداً") } }
+                                            } else null
+                                        )
+                                    }
                                     val updateGlow by androidx.compose.animation.core.rememberInfiniteTransition(label = "updGlow")
                                         .animateFloat(0.35f, 0.9f, androidx.compose.animation.core.infiniteRepeatable(
                                             androidx.compose.animation.core.tween(2200, easing = androidx.compose.animation.core.LinearEasing),
@@ -490,11 +511,14 @@ class MainActivity : ComponentActivity() {
                                                 RoundedCornerShape(16.dp)
                                             )
                                             .clickable {
-                                                android.widget.Toast.makeText(
-                                                    updateCtx,
-                                                    "بروزرسانی داخلی به‌زودی فعال می‌شود",
-                                                    android.widget.Toast.LENGTH_SHORT
-                                                ).show()
+                                                android.widget.Toast.makeText(updateCtx, "در حال بررسی…", android.widget.Toast.LENGTH_SHORT).show()
+                                                updateScope.launch {
+                                                    val res = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                                        com.example.calendar.core.UpdateChecker.check(com.example.BuildConfig.VERSION_NAME)
+                                                    }
+                                                    if (res == null) android.widget.Toast.makeText(updateCtx, "بررسی انجام نشد؛ اینترنت را چک کنید", android.widget.Toast.LENGTH_LONG).show()
+                                                    else updateResult = res
+                                                }
                                             }
                                             .testTag("drawer_check_update")
                                     ) {
