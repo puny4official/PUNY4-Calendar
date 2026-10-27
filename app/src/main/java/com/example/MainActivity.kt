@@ -175,7 +175,7 @@ class MainActivity : ComponentActivity() {
 
                     ModalNavigationDrawer(
                         drawerState = drawerState,
-                        scrimColor = androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.18f),
+                        scrimColor = androidx.compose.ui.graphics.Color.Black.copy(alpha = if (android.os.Build.VERSION.SDK_INT >= 31) 0.18f else 0.45f),
                         drawerContent = {
                             ModalDrawerSheet(
                                 modifier = Modifier
@@ -212,7 +212,8 @@ class MainActivity : ComponentActivity() {
                                     )
                                     .testTag("hamburger_drawer_sheet"),
                                 drawerShape = androidx.compose.foundation.shape.RoundedCornerShape(topEnd = 28.dp, bottomEnd = 28.dp),
-                                drawerContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.30f)
+                                // Without blur (Android < 12) a see-through drawer is unreadable, so make it nearly opaque there
+                                drawerContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = if (android.os.Build.VERSION.SDK_INT >= 31) 0.30f else 0.97f)
                             ) {
                                 Column(
                                     modifier = Modifier
