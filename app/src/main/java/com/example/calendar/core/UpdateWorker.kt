@@ -57,11 +57,11 @@ class UpdateWorker(private val ctx: Context, params: WorkerParameters) : Worker(
         private const val NOTIF_ID = 1101
 
         fun schedule(context: Context) {
-            val req = PeriodicWorkRequestBuilder<UpdateWorker>(6, TimeUnit.HOURS)
+            val req = PeriodicWorkRequestBuilder<UpdateWorker>(15, TimeUnit.MINUTES)
                 .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
                 .build()
             WorkManager.getInstance(context.applicationContext)
-                .enqueueUniquePeriodicWork("puny4_update_check", ExistingPeriodicWorkPolicy.KEEP, req)
+                .enqueueUniquePeriodicWork("puny4_update_check", ExistingPeriodicWorkPolicy.UPDATE, req)
         }
     }
 }
