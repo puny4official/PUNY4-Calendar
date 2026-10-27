@@ -513,7 +513,7 @@ fun SettingsScreen(
                                     color = MaterialTheme.colorScheme.primary
                                 )
                                 Text(
-                                    text = "v 1.0.0",
+                                    text = "v 1.0.1",
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
