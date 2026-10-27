@@ -1,5 +1,6 @@
 package com.example.calendar.ui.components
 
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
@@ -245,6 +246,7 @@ fun TodaySpotlightOverlay(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp)
+                    .navigationBarsPadding()
                     .align(if (isTargetCellHigh) Alignment.BottomCenter else Alignment.TopCenter)
                     .padding(top = if (isTargetCellHigh) 0.dp else 8.dp, bottom = if (isTargetCellHigh) 20.dp else 0.dp)
                     .onGloballyPositioned { coordinates ->
