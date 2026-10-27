@@ -633,7 +633,7 @@ class MainActivity : ComponentActivity() {
                                             }
 
                                             Text(
-                                                text = "v 1.0.1",
+                                                text = "v 1.1.0",
                                                 fontSize = 14.5.sp,
                                                 fontWeight = FontWeight.SemiBold,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant

@@ -55,7 +55,7 @@ private const val LOADING_DURATION_MS = 2000L
  *  2. app name under it
  *  3. square-outline loader under the name
  *  4. fixed "Loading" text under the loader, only its three dots come and go
- *  5. "Version 1.0.1" at the bottom
+ *  5. "Version 1.1.0" at the bottom
  * Hands over to the app after 5 seconds.
  */
 @Composable
@@ -108,7 +108,7 @@ fun DigitalLoadingScreen(
         }
 
         Text(
-            text = "Version 1.0.1",
+            text = "Version 1.1.0",
             color = Color.White.copy(alpha = 0.6f),
             fontSize = 13.sp,
             modifier = Modifier
