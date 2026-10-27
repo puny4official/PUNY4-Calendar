@@ -83,13 +83,13 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var userSettings: UserSettings
 
-    @OptIn(ExperimentalMaterial3Api::class)
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) androidx.core.view.WindowInsetsControllerCompat(window, window.decorView)
             .hide(androidx.core.view.WindowInsetsCompat.Type.navigationBars())
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         runCatching { com.example.calendar.core.UpdateWorker.schedule(this) }
