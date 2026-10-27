@@ -71,6 +71,24 @@ fun AppGuideDialog(
                     "Phone Settings → Apps → PUNY4 Calendar → Battery: choose \"No restrictions\".",
                     "In the same place, turn on \"Autostart\"."
                 )
+            ),
+            GuideTopic(
+                titlePersian = "گوشی‌های شیائومی / پوکو / ردمی",
+                titleEnglish = "Xiaomi / Poco / Redmi phones",
+                descriptionPersian = "در شیائومی (MIUI و HyperOS) سیستم برنامه‌های پس‌زمینه را سخت‌گیرانه می‌بندد. برای اینکه نوتیف تقویم، ویجت و اعلان بروزرسانی درست کار کنند، این سه تنظیم را انجام دهید.",
+                descriptionEnglish = "Xiaomi (MIUI and HyperOS) aggressively closes background apps. To keep the calendar notification, widget and update alerts working, apply these three settings.",
+                icon = Icons.Default.Settings,
+                iconTint = Color(0xFFFF6A00),
+                tipsPersian = listOf(
+                    "شروع خودکار: تنظیمات ← برنامه‌ها ← PUNY4 Calendar ← «Other permissions» ← «Autostart» را روشن کنید. اگر آنجا نبود: تنظیمات ← برنامه‌ها ← Permissions ← Autostart.",
+                    "گزینه‌ی «Pause app activity if unused» را در همان صفحه‌ی اطلاعات برنامه خاموش کنید.",
+                    "روی «Power» بزنید و «Battery saver» را روی «No restrictions» بگذارید."
+                ),
+                tipsEnglish = listOf(
+                    "Autostart: Settings → Apps → PUNY4 Calendar → \"Other permissions\" → turn on \"Autostart\". If it is not there: Settings → Apps → Permissions → Autostart.",
+                    "Turn off \"Pause app activity if unused\" on the same app info page.",
+                    "Tap \"Power\" and set \"Battery saver\" to \"No restrictions\"."
+                )
             )
         )
     }
