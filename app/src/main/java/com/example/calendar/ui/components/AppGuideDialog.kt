@@ -80,12 +80,12 @@ fun AppGuideDialog(
                 icon = Icons.Default.Settings,
                 iconTint = Color(0xFFFF6A00),
                 tipsPersian = listOf(
-                    "شروع خودکار: تنظیمات ← برنامه‌ها ← PUNY4 Calendar ← «Other permissions» ← «Autostart» را روشن کنید. اگر آنجا نبود: تنظیمات ← برنامه‌ها ← Permissions ← Autostart.",
+                    "شروع خودکار: تنظیمات ← برنامه‌ها ← Permissions ← Autostart، و PUNY4 Calendar را روشن کنید. (در بعضی نسخه‌ها داخل برنامه‌ی Security ← Permissions ← Autostart است.)",
                     "گزینه‌ی «Pause app activity if unused» را در همان صفحه‌ی اطلاعات برنامه خاموش کنید.",
                     "روی «Power» بزنید و «Battery saver» را روی «No restrictions» بگذارید."
                 ),
                 tipsEnglish = listOf(
-                    "Autostart: Settings → Apps → PUNY4 Calendar → \"Other permissions\" → turn on \"Autostart\". If it is not there: Settings → Apps → Permissions → Autostart.",
+                    "Autostart: Settings → Apps → Permissions → Autostart, and turn on PUNY4 Calendar. (On some versions it is in the Security app → Permissions → Autostart.)",
                     "Turn off \"Pause app activity if unused\" on the same app info page.",
                     "Tap \"Power\" and set \"Battery saver\" to \"No restrictions\"."
                 )
