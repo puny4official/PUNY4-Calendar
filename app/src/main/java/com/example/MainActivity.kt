@@ -86,6 +86,7 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        runCatching { com.example.calendar.core.UpdateWorker.schedule(this) }
         enableEdgeToEdge()
 
         userSettings = UserSettings(applicationContext)
