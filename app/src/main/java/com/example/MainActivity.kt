@@ -84,6 +84,12 @@ class MainActivity : ComponentActivity() {
     private lateinit var userSettings: UserSettings
 
     @OptIn(ExperimentalMaterial3Api::class)
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) androidx.core.view.WindowInsetsControllerCompat(window, window.decorView)
+            .hide(androidx.core.view.WindowInsetsCompat.Type.navigationBars())
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         runCatching { com.example.calendar.core.UpdateWorker.schedule(this) }
@@ -91,6 +97,12 @@ class MainActivity : ComponentActivity() {
             statusBarStyle = androidx.activity.SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
             navigationBarStyle = androidx.activity.SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
         )
+
+        // Hide the Android navigation buttons (back / home / recents); a swipe from the bottom edge shows them briefly
+        androidx.core.view.WindowInsetsControllerCompat(window, window.decorView).apply {
+            systemBarsBehavior = androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            hide(androidx.core.view.WindowInsetsCompat.Type.navigationBars())
+        }
 
         userSettings = UserSettings(applicationContext)
 
