@@ -289,6 +289,16 @@ fun AllCalendarsCard(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 CalendarDateRow(
+                    icon = Icons.Default.AccountBalance,
+                    iconTint = AstroGold,
+                    calendarName = "شاهنشاهی (باستان)",
+                    dateString = "${DigitFormatter.toSystemDigits(dayInfo.jalaliDate.day, renderFaDigits)} ${JalaliCalendar.MONTH_NAMES_PERSIAN[dayInfo.jalaliDate.month - 1]} ${DigitFormatter.toSystemDigits(dayInfo.jalaliDate.year + com.example.calendar.model.IMPERIAL_YEAR_OFFSET, renderFaDigits)}",
+                    subtitle = "مبدأ: کوروش بزرگ"
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                CalendarDateRow(
                     icon = Icons.Default.Public,
                     iconTint = PrimaryLight,
                     calendarName = "میلادی",

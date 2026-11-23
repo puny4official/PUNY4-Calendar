@@ -56,7 +56,7 @@ fun CalendarScreen(
     val initialYear: Int
     val initialMonth: Int
     when (defaultCalType) {
-        CalendarType.SOLAR_HIJRI -> {
+        CalendarType.SOLAR_HIJRI, CalendarType.IMPERIAL -> {
             val j = JalaliCalendar.jdnToJalali(todayJdn)
             initialYear = j.year
             initialMonth = j.month
@@ -88,7 +88,7 @@ fun CalendarScreen(
             selectedJdn = target
             userNote = userSettings.getNote(target)
             when (activeCalendarType) {
-                CalendarType.SOLAR_HIJRI -> {
+                CalendarType.SOLAR_HIJRI, CalendarType.IMPERIAL -> {
                     val j = JalaliCalendar.jdnToJalali(target)
                     currentYear = j.year
                     currentMonth = j.month
@@ -180,7 +180,7 @@ fun CalendarScreen(
         selectedJdn = todayJdn
         userNote = userSettings.getNote(todayJdn)
         when (activeCalendarType) {
-            CalendarType.SOLAR_HIJRI -> {
+            CalendarType.SOLAR_HIJRI, CalendarType.IMPERIAL -> {
                 val j = JalaliCalendar.jdnToJalali(todayJdn)
                 currentYear = j.year
                 currentMonth = j.month
@@ -266,7 +266,7 @@ fun CalendarScreen(
                     onCalendarTypeChanged = { newType ->
                         activeCalendarType = newType
                         when (newType) {
-                            CalendarType.SOLAR_HIJRI -> {
+                            CalendarType.SOLAR_HIJRI, CalendarType.IMPERIAL -> {
                                 val j = JalaliCalendar.jdnToJalali(selectedJdn)
                                 currentYear = j.year
                                 currentMonth = j.month

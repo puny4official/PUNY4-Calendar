@@ -62,6 +62,7 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import com.example.calendar.model.AppLanguage
 import com.example.calendar.model.CalendarType
+import com.example.calendar.model.IMPERIAL_YEAR_OFFSET
 import com.example.calendar.model.JalaliDate
 import com.example.ui.theme.AstroGold
 import com.example.ui.theme.HolidayPurple
@@ -133,6 +134,7 @@ fun CalendarGridView(
         val yearStr = DigitFormatter.toSystemDigits(currentYear, renderFaDigits)
         when (calendarType) {
             CalendarType.SOLAR_HIJRI -> "${JalaliCalendar.MONTH_NAMES_PERSIAN[currentMonth - 1]} $yearStr"
+            CalendarType.IMPERIAL -> "${JalaliCalendar.MONTH_NAMES_PERSIAN[currentMonth - 1]} ${DigitFormatter.toSystemDigits(currentYear + IMPERIAL_YEAR_OFFSET, renderFaDigits)}"
             CalendarType.GREGORIAN -> {
                 if (isFa) {
                     "${CalendarManager.GREGORIAN_MONTH_NAMES_PERSIAN[currentMonth - 1]} $yearStr"
@@ -215,6 +217,7 @@ Box(
                     CalendarType.SOLAR_HIJRI -> if (isFa) "شمسی" else "Solar"
                     CalendarType.GREGORIAN -> if (isFa) "میلادی" else "Gregorian"
                     CalendarType.LUNAR_HIJRI -> if (isFa) "قمری" else "Lunar"
+                    CalendarType.IMPERIAL -> if (isFa) "باستان" else "Ancient"
                 }
 
                 // The chosen calendar always sits in the first slot; the other two slide out from the drawer
@@ -266,7 +269,7 @@ Box(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            listOf(CalendarType.SOLAR_HIJRI, CalendarType.GREGORIAN, CalendarType.LUNAR_HIJRI).filter { it != calendarType }.forEach { type ->
+                            listOf(CalendarType.SOLAR_HIJRI, CalendarType.GREGORIAN, CalendarType.LUNAR_HIJRI, CalendarType.IMPERIAL).filter { it != calendarType }.forEach { type ->
                                 CalendarTypeChip(
                                     label = typeLabel(type),
                                     isSelected = false,
@@ -716,14 +719,14 @@ fun YearMonthPickerDialog(
 
     val monthNames = remember(calendarType) {
         when (calendarType) {
-            CalendarType.SOLAR_HIJRI -> JalaliCalendar.MONTH_NAMES_PERSIAN
+            CalendarType.SOLAR_HIJRI, CalendarType.IMPERIAL -> JalaliCalendar.MONTH_NAMES_PERSIAN
             CalendarType.GREGORIAN -> CalendarManager.GREGORIAN_MONTH_NAMES_PERSIAN
             CalendarType.LUNAR_HIJRI -> IslamicCalendar.MONTH_NAMES_ARABIC
         }
     }
 
     val dialogYearAnimal = remember(calendarType, selectedYear) {
-        if (calendarType == CalendarType.SOLAR_HIJRI) {
+        if (calendarType == CalendarType.SOLAR_HIJRI || calendarType == CalendarType.IMPERIAL) {
             AstronomicalCalculator.getYearAnimal(selectedYear)
         } else null
     }
@@ -753,7 +756,7 @@ fun YearMonthPickerDialog(
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = DigitFormatter.toSystemDigits(selectedYear, renderFaDigits),
+                            text = DigitFormatter.toSystemDigits(selectedYear + (if (calendarType == CalendarType.IMPERIAL) IMPERIAL_YEAR_OFFSET else 0), renderFaDigits),
                             style = MaterialTheme.typography.headlineSmall.copy(
                                 fontFamily = FontFamily.Default
                             ),
@@ -790,7 +793,7 @@ fun YearMonthPickerDialog(
                         rowList.forEachIndexed { colIndex, mName ->
                             val mNum = rowIndex * 3 + colIndex + 1
                             val isChosen = (mNum == selectedMonth)
-                            val element = if (calendarType == CalendarType.SOLAR_HIJRI) {
+                            val element = if (calendarType == CalendarType.SOLAR_HIJRI || calendarType == CalendarType.IMPERIAL) {
                                 AstronomicalCalculator.getMonthElement(mNum)
                             } else null
 

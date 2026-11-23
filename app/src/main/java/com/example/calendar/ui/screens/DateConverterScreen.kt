@@ -26,6 +26,7 @@ import com.example.calendar.core.CalendarManager
 import com.example.calendar.core.IslamicCalendar
 import com.example.calendar.core.JalaliCalendar
 import com.example.calendar.model.CalendarType
+import com.example.calendar.model.IMPERIAL_YEAR_OFFSET
 import com.example.calendar.model.GregorianDate
 import com.example.calendar.model.IslamicDate
 import com.example.calendar.model.JalaliDate
@@ -55,6 +56,7 @@ fun DateConverterScreen(
 
         val jdn: Long = when (sourceCalendarType) {
             CalendarType.SOLAR_HIJRI -> JalaliCalendar.jalaliToJdn(y, m, d)
+            CalendarType.IMPERIAL -> JalaliCalendar.jalaliToJdn(y - IMPERIAL_YEAR_OFFSET, m, d)
             CalendarType.GREGORIAN -> JalaliCalendar.gregorianToJdn(y, m, d)
             CalendarType.LUNAR_HIJRI -> IslamicCalendar.islamicToJdn(y, m, d)
         }
@@ -151,6 +153,11 @@ fun DateConverterScreen(
                                             inputMonth = "${todayG.month}"
                                             inputDay = "${todayG.day}"
                                         }
+                                        CalendarType.IMPERIAL -> {
+                                            inputYear = "${todayJ.year + IMPERIAL_YEAR_OFFSET}"
+                                            inputMonth = "${todayJ.month}"
+                                            inputDay = "${todayJ.day}"
+                                        }
                                         CalendarType.LUNAR_HIJRI -> {
                                             inputYear = "${todayI.year}"
                                             inputMonth = "${todayI.month}"
@@ -242,6 +249,13 @@ fun DateConverterScreen(
                         title = "هجری شمسی (خورشیدی)",
                         dateText = "${convertedResults.jalali.day} ${JalaliCalendar.MONTH_NAMES_PERSIAN[convertedResults.jalali.month - 1]} ${convertedResults.jalali.year}",
                         isSource = (sourceCalendarType == CalendarType.SOLAR_HIJRI)
+                    )
+
+                    // Imperial (Shahanshahi) Result
+                    ConvertedResultRow(
+                        title = "شاهنشاهی (باستان)",
+                        dateText = "${convertedResults.jalali.day} ${JalaliCalendar.MONTH_NAMES_PERSIAN[convertedResults.jalali.month - 1]} ${convertedResults.jalali.year + IMPERIAL_YEAR_OFFSET}",
+                        isSource = (sourceCalendarType == CalendarType.IMPERIAL)
                     )
 
                     // Gregorian Result

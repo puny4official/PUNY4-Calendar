@@ -180,6 +180,7 @@ fun SettingsScreen(
                         CalendarType.SOLAR_HIJRI -> if (isFa) "گاه‌شماری رسمی ایران با ۱۲ ماه خورشیدی" else "Iranian official Solar calendar (12 months)"
                         CalendarType.GREGORIAN -> if (isFa) "گاه‌شماری بین‌المللی میلادی" else "International Gregorian calendar"
                         CalendarType.LUNAR_HIJRI -> if (isFa) "گاه‌شماری قمری اسلامی و رویدادهای مذهبی" else "Islamic Lunar calendar and religious events"
+                        CalendarType.IMPERIAL -> if (isFa) "گاه‌شماری شاهنشاهی ایران باستان (مبدأ کوروش بزرگ)" else "Imperial Iranian calendar (epoch: Cyrus the Great)"
                     }
 
                     SelectableOptionRow(

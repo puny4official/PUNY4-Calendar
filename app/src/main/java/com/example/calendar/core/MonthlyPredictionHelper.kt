@@ -1,6 +1,7 @@
 package com.example.calendar.core
 
 import com.example.calendar.model.CalendarType
+import com.example.calendar.model.IMPERIAL_YEAR_OFFSET
 import com.example.calendar.model.JalaliDate
 import kotlin.math.abs
 
@@ -41,25 +42,26 @@ object MonthlyPredictionHelper {
     ): MonthlyPrediction {
         // We calculate based on the corresponding Solar Hijri month or Gregorian/Islamic month
         val solarMonth = when (calendarType) {
-            CalendarType.SOLAR_HIJRI -> month
+            CalendarType.SOLAR_HIJRI, CalendarType.IMPERIAL -> month
             CalendarType.GREGORIAN -> ((month + 8) % 12) + 1 // Approximate match
             CalendarType.LUNAR_HIJRI -> month
         }
         val solarYear = when (calendarType) {
-            CalendarType.SOLAR_HIJRI -> year
+            CalendarType.SOLAR_HIJRI, CalendarType.IMPERIAL -> year
             CalendarType.GREGORIAN -> year - 621
             CalendarType.LUNAR_HIJRI -> year - 42
         }
 
         val monthName = when (calendarType) {
-            CalendarType.SOLAR_HIJRI -> JalaliCalendar.MONTH_NAMES_PERSIAN[(month - 1).coerceIn(0, 11)]
+            CalendarType.SOLAR_HIJRI, CalendarType.IMPERIAL -> JalaliCalendar.MONTH_NAMES_PERSIAN[(month - 1).coerceIn(0, 11)]
             CalendarType.GREGORIAN -> CalendarManager.GREGORIAN_MONTH_NAMES_PERSIAN[(month - 1).coerceIn(0, 11)]
             CalendarType.LUNAR_HIJRI -> IslamicCalendar.MONTH_NAMES_ARABIC[(month - 1).coerceIn(0, 11)]
         }
-        val monthTitle = "پیشگوییهای ماه – $monthName $year"
+        val shownYear = if (calendarType == CalendarType.IMPERIAL) year + IMPERIAL_YEAR_OFFSET else year
+        val monthTitle = "پیشگوییهای ماه – $monthName $shownYear"
 
         val daysInMonth = when (calendarType) {
-            CalendarType.SOLAR_HIJRI -> JalaliCalendar.getDaysInMonth(year, month)
+            CalendarType.SOLAR_HIJRI, CalendarType.IMPERIAL -> JalaliCalendar.getDaysInMonth(year, month)
             CalendarType.GREGORIAN -> java.time.LocalDate.of(year, month, 1).lengthOfMonth()
             CalendarType.LUNAR_HIJRI -> IslamicCalendar.getDaysInMonth(year, month)
         }
@@ -75,7 +77,7 @@ object MonthlyPredictionHelper {
 
         for (day in 1..daysInMonth) {
             val jdn = when (calendarType) {
-                CalendarType.SOLAR_HIJRI -> JalaliCalendar.jalaliToJdn(year, month, day)
+                CalendarType.SOLAR_HIJRI, CalendarType.IMPERIAL -> JalaliCalendar.jalaliToJdn(year, month, day)
                 CalendarType.GREGORIAN -> JalaliCalendar.gregorianToJdn(year, month, day)
                 CalendarType.LUNAR_HIJRI -> IslamicCalendar.islamicToJdn(year, month, day)
             }

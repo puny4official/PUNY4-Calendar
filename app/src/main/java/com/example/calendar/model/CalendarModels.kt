@@ -15,8 +15,12 @@ enum class AppLanguage(val code: String, val titlePersian: String, val titleEngl
 enum class CalendarType(val titlePersian: String, val titleEnglish: String) {
     SOLAR_HIJRI("هجری شمسی", "Solar Hijri"),
     GREGORIAN("میلادی", "Gregorian"),
-    LUNAR_HIJRI("هجری قمری", "Lunar Hijri")
+    LUNAR_HIJRI("هجری قمری", "Lunar Hijri"),
+    IMPERIAL("شاهنشاهی (باستان)", "Imperial (Ancient)")
 }
+
+/** Imperial Iranian (Shahanshahi) year = Solar Hijri year + 1180; months and days are identical to the Solar Hijri calendar. */
+const val IMPERIAL_YEAR_OFFSET = 1180
 
 @Immutable
 data class JalaliDate(val year: Int, val month: Int, val day: Int) {

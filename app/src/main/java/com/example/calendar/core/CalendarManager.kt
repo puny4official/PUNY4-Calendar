@@ -166,7 +166,7 @@ object CalendarManager {
         val cells = mutableListOf<CalendarGridCell>()
 
         when (calendarType) {
-            CalendarType.SOLAR_HIJRI -> {
+            CalendarType.SOLAR_HIJRI, CalendarType.IMPERIAL -> {
                 val daysInMonth = JalaliCalendar.getDaysInMonth(year, month)
                 val firstJdn = JalaliCalendar.jalaliToJdn(year, month, 1)
                 val startDayOfWeek = JalaliCalendar.getDayOfWeekIndex(firstJdn) // 0=Sat ... 6=Fri
@@ -267,7 +267,7 @@ object CalendarManager {
         val sec2: String
 
         when (calendarType) {
-            CalendarType.SOLAR_HIJRI -> {
+            CalendarType.SOLAR_HIJRI, CalendarType.IMPERIAL -> {
                 primaryNum = j.day
                 sec1 = "${g.day}"
                 sec2 = "${i.day}"
