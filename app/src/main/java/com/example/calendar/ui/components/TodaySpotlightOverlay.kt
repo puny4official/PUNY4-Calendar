@@ -240,7 +240,8 @@ fun TodaySpotlightOverlay(
             // -----------------------------------------------------------
             // The card sits at the top; it only drops to the bottom when today's cell would be hidden behind it.
             val topCardReachPx = with(LocalDensity.current) { 260.dp.toPx() }
-            val isTargetCellHigh = targetCenter != null && targetCenter.y < topCardReachPx
+            // The card always stays at the top, whatever the position of the highlighted day
+            val isTargetCellHigh = false
 
             Box(
                 modifier = Modifier

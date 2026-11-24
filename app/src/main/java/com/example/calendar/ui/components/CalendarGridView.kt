@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -60,6 +61,13 @@ import com.example.calendar.core.JalaliCalendar
 import com.example.calendar.core.MonthlyPredictionHelper
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.toArgb
 import com.example.calendar.model.AppLanguage
 import com.example.calendar.model.CalendarType
 import com.example.calendar.model.IMPERIAL_YEAR_OFFSET
@@ -111,6 +119,7 @@ fun CalendarGridView(
     fontScalePercent: Int = 100,
     dayNumberScalePercent: Int = 100,
     holidayColor: Color = Color(0xFF8B5CF6L),
+    frameColor: Color = Color(0xFFFFE08AL),
     onTodayPositioned: ((LayoutCoordinates) -> Unit)? = null,
     onIndicatorPositioned: ((LayoutCoordinates) -> Unit)? = null,
     onShowTodaySpotlight: (() -> Unit)? = null
@@ -146,28 +155,67 @@ fun CalendarGridView(
         }
     }
 
+// Live frame light: the halo breathes and two comets of light run around the frame.
+val frameFx = rememberInfiniteTransition(label = "frameFx")
+val frameBreathe by frameFx.animateFloat(
+    initialValue = 0.62f, targetValue = 1.0f,
+    animationSpec = infiniteRepeatable(tween(2600, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+    label = "frameBreathe"
+)
+val frameRun by frameFx.animateFloat(
+    initialValue = 0f, targetValue = 1f,
+    animationSpec = infiniteRepeatable(tween(7000, easing = LinearEasing), RepeatMode.Restart),
+    label = "frameRun"
+)
+val fx = remember { FrameFxCache() }
+
 Box(
     modifier = modifier
         .fillMaxWidth()
-        // Warm light spilling out of the gold frame (soft, wide falloff)
+        // Light spilling out of the frame: the blurred halo is rendered once into a bitmap, then only its alpha animates
         .drawBehind {
             val r = 24.dp.toPx()
-            val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-                style = android.graphics.Paint.Style.STROKE
+            val margin = 60.dp.toPx()
+            fx.ensure(size.width, size.height, margin, r, frameColor.toArgb(), density)
+            fx.halo?.let { bmp ->
+                drawIntoCanvas { c ->
+                    val pt = android.graphics.Paint().apply { alpha = (255 * frameBreathe).toInt().coerceIn(0, 255) }
+                    c.nativeCanvas.drawBitmap(bmp, -margin, -margin, pt)
+                }
             }
-            drawIntoCanvas { c ->
-                // wide diffuse halo -> tight bright core
-                val layers = listOf(
-                    Triple(46.dp.toPx(), 22.dp.toPx(), 0x30),
-                    Triple(28.dp.toPx(), 14.dp.toPx(), 0x48),
-                    Triple(14.dp.toPx(), 7.dp.toPx(), 0x70),
-                    Triple(5.dp.toPx(), 3.dp.toPx(), 0xB0)
-                )
-                for ((blur, width, alpha) in layers) {
-                    paint.strokeWidth = width
-                    paint.color = android.graphics.Color.argb(alpha, 255, 200, 90)
-                    paint.maskFilter = android.graphics.BlurMaskFilter(blur, android.graphics.BlurMaskFilter.Blur.NORMAL)
-                    c.nativeCanvas.drawRoundRect(0f, 0f, size.width, size.height, r, r, paint)
+            // comets of light travelling along the frame
+            val measure = fx.measure
+            if (measure != null) {
+                val total = fx.length
+                val cometLen = total * 0.13f
+                val steps = 9
+                val bright = android.graphics.Color.WHITE
+                drawIntoCanvas { c ->
+                    val cv = c.nativeCanvas
+                    for (spot in 0..1) {
+                        val head = ((frameRun + spot * 0.5f) % 1f) * total
+                        for (i in 0 until steps) {
+                            val end = head - cometLen * i / steps
+                            val start = head - cometLen * (i + 1) / steps
+                            val a = (1f - i / steps.toFloat())
+                            fx.seg.reset()
+                            // handle wrap-around at the start of the path
+                            if (start >= 0f) measure.getSegment(start, end, fx.seg, true)
+                            else {
+                                measure.getSegment(total + start, total, fx.seg, true)
+                                measure.getSegment(0f, end.coerceAtLeast(0f), fx.seg, true)
+                            }
+                            fx.paint.maskFilter = null
+                            fx.paint.strokeCap = android.graphics.Paint.Cap.ROUND
+                            fx.paint.strokeWidth = 7.dp.toPx()
+                            fx.paint.color = androidx.core.graphics.ColorUtils.setAlphaComponent(frameColor.toArgb(), (70 * a * a).toInt())
+                            cv.drawPath(fx.seg, fx.paint)
+                            fx.paint.strokeWidth = 2.6.dp.toPx()
+                            fx.paint.color = androidx.core.graphics.ColorUtils.setAlphaComponent(
+                                androidx.core.graphics.ColorUtils.blendARGB(frameColor.toArgb(), bright, 0.65f), (255 * a * a).toInt())
+                            cv.drawPath(fx.seg, fx.paint)
+                        }
+                    }
                 }
             }
         }
@@ -186,7 +234,7 @@ Box(
             drawRect(Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.28f), Color.Transparent), 0f, 3.dp.toPx()))
             drawContent()
             val glow = 36.dp.toPx()
-            val warm = Color(0xFFFFC85A)
+            val warm = frameColor
             drawRect(Brush.verticalGradient(listOf(warm.copy(alpha = 0.16f), Color.Transparent), 0f, glow))
             drawRect(Brush.verticalGradient(listOf(Color.Transparent, warm.copy(alpha = 0.12f)), size.height - glow, size.height))
             drawRect(Brush.horizontalGradient(listOf(warm.copy(alpha = 0.12f), Color.Transparent), 0f, glow))
@@ -194,7 +242,7 @@ Box(
         }
         .border(
             width = 1.5.dp,
-            color = Color(0xFFFFE08A),
+            color = frameColor,
             shape = RoundedCornerShape(24.dp)
         )
         .testTag("calendar_grid_card")
@@ -895,4 +943,49 @@ private fun DrawerSlot(
     content: @androidx.compose.runtime.Composable () -> Unit
 ) {
     AnimatedVisibility(visible = visible, enter = enter, exit = exit) { content() }
+}
+
+
+/** Cached geometry/bitmap for the animated calendar frame so nothing heavy is rebuilt per animation frame. */
+private class FrameFxCache {
+    var halo: android.graphics.Bitmap? = null
+    var measure: android.graphics.PathMeasure? = null
+    var length = 0f
+    val seg = android.graphics.Path()
+    val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+        style = android.graphics.Paint.Style.STROKE
+    }
+    private var key = ""
+
+    fun ensure(w: Float, h: Float, margin: Float, r: Float, color: Int, density: Float) {
+        val k = "$w|$h|$color"
+        if (k == key || w <= 0f || h <= 0f) return
+        key = k
+        val path = android.graphics.Path().apply {
+            addRoundRect(android.graphics.RectF(0f, 0f, w, h), r, r, android.graphics.Path.Direction.CW)
+        }
+        measure = android.graphics.PathMeasure(path, false)
+        length = measure!!.length
+        halo?.recycle()
+        val bw = (w + margin * 2).toInt().coerceAtLeast(1)
+        val bh = (h + margin * 2).toInt().coerceAtLeast(1)
+        val bmp = android.graphics.Bitmap.createBitmap(bw, bh, android.graphics.Bitmap.Config.ARGB_8888)
+        val cv = android.graphics.Canvas(bmp)
+        val p = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            style = android.graphics.Paint.Style.STROKE
+        }
+        val layers = listOf(
+            Triple(46f * density, 22f * density, 0x30),
+            Triple(28f * density, 14f * density, 0x48),
+            Triple(14f * density, 7f * density, 0x70),
+            Triple(5f * density, 3f * density, 0xB0)
+        )
+        for ((blur, width, alpha) in layers) {
+            p.strokeWidth = width
+            p.color = androidx.core.graphics.ColorUtils.setAlphaComponent(color, alpha)
+            p.maskFilter = android.graphics.BlurMaskFilter(blur, android.graphics.BlurMaskFilter.Blur.NORMAL)
+            cv.drawRoundRect(margin, margin, margin + w, margin + h, r, r, p)
+        }
+        halo = bmp
+    }
 }

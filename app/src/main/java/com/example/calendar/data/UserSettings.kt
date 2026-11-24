@@ -47,6 +47,9 @@ class UserSettings(context: Context) {
     private val _useEnglishDayNumbers = MutableStateFlow(prefs.getBoolean("use_english_day_numbers", true))
     val useEnglishDayNumbers: StateFlow<Boolean> = _useEnglishDayNumbers.asStateFlow()
 
+    private val _frameColorLong = MutableStateFlow(prefs.getLong("frame_color_long", 0xFFFFE08AL))
+    val frameColorLong: StateFlow<Long> = _frameColorLong.asStateFlow()
+
     private val _holidayColorLong = MutableStateFlow(prefs.getLong("holiday_color_long", 0xFF8B5CF6L))
     val holidayColorLong: StateFlow<Long> = _holidayColorLong.asStateFlow()
 
@@ -137,6 +140,11 @@ class UserSettings(context: Context) {
     fun setUseEnglishDayNumbers(enabled: Boolean) {
         prefs.edit().putBoolean("use_english_day_numbers", enabled).apply()
         _useEnglishDayNumbers.value = enabled
+    }
+
+    fun setFrameColor(colorLong: Long) {
+        prefs.edit().putLong("frame_color_long", colorLong).apply()
+        _frameColorLong.value = colorLong
     }
 
     fun setHolidayColor(colorLong: Long) {

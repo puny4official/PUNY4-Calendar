@@ -715,6 +715,10 @@ fun AppearanceDialog(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
+                    FrameColorCard(userSettings = userSettings, isFa = isFa)
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
                     // ICON DIGIT FONT (widget / notification / status bar)
                     run {
                         val iconCtx = androidx.compose.ui.platform.LocalContext.current
@@ -926,6 +930,111 @@ fun AppearanceDialog(
                     )
                 }
             }
+        }
+    }
+}
+
+
+/** Picker for the colour of the glowing frame around the calendar: preset swatches (all palette colours) + a full hue/brightness slider. */
+@Composable
+private fun FrameColorCard(userSettings: UserSettings, isFa: Boolean) {
+    val current by userSettings.frameColorLong.collectAsState()
+    val currentColor = Color(current)
+    val hsv = remember(current) { FloatArray(3).also { android.graphics.Color.colorToHSV(currentColor.toArgb(), it) } }
+    var hue by remember { mutableFloatStateOf(hsv[0]) }
+    var sat by remember { mutableFloatStateOf(hsv[1]) }
+    val frameSwatches = remember {
+        listOf(0xFFFFE08AL, 0xFFFFC107L, 0xFFFF9800L, 0xFFFFFFFFL, 0xFFB0BEC5L) + PRESET_HOLIDAY_COLORS.map { it.colorLong }
+    }
+    Card(
+        modifier = Modifier.fillMaxWidth().testTag("appearance_frame_color_card"),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)),
+        border = BorderStroke(1.dp, cardFrameColor)
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (isFa) "رنگ کادر درخشان دور تقویم:" else "Calendar glowing frame colour:",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                TextButton(
+                    onClick = {
+                        userSettings.setFrameColor(0xFFFFE08AL)
+                        hue = 44f; sat = 0.46f
+                    },
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    Text(if (isFa) "طلایی پیش‌فرض" else "Default gold", fontSize = 12.sp)
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            frameSwatches.chunked(7).forEach { row ->
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    row.forEach { c ->
+                        val sel = c == current
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .aspectRatio(1f)
+                                .clip(CircleShape)
+                                .background(Color(c))
+                                .border(if (sel) 3.dp else 1.dp, if (sel) Color.White else Color.White.copy(alpha = 0.35f), CircleShape)
+                                .clickable {
+                                    userSettings.setFrameColor(c)
+                                    val h = FloatArray(3)
+                                    android.graphics.Color.colorToHSV(Color(c).toArgb(), h)
+                                    hue = h[0]; sat = h[1]
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (sel) Icon(Icons.Default.Check, null, tint = if (c == 0xFFFFFFFFL) Color.Black else Color.White, modifier = Modifier.size(16.dp))
+                        }
+                    }
+                    repeat(7 - row.size) { Spacer(Modifier.weight(1f)) }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = if (isFa) "هر رنگ دلخواه (طیف کامل):" else "Any colour (full spectrum):",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Box(
+                modifier = Modifier.fillMaxWidth().height(14.dp).padding(top = 4.dp)
+                    .clip(RoundedCornerShape(7.dp))
+                    .background(Brush.horizontalGradient((0..12).map { Color(android.graphics.Color.HSVToColor(floatArrayOf(it * 30f, 1f, 1f))) }))
+            )
+            Slider(
+                value = hue,
+                onValueChange = {
+                    hue = it
+                    userSettings.setFrameColor(hsvToColorLong(hue, sat.coerceAtLeast(0.35f), 1f))
+                },
+                valueRange = 0f..360f
+            )
+            Text(
+                text = if (isFa) "پرنگی رنگ:" else "Saturation:",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Slider(
+                value = sat,
+                onValueChange = {
+                    sat = it
+                    userSettings.setFrameColor(hsvToColorLong(hue, sat, 1f))
+                },
+                valueRange = 0f..1f
+            )
         }
     }
 }

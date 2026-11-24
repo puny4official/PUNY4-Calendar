@@ -44,6 +44,8 @@ fun CalendarScreen(
     val appLanguage by userSettings.appLanguage.collectAsState()
     val holidayColorLong by userSettings.holidayColorLong.collectAsState()
     val holidayColor = remember(holidayColorLong) { Color(holidayColorLong) }
+    val frameColorLong by userSettings.frameColorLong.collectAsState()
+    val frameColor = remember(frameColorLong) { Color(frameColorLong) }
     val fontScalePercent by userSettings.fontScalePercent.collectAsState()
     val dayNumberScalePercent by userSettings.dayNumberScalePercent.collectAsState()
 
@@ -287,7 +289,8 @@ fun CalendarScreen(
                     onTodayPositioned = { coordsHolder[1] = it },
                     onIndicatorPositioned = { coordsHolder[2] = it },
                     appLanguage = appLanguage,
-                    holidayColor = holidayColor
+                    holidayColor = holidayColor,
+                    frameColor = frameColor
                 )
 
             }
