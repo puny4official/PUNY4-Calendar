@@ -22,6 +22,12 @@ enum class CalendarType(val titlePersian: String, val titleEnglish: String) {
 /** Imperial Iranian (Shahanshahi) year = Solar Hijri year + 1180; months and days are identical to the Solar Hijri calendar. */
 const val IMPERIAL_YEAR_OFFSET = 1180
 
+/** Ancient Iranian (Avestan) month names, used only in the Imperial (Ancient) calendar. */
+val ANCIENT_MONTH_NAMES = listOf(
+    "فْرَوَشی", "اَشا-وَهیشتَ", "هَئوروَتات", "تیشْتْریه", "اَمِرِتات", "خْشَتْرَ-وَئیریه",
+    "میثْرَ", "اَپَم", "آتَر", "دَثوش", "وُهومَنه", "سْپِنتَ آرمَئیتی"
+)
+
 @Immutable
 data class JalaliDate(val year: Int, val month: Int, val day: Int) {
     override fun toString(): String = String.format("%04d/%02d/%02d", year, month, day)

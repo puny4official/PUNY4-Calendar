@@ -143,7 +143,7 @@ fun CalendarGridView(
         val yearStr = DigitFormatter.toSystemDigits(currentYear, renderFaDigits)
         when (calendarType) {
             CalendarType.SOLAR_HIJRI -> "${JalaliCalendar.MONTH_NAMES_PERSIAN[currentMonth - 1]} $yearStr"
-            CalendarType.IMPERIAL -> "${JalaliCalendar.MONTH_NAMES_PERSIAN[currentMonth - 1]} ${DigitFormatter.toSystemDigits(currentYear + IMPERIAL_YEAR_OFFSET, renderFaDigits)}"
+            CalendarType.IMPERIAL -> "${com.example.calendar.model.ANCIENT_MONTH_NAMES[currentMonth - 1]} ${DigitFormatter.toSystemDigits(currentYear + IMPERIAL_YEAR_OFFSET, renderFaDigits)}"
             CalendarType.GREGORIAN -> {
                 if (isFa) {
                     "${CalendarManager.GREGORIAN_MONTH_NAMES_PERSIAN[currentMonth - 1]} $yearStr"
@@ -767,7 +767,8 @@ fun YearMonthPickerDialog(
 
     val monthNames = remember(calendarType) {
         when (calendarType) {
-            CalendarType.SOLAR_HIJRI, CalendarType.IMPERIAL -> JalaliCalendar.MONTH_NAMES_PERSIAN
+            CalendarType.SOLAR_HIJRI -> JalaliCalendar.MONTH_NAMES_PERSIAN
+            CalendarType.IMPERIAL -> com.example.calendar.model.ANCIENT_MONTH_NAMES
             CalendarType.GREGORIAN -> CalendarManager.GREGORIAN_MONTH_NAMES_PERSIAN
             CalendarType.LUNAR_HIJRI -> IslamicCalendar.MONTH_NAMES_ARABIC
         }

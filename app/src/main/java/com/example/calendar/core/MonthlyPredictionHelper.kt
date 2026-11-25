@@ -53,7 +53,8 @@ object MonthlyPredictionHelper {
         }
 
         val monthName = when (calendarType) {
-            CalendarType.SOLAR_HIJRI, CalendarType.IMPERIAL -> JalaliCalendar.MONTH_NAMES_PERSIAN[(month - 1).coerceIn(0, 11)]
+            CalendarType.SOLAR_HIJRI -> JalaliCalendar.MONTH_NAMES_PERSIAN[(month - 1).coerceIn(0, 11)]
+            CalendarType.IMPERIAL -> com.example.calendar.model.ANCIENT_MONTH_NAMES[(month - 1).coerceIn(0, 11)]
             CalendarType.GREGORIAN -> CalendarManager.GREGORIAN_MONTH_NAMES_PERSIAN[(month - 1).coerceIn(0, 11)]
             CalendarType.LUNAR_HIJRI -> IslamicCalendar.MONTH_NAMES_ARABIC[(month - 1).coerceIn(0, 11)]
         }

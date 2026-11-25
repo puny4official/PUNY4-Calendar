@@ -254,7 +254,7 @@ fun DateConverterScreen(
                     // Imperial (Shahanshahi) Result
                     ConvertedResultRow(
                         title = "شاهنشاهی (باستان)",
-                        dateText = "${convertedResults.jalali.day} ${JalaliCalendar.MONTH_NAMES_PERSIAN[convertedResults.jalali.month - 1]} ${convertedResults.jalali.year + IMPERIAL_YEAR_OFFSET}",
+                        dateText = "${convertedResults.jalali.day} ${com.example.calendar.model.ANCIENT_MONTH_NAMES[convertedResults.jalali.month - 1]} ${convertedResults.jalali.year + IMPERIAL_YEAR_OFFSET}",
                         isSource = (sourceCalendarType == CalendarType.IMPERIAL)
                     )
 
