@@ -259,7 +259,10 @@ fun AllCalendarsCard(
                 // Ancient (Imperial) calendar only: name of the day of the month and its meaning
                 if (primaryType == com.example.calendar.model.CalendarType.IMPERIAL) {
                     val dayNo = dayInfo.jalaliDate.day
-                    com.example.calendar.model.ANCIENT_DAY_NAMES.getOrNull((dayNo - 1) % 30)?.let { (dayName, meaning) ->
+                    // The 30 names cycle continuously through the whole year (day of year 1 = Ormazd, 31 = Ormazd, 32 = Bahman ...)
+                    val jm = dayInfo.jalaliDate.month
+                    val dayOfYear = if (jm <= 6) (jm - 1) * 31 + dayNo else 186 + (jm - 7) * 30 + dayNo
+                    com.example.calendar.model.ANCIENT_DAY_NAMES.getOrNull((dayOfYear - 1) % 30)?.let { (dayName, meaning) ->
                         CalendarDateRow(
                             icon = Icons.Default.Star,
                             iconTint = AstroGold,
