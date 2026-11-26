@@ -405,27 +405,6 @@ fun AppearanceDialog(
                             color = MaterialTheme.colorScheme.onSurface
                         )
 
-                        TextButton(
-                            onClick = {
-                                userSettings.setHolidayColor(0xFF8B5CF6L)
-                                selectedHue = 265f
-                                selectedSaturation = 0.62f
-                            },
-                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.RestartAlt,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = if (isFa) "بنفش پیش‌فرض" else "Default Purple",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))

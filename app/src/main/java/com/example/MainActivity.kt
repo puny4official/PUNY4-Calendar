@@ -125,6 +125,9 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
+            // Settings texts keep a fixed size: the text-size slider must not enlarge them
+            val settingsDensity = remember(currentDensity) { Density(density = currentDensity.density, fontScale = 1f) }
+
             val accentLong by userSettings.holidayColorLong.collectAsState()
             MyApplicationTheme(themeMode = themeMode, accentColor = androidx.compose.ui.graphics.Color(accentLong)) {
                 // Respect layout direction and custom percentage font scale without moving any UI components
@@ -789,10 +792,12 @@ class MainActivity : ComponentActivity() {
                                     MainTab.CONVERTER -> DateConverterScreen(
                                         modifier = Modifier.fillMaxSize()
                                     )
-                                    MainTab.SETTINGS -> SettingsScreen(
-                                        userSettings = userSettings,
-                                        modifier = Modifier.fillMaxSize()
-                                    )
+                                    MainTab.SETTINGS -> CompositionLocalProvider(LocalDensity provides settingsDensity) {
+                                        SettingsScreen(
+                                            userSettings = userSettings,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -821,11 +826,13 @@ class MainActivity : ComponentActivity() {
                     }
 
                     if (showAppearanceDialog) {
-                        AppearanceDialog(
-                            userSettings = userSettings,
-                            isFa = isFa,
-                            onDismiss = { showAppearanceDialog = false }
-                        )
+                        CompositionLocalProvider(LocalDensity provides settingsDensity) {
+                            AppearanceDialog(
+                                userSettings = userSettings,
+                                isFa = isFa,
+                                onDismiss = { showAppearanceDialog = false }
+                            )
+                        }
                     }
 
                     // Pure black digital loading splash overlay displayed while initializing
