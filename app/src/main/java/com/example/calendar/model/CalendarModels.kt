@@ -235,3 +235,13 @@ val ANCIENT_DAY_NAMES: List<Pair<String, String>> = listOf(
     "مانترِه سِپَند" to "ستایش گفتار مقدس و نیایش پاک",
     "اَنارام" to "ستایش فروغ و روشنایی بی‌پایان"
 )
+
+/** The five Gatha days at the end of the year (Esfand 25-29) and the extra day of leap years (Esfand 30). */
+val ANCIENT_GATHA_DAYS: List<Pair<String, String>> = listOf(
+    "اَهونَوَد" to "سرور و سالار",
+    "اُشتَوَد" to "تندرستی و شادی",
+    "سِپِنتَمَد" to "خرد مقدس و منش سپند",
+    "وَهوخْشَتَر" to "اقتدار نیک و کشور خوب",
+    "وَهِشْتواش" to "بهترین خواسته و نیکوترین ثروت"
+)
+val ANCIENT_LEAP_DAY: Pair<String, String> = "اورداد" to "روز زیاد"

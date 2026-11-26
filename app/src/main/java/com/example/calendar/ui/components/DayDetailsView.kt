@@ -262,7 +262,11 @@ fun AllCalendarsCard(
                     // The 30 names cycle continuously through the whole year (day of year 1 = Ormazd, 31 = Ormazd, 32 = Bahman ...)
                     val jm = dayInfo.jalaliDate.month
                     val dayOfYear = if (jm <= 6) (jm - 1) * 31 + dayNo else 186 + (jm - 7) * 30 + dayNo
-                    com.example.calendar.model.ANCIENT_DAY_NAMES.getOrNull((dayOfYear - 1) % 30)?.let { (dayName, meaning) ->
+                    val specialDay = if (jm == 12 && dayNo >= 25) {
+                        if (dayNo == 30) com.example.calendar.model.ANCIENT_LEAP_DAY
+                        else com.example.calendar.model.ANCIENT_GATHA_DAYS[dayNo - 25]
+                    } else null
+                    (specialDay ?: com.example.calendar.model.ANCIENT_DAY_NAMES.getOrNull((dayOfYear - 1) % 30))?.let { (dayName, meaning) ->
                         CalendarDateRow(
                             icon = Icons.Default.Star,
                             iconTint = AstroGold,
