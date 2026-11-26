@@ -235,20 +235,6 @@ fun AllCalendarsCard(
                         }
                     }
 
-                    if (dayInfo.isToday) {
-                        Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = SuccessGreen.copy(alpha = 0.15f)
-                        ) {
-                            Text(
-                                text = "امروز",
-                                color = SuccessGreen,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 12.sp,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                            )
-                        }
-                    }
                 }
 
                 HorizontalDivider(
