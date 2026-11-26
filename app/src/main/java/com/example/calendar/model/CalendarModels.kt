@@ -190,3 +190,14 @@ data class SearchableCalendarEvent(
     val formattedDate: String
 )
 
+
+/** Ancient Iranian weekday names (Saturday first), used only in the Imperial (Ancient) calendar. */
+val ANCIENT_WEEKDAY_NAMES = listOf(
+    "کِیوان‌شید", "مِهرشید", "مَه‌شید", "بَهرام‌شید", "تیرشید", "هُرمُزشید", "آدینه"
+)
+
+/** "تیرشید (چهارشنبه)": ancient name followed by the usual name in parentheses. */
+fun ancientWeekdayLabel(persianName: String, persianNames: List<String>): String {
+    val idx = persianNames.indexOf(persianName)
+    return if (idx in ANCIENT_WEEKDAY_NAMES.indices) "${ANCIENT_WEEKDAY_NAMES[idx]} ($persianName)" else persianName
+}

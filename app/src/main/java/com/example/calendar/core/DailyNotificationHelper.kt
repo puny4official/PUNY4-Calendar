@@ -114,7 +114,9 @@ object DailyNotificationHelper {
         }
 
         // The chosen calendar leads the title; the others follow below it (Solar Hijri first, then the rest)
-        val title = if (isFa) "$weekdayName ${dateText(primaryType)}" else "${dayInfo.dayOfWeekEnglish}, ${dateText(primaryType)}"
+        val shownWeekday = if (primaryType == com.example.calendar.model.CalendarType.IMPERIAL)
+            com.example.calendar.model.ancientWeekdayLabel(weekdayName, JalaliCalendar.WEEKDAY_NAMES_PERSIAN) else weekdayName
+        val title = if (isFa) "$shownWeekday ${dateText(primaryType)}" else "${dayInfo.dayOfWeekEnglish}, ${dateText(primaryType)}"
         val secDateStr = listOf(
             com.example.calendar.model.CalendarType.SOLAR_HIJRI,
             com.example.calendar.model.CalendarType.IMPERIAL,

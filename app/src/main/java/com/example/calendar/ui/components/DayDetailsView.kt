@@ -217,7 +217,9 @@ fun AllCalendarsCard(
                         }
                         Column {
                             Text(
-                                text = dayInfo.dayOfWeekPersian,
+                                text = if (primaryType == com.example.calendar.model.CalendarType.IMPERIAL)
+                                    com.example.calendar.model.ancientWeekdayLabel(dayInfo.dayOfWeekPersian, JalaliCalendar.WEEKDAY_NAMES_PERSIAN)
+                                else dayInfo.dayOfWeekPersian,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
