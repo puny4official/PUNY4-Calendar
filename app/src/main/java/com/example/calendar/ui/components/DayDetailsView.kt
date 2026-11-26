@@ -246,33 +246,6 @@ fun AllCalendarsCard(
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                             )
                         }
-                    } else if (onJumpToToday != null) {
-                        Surface(
-                            onClick = onJumpToToday,
-                            shape = RoundedCornerShape(10.dp),
-                            color = HolidayPurpleContainer,
-                            border = BorderStroke(1.dp, HolidayPurple.copy(alpha = 0.35f)),
-                            modifier = Modifier.testTag("jump_to_today_badge_details")
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                            ) {
-                                Text(
-                                    text = "امروز",
-                                    color = OnHolidayPurpleContainer,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 12.sp
-                                )
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "بازگشت به تاریخ امروز",
-                                    tint = HolidayPurple,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
-                        }
                     }
                 }
 
