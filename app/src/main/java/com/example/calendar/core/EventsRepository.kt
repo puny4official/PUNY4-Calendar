@@ -195,6 +195,46 @@ object EventsRepository {
         m
     }
 
+    // ---- آذر ۱۴۰۵: فهرست دقیقِ داده‌شده توسط کاربر (جایگزین مناسبت‌های عمومی همین ماه) ----
+    private fun uni(title: String, type: EventType = EventType.NATIONAL) =
+        CalendarEvent(title, isHoliday = false, type, "منبع: تقویم دانشگاه تهران")
+    private fun intl(title: String) = CalendarEvent(title, isHoliday = false, EventType.INTERNATIONAL, "مناسبت جهانی / بین‌المللی")
+    private fun ancient(title: String) = CalendarEvent(title, isHoliday = false, EventType.NATIONAL, "ایران باستان")
+
+    private val AZAR_1405_EVENTS: Map<Int, List<CalendarEvent>> by lazy {
+        mapOf(
+            1 to listOf(uni("روز صنعت سرب و روی")),
+            2 to listOf(uni("سالروز وفات ام‌البنین", EventType.RELIGIOUS)),
+            3 to listOf(ancient("جشن آذرگان"), ancient("زادروز نادرشاه افشار")),
+            4 to listOf(uni("روز زیتون"), intl("روز جهانی مبارزه با خشونت علیه زنان")),
+            5 to listOf(uni("روز تشکیل بسیج مستضعفان"), uni("روز بسیج مستضعفان"), uni("سالروز قیام مردم گرگان")),
+            6 to listOf(intl("جمعه سیاه (بلک فرایدی) — آخرین جمعه‌ی نوامبر")),
+            7 to listOf(uni("روز نیروی دریایی"), uni("روز نوآوری و فناوری ایران‌ساخت")),
+            8 to listOf(intl("روز جهانی همبستگی با مردم فلسطین")),
+            9 to listOf(
+                uni("روز جزایر سه‌گانه‌ی خلیج فارس (بوموسی، تنب بزرگ و تنب کوچک)"),
+                uni("روز زن و مادر و ولادت حضرت فاطمه زهرا", EventType.RELIGIOUS),
+                uni("تولد امام خمینی")
+            ),
+            10 to listOf(uni("روز مجلس"), uni("روز جهانی مبارزه با ایدز")),
+            11 to listOf(uni("شهادت میرزا کوچک‌خان جنگلی"), intl("روز جهانی لغو برده‌داری")),
+            12 to listOf(uni("تصویب قانون اساسی"), uni("روز قانون اساسی"), uni("روز جهانی معلولان")),
+            13 to listOf(uni("روز بیمه")),
+            14 to listOf(intl("روز جهانی داوطلبان پیشرفت اجتماعی")),
+            15 to listOf(uni("روز حسابدار")),
+            16 to listOf(uni("روز دانشجو"), uni("روز جهانی هواپیمایی")),
+            18 to listOf(uni("روز سد و نیروگاه برق‌آبی"), intl("روز جهانی مبارزه با فساد")),
+            19 to listOf(uni("تشکیل شورای عالی انقلاب فرهنگی"), intl("روز جهانی حقوق بشر")),
+            20 to listOf(uni("ولادت امام محمد باقر", EventType.RELIGIOUS), intl("روز جهانی کوهستان")),
+            22 to listOf(uni("روز صنعت مس"), uni("شهادت امام علی النقی", EventType.RELIGIOUS)),
+            25 to listOf(uni("روز پژوهش"), ancient("اولین جشن دی‌گان")),
+            26 to listOf(uni("روز حمل و نقل و رانندگان")),
+            27 to listOf(uni("روز وحدت حوزه و دانشگاه"), uni("روز جهانی عاری از خشونت و افراط‌گرایی")),
+            29 to listOf(uni("ولادت امام محمد تقی", EventType.RELIGIOUS)),
+            30 to listOf(ancient("جشن شب یلدا"))
+        )
+    }
+
     fun getEvents(
         jalali: JalaliDate,
         islamic: IslamicDate,
@@ -206,6 +246,13 @@ object EventsRepository {
         if (jalali.year == 1405 && jalali.month == 8) {
             // Multi-day items (weeks, university periods) are shown only on the day they start
             ABAN_1405_EVENTS[jalali.day]?.filter { ABAN_1405_FIRST_DAY[it.title] == jalali.day }?.let { list.addAll(it) }
+            ASTRONOMICAL_EVENTS[Pair(jalali.month, jalali.day)]?.let { list.add(it) }
+            return list
+        }
+
+        // Azar 1405: the user-supplied exact list replaces the generic recurring events of this month
+        if (jalali.year == 1405 && jalali.month == 9) {
+            AZAR_1405_EVENTS[jalali.day]?.let { list.addAll(it) }
             ASTRONOMICAL_EVENTS[Pair(jalali.month, jalali.day)]?.let { list.add(it) }
             return list
         }
@@ -275,9 +322,27 @@ object EventsRepository {
             }
         }
 
+        if (is1405) {
+            AZAR_1405_EVENTS.toSortedMap().forEach { (day, events) ->
+                events.forEach { ev ->
+                    list.add(
+                        SearchableCalendarEvent(
+                            title = ev.title,
+                            isHoliday = ev.isHoliday,
+                            eventType = ev.type,
+                            calendarCategory = CalendarCategory.SOLAR,
+                            month = 9,
+                            day = day,
+                            formattedDate = "$day آذر (شمسی)"
+                        )
+                    )
+                }
+            }
+        }
+
         SOLAR_EVENTS.forEach { (key, events) ->
             val (month, day) = key
-            if (is1405 && month == 8) return@forEach
+            if (is1405 && (month == 8 || month == 9)) return@forEach
             val monthName = JalaliCalendar.MONTH_NAMES_PERSIAN.getOrElse(month - 1) { "" }
             events.forEach { ev ->
                 list.add(
@@ -296,7 +361,7 @@ object EventsRepository {
 
         ISLAMIC_EVENTS.forEach { (key, events) ->
             val (month, day) = key
-            if (is1405 && ((month == 5 && day >= 12) || (month == 6 && day <= 11))) return@forEach
+            if (is1405 && ((month == 5 && day >= 12) || (month == 6 && day <= 11) || (month == 6 && day >= 12) || (month == 7 && day <= 11))) return@forEach
             val monthName = IslamicCalendar.MONTH_NAMES_ARABIC.getOrElse(month - 1) { "" }
             events.forEach { ev ->
                 list.add(
@@ -316,7 +381,7 @@ object EventsRepository {
         GLOBAL_EVENTS.forEach { (key, events) ->
             val (month, day) = key
             // Aban 1405 spans 23 Oct - 21 Nov 2026
-            if (is1405 && ((month == 10 && day >= 23) || (month == 11 && day <= 21))) return@forEach
+            if (is1405 && ((month == 10 && day >= 23) || (month == 11 && day <= 21) || (month == 11 && day >= 22) || (month == 12 && day <= 21))) return@forEach
             val monthName = CalendarManager.GREGORIAN_MONTH_NAMES_PERSIAN.getOrElse(month - 1) { "" }
             events.forEach { ev ->
                 list.add(

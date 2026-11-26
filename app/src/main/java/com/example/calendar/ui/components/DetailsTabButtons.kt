@@ -60,10 +60,10 @@ fun DetailsTabButton(kind: DetailsTabKind, label: String, onClick: () -> Unit, m
             text = label,
             color = Color.White,
             fontWeight = FontWeight.ExtraBold,
-            fontSize = 13.sp,
+            fontSize = 15.sp,
             maxLines = 1,
             textAlign = TextAlign.Center,
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 11.dp, start = 6.dp, end = 6.dp)
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 11.dp, start = 3.dp, end = 3.dp)
         )
     }
 }
