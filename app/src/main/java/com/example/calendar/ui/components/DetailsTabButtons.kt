@@ -193,3 +193,27 @@ private fun DrawScope.drawTelescope() {
     drawLine(Color.White, Offset(sp.x - h * 0.03f, sp.y), Offset(sp.x + h * 0.03f, sp.y), h * 0.008f, StrokeCap.Round)
     drawLine(Color.White, Offset(sp.x, sp.y - h * 0.03f), Offset(sp.x, sp.y + h * 0.03f), h * 0.008f, StrokeCap.Round)
 }
+
+/** Soft decorative background: light glow (day), galaxies (astro), mandala arcs (solar). */
+private fun DrawScope.drawBackdrop(kind: DetailsTabKind) {
+    val dp = density
+    when (kind) {
+        DetailsTabKind.DAY -> {
+            val c = Offset(size.width / 2, size.height * 0.35f)
+            drawCircle(Brush.radialGradient(listOf(Color(0xFF3D8BFF).copy(alpha = 0.35f), Color.Transparent), c, size.width * 0.55f), size.width * 0.55f, c)
+        }
+        DetailsTabKind.ASTRO -> {
+            listOf(Offset(size.width * 0.22f, size.height * 0.30f) to 0.07f, Offset(size.width * 0.80f, size.height * 0.42f) to 0.06f).forEach { (c, k) ->
+                val rr = size.width * k
+                drawOval(Color(0xFFFFC9A0).copy(alpha = 0.55f), Offset(c.x - rr, c.y - rr * 0.38f), Size(rr * 2, rr * 0.76f))
+                drawOval(Color(0xFF8F6BFF).copy(alpha = 0.35f), Offset(c.x - rr * 1.5f, c.y - rr * 0.6f), Size(rr * 3, rr * 1.2f), style = Stroke(1f * dp))
+            }
+        }
+        DetailsTabKind.SOLAR -> {
+            val c = Offset(size.width / 2, size.height * 0.5f)
+            listOf(0.26f, 0.38f, 0.5f).forEach { k ->
+                drawCircle(Color(0xFFD4A017).copy(alpha = 0.16f), size.height * k, c, style = Stroke(1f * dp))
+            }
+        }
+    }
+}
