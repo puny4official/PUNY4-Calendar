@@ -121,13 +121,14 @@ fun DetailsSection(
     isFa: Boolean,
     onJumpToToday: (() -> Unit)?,
     onOpenCityPicker: () -> Unit,
-    tabState: DetailsTabState = rememberDetailsTabState()
+    tabState: DetailsTabState = rememberDetailsTabState(),
+    primaryType: com.example.calendar.model.CalendarType = com.example.calendar.model.CalendarType.SOLAR_HIJRI
 ) {
     val selectedTab = tabState.selected
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         DetailsTabs(selected = selectedTab, onSelect = { tabState.select(it) })
         when (selectedTab) {
-            0 -> AllCalendarsCard(dayInfo, renderFaDigits, onJumpToToday)
+            0 -> AllCalendarsCard(dayInfo, renderFaDigits, onJumpToToday, primaryType = primaryType)
             1 -> AstronomyCard(dayInfo, currentCity, renderFaDigits, isFa, onOpenCityPicker = onOpenCityPicker, part = 0)
             else -> AstronomyCard(dayInfo, currentCity, renderFaDigits, isFa, onOpenCityPicker = onOpenCityPicker, part = 1)
         }
@@ -171,7 +172,8 @@ fun AllCalendarsCard(
     onJumpToToday: (() -> Unit)? = null,
     isFa: Boolean = true,
     holidayColor: Color = Color(0xFF8B5CF6L),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    primaryType: com.example.calendar.model.CalendarType = com.example.calendar.model.CalendarType.SOLAR_HIJRI
 ) {
     Card(
         modifier = modifier
@@ -277,7 +279,17 @@ fun AllCalendarsCard(
                     color = MaterialTheme.colorScheme.surfaceVariant
                 )
 
-                // The 3 Calendars Rows
+                // Calendar rows: the chosen calendar first, then the rest (Solar Hijri has priority among them)
+                val calendarOrder = listOf(primaryType) + listOf(
+                    com.example.calendar.model.CalendarType.SOLAR_HIJRI,
+                    com.example.calendar.model.CalendarType.IMPERIAL,
+                    com.example.calendar.model.CalendarType.GREGORIAN,
+                    com.example.calendar.model.CalendarType.LUNAR_HIJRI
+                ).filter { it != primaryType }
+                calendarOrder.forEachIndexed { idx, type ->
+                    if (idx > 0) Spacer(modifier = Modifier.height(10.dp))
+                    when (type) {
+                    com.example.calendar.model.CalendarType.SOLAR_HIJRI -> {
                 CalendarDateRow(
                     icon = Icons.Default.WbSunny,
                     iconTint = AstroGold,
@@ -285,9 +297,8 @@ fun AllCalendarsCard(
                     dateString = "${DigitFormatter.toSystemDigits(dayInfo.jalaliDate.day, renderFaDigits)} ${JalaliCalendar.MONTH_NAMES_PERSIAN[dayInfo.jalaliDate.month - 1]} ${DigitFormatter.toSystemDigits(dayInfo.jalaliDate.year, renderFaDigits)}",
                     subtitle = "فصل ${dayInfo.seasonPersian} ${dayInfo.seasonEmoji}"
                 )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
+                    }
+                    com.example.calendar.model.CalendarType.IMPERIAL -> {
                 CalendarDateRow(
                     icon = Icons.Default.AccountBalance,
                     iconTint = AstroGold,
@@ -295,9 +306,8 @@ fun AllCalendarsCard(
                     dateString = "${DigitFormatter.toSystemDigits(dayInfo.jalaliDate.day, renderFaDigits)} ${com.example.calendar.model.ANCIENT_MONTH_NAMES[dayInfo.jalaliDate.month - 1]} ${DigitFormatter.toSystemDigits(dayInfo.jalaliDate.year + com.example.calendar.model.IMPERIAL_YEAR_OFFSET, renderFaDigits)}",
                     subtitle = "مبدأ: کوروش بزرگ"
                 )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
+                    }
+                    com.example.calendar.model.CalendarType.GREGORIAN -> {
                 CalendarDateRow(
                     icon = Icons.Default.Public,
                     iconTint = PrimaryLight,
@@ -306,9 +316,8 @@ fun AllCalendarsCard(
                     subtitle = "${dayInfo.gregorianDate.year}-${String.format(java.util.Locale.US, "%02d", dayInfo.gregorianDate.month)}-${String.format(java.util.Locale.US, "%02d", dayInfo.gregorianDate.day)} (${dayInfo.dayOfWeekEnglish})",
                     subtitleBelow = true
                 )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
+                    }
+                    com.example.calendar.model.CalendarType.LUNAR_HIJRI -> {
                 CalendarDateRow(
                     icon = Icons.Default.Nightlight,
                     iconTint = MoonPaleYellow,
@@ -316,6 +325,9 @@ fun AllCalendarsCard(
                     dateString = "${DigitFormatter.toSystemDigits(dayInfo.islamicDate.day, renderFaDigits)} ${com.example.calendar.core.IslamicCalendar.MONTH_NAMES_ARABIC[dayInfo.islamicDate.month - 1]} ${DigitFormatter.toSystemDigits(dayInfo.islamicDate.year, renderFaDigits)}",
                     subtitle = "یوم ${dayInfo.dayOfWeekArabic}"
                 )
+                    }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(12.dp))
 

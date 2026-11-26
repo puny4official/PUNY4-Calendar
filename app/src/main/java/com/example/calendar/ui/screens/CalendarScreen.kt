@@ -267,6 +267,8 @@ fun CalendarScreen(
                     },
                     onCalendarTypeChanged = { newType ->
                         activeCalendarType = newType
+                        // The calendar chosen from the drawer becomes the default one
+                        userSettings.setCalendarType(newType)
                         when (newType) {
                             CalendarType.SOLAR_HIJRI, CalendarType.IMPERIAL -> {
                                 val j = JalaliCalendar.jdnToJalali(selectedJdn)
@@ -299,6 +301,7 @@ fun CalendarScreen(
             item(key = "details_section") {
                 DetailsSection(
                     tabState = detailsTabState,
+                    primaryType = activeCalendarType,
                     dayInfo = selectedDayInfo,
                     currentCity = currentCity,
                     renderFaDigits = (appLanguage == AppLanguage.PERSIAN && !useEnglishDayNumbers),

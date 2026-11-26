@@ -90,12 +90,12 @@ object DailyNotificationHelper {
         val dayIconBitmap = createDayNumberBitmap(context, dayNumberStr)
         val dayIconCompat = IconCompat.createWithBitmap(dayIconBitmap)
 
-        val title = if (isFa) {
-            val yearStr = DigitFormatter.toSystemDigits(j.year, renderFaDigits)
-            "$weekdayName $dayNumberStr $jalaliMonthName $yearStr"
-        } else {
-            "${dayInfo.dayOfWeekEnglish}, ${j.day} $jalaliMonthName ${j.year}"
-        }
+        val primaryType = runCatching {
+            com.example.calendar.model.CalendarType.valueOf(
+                context.applicationContext.getSharedPreferences("app_calendar_prefs", Context.MODE_PRIVATE)
+                    .getString("calendar_type", null) ?: "SOLAR_HIJRI"
+            )
+        }.getOrDefault(com.example.calendar.model.CalendarType.SOLAR_HIJRI)
 
         val gregorianMonthName = if (isFa) {
             CalendarManager.GREGORIAN_MONTH_NAMES_PERSIAN[g.month - 1].substringBefore(" ")
@@ -104,15 +104,25 @@ object DailyNotificationHelper {
         }
         val islamicMonthName = IslamicCalendar.MONTH_NAMES_ARABIC[i.month - 1]
 
-        val secDateStr = if (isFa) {
-            val gDayStr = DigitFormatter.toSystemDigits(g.day, renderFaDigits)
-            val gYearStr = DigitFormatter.toSystemDigits(g.year, renderFaDigits)
-            val iDayStr = DigitFormatter.toSystemDigits(i.day, renderFaDigits)
-            val iYearStr = DigitFormatter.toSystemDigits(i.year, renderFaDigits)
-            "$gDayStr $gregorianMonthName $gYearStr  •  $iDayStr $islamicMonthName $iYearStr"
-        } else {
-            "${g.day} $gregorianMonthName ${g.year}  •  ${i.day} $islamicMonthName ${i.year}"
+        fun num(n: Int) = if (isFa) DigitFormatter.toSystemDigits(n, renderFaDigits) else n.toString()
+        fun dateText(type: com.example.calendar.model.CalendarType): String = when (type) {
+            com.example.calendar.model.CalendarType.SOLAR_HIJRI -> "${num(j.day)} $jalaliMonthName ${num(j.year)}"
+            com.example.calendar.model.CalendarType.IMPERIAL ->
+                "${num(j.day)} ${com.example.calendar.model.ANCIENT_MONTH_NAMES[j.month - 1]} ${num(j.year + com.example.calendar.model.IMPERIAL_YEAR_OFFSET)}"
+            com.example.calendar.model.CalendarType.GREGORIAN -> "${num(g.day)} $gregorianMonthName ${num(g.year)}"
+            com.example.calendar.model.CalendarType.LUNAR_HIJRI -> "${num(i.day)} $islamicMonthName ${num(i.year)}"
         }
+
+        // The chosen calendar leads the title; the others follow below it (Solar Hijri first, then the rest)
+        val title = if (isFa) "$weekdayName ${dateText(primaryType)}" else "${dayInfo.dayOfWeekEnglish}, ${dateText(primaryType)}"
+        val secDateStr = listOf(
+            com.example.calendar.model.CalendarType.SOLAR_HIJRI,
+            com.example.calendar.model.CalendarType.IMPERIAL,
+            com.example.calendar.model.CalendarType.GREGORIAN,
+            com.example.calendar.model.CalendarType.LUNAR_HIJRI
+        )
+            .filter { it != primaryType }
+            .joinToString("  •  ") { dateText(it) }
 
         val holidayEvent = dayInfo.events.firstOrNull { it.isHoliday }?.title
         val eventTitle = holidayEvent ?: dayInfo.events.firstOrNull()?.title
