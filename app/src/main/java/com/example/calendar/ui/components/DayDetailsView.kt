@@ -138,25 +138,27 @@ fun DetailsSection(
 @Composable
 private fun DetailsTabs(selected: Int, onSelect: (Int) -> Unit) {
     // RTL layout: first item is on the right -> day info, then astronomy, then prayer/solar times (as in the design)
-    val items = listOf(R.drawable.tab_shari to 2, R.drawable.tab_astro to 1, R.drawable.tab_day to 0)
+    val items = listOf(
+        Triple(DetailsTabKind.SOLAR, "اوقات خورشیدی", 2),
+        Triple(DetailsTabKind.ASTRO, "اطلاعات نجومی", 1),
+        Triple(DetailsTabKind.DAY, "اطلاعات روز", 0)
+    )
     Row(
         modifier = Modifier.fillMaxWidth().testTag("details_tabs"),
-        horizontalArrangement = Arrangement.spacedBy(2.dp)
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        items.forEach { (res, idx) ->
+        items.forEach { (kind, label, idx) ->
             val on = selected == idx
-            val a by androidx.compose.animation.core.animateFloatAsState(if (on) 1f else 0.78f, label = "tabAlpha")
-            val sc by androidx.compose.animation.core.animateFloatAsState(if (on) 1f else 0.98f, label = "tabScale")
-            Image(
-                painter = painterResource(res),
-                contentDescription = null,
-                contentScale = ContentScale.FillBounds,
+            val a by androidx.compose.animation.core.animateFloatAsState(if (on) 1f else 0.72f, label = "tabAlpha")
+            val sc by androidx.compose.animation.core.animateFloatAsState(if (on) 1f else 0.97f, label = "tabScale")
+            DetailsTabButton(
+                kind = kind,
+                label = label,
+                onClick = { onSelect(idx) },
                 modifier = Modifier
                     .weight(1f)
                     .aspectRatio(1.78f)
                     .graphicsLayer { alpha = a; scaleX = sc; scaleY = sc }
-                    .clip(RoundedCornerShape(14.dp))
-                    .clickable { onSelect(idx) }
             )
         }
     }
