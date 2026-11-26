@@ -256,6 +256,22 @@ fun AllCalendarsCard(
                     color = MaterialTheme.colorScheme.surfaceVariant
                 )
 
+                // Ancient (Imperial) calendar only: name of the day of the month and its meaning
+                if (primaryType == com.example.calendar.model.CalendarType.IMPERIAL) {
+                    val dayNo = dayInfo.jalaliDate.day
+                    com.example.calendar.model.ANCIENT_DAY_NAMES.getOrNull(dayNo - 1)?.let { (dayName, meaning) ->
+                        CalendarDateRow(
+                            icon = Icons.Default.Star,
+                            iconTint = AstroGold,
+                            calendarName = "روز ${DigitFormatter.toSystemDigits(dayNo, renderFaDigits)} ماه",
+                            dateString = dayName,
+                            subtitle = meaning,
+                            subtitleBelow = true
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+                }
+
                 // Calendar rows: the chosen calendar first, then the rest (Solar Hijri has priority among them)
                 val calendarOrder = listOf(primaryType) + listOf(
                     com.example.calendar.model.CalendarType.SOLAR_HIJRI,
