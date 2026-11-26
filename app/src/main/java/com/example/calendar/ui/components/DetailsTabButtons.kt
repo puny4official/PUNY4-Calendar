@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -49,11 +50,10 @@ fun DetailsTabButton(kind: DetailsTabKind, label: String, onClick: () -> Unit, m
         Canvas(Modifier.fillMaxSize()) {
             drawBackdrop(kind)
             drawFrame(kind)
-            drawCornerFlourishes(kind)
             when (kind) {
-                DetailsTabKind.DAY -> drawSunWithCloud()
-                DetailsTabKind.ASTRO -> { drawStarField(); drawMoon() }
-                DetailsTabKind.SOLAR -> drawSunClockBook()
+                DetailsTabKind.DAY -> drawCalendarIcon()
+                DetailsTabKind.ASTRO -> { drawStarField(); drawTelescope() }
+                DetailsTabKind.SOLAR -> drawSunWithCloud()
             }
         }
         Text(
@@ -87,12 +87,6 @@ private fun DrawScope.drawFrame(kind: DetailsTabKind) {
     // inner thin frame
     val inset = 8 * dp
     drawRoundRect(main.copy(alpha = 0.65f), Offset(inset, inset), Size(size.width - 2 * inset, size.height - 2 * inset), CornerRadius(10 * dp), style = Stroke(1f * dp))
-    // corner ornaments
-    val pts = listOf(
-        Offset(inset + 4 * dp, inset + 4 * dp), Offset(size.width - inset - 4 * dp, inset + 4 * dp),
-        Offset(inset + 4 * dp, size.height - inset - 4 * dp), Offset(size.width - inset - 4 * dp, size.height - inset - 4 * dp)
-    )
-    pts.forEach { drawCircle(soft, 1.8f * dp, it) }
 }
 
 private fun DrawScope.rays(center: Offset, r1: Float, r2: Float, count: Int, color: Color, width: Float) {
@@ -110,9 +104,9 @@ private fun DrawScope.rays(center: Offset, r1: Float, r2: Float, count: Int, col
 private fun DrawScope.drawSunWithCloud() {
     val r = size.height * 0.11f
     val c = Offset(size.width * 0.46f, size.height * 0.30f)
-    drawCircle(Color(0xFF8DB8FF).copy(alpha = 0.25f), r * 2.1f, c)
-    rays(c, r * 1.25f, r * 1.75f, 12, Color(0xFFE3E8F5), r * 0.22f)
-    drawCircle(Brush.radialGradient(listOf(Color.White, Color(0xFFBFC8DD)), c, r), r, c)
+    drawCircle(Color(0xFFFFC53D).copy(alpha = 0.25f), r * 2.1f, c)
+    rays(c, r * 1.25f, r * 1.75f, 12, Color(0xFFFFD45A), r * 0.22f)
+    drawCircle(Brush.radialGradient(listOf(Color(0xFFFFF3B0), Color(0xFFFFB300)), c, r), r, c)
     // cloud
     val cc = Offset(size.width * 0.56f, size.height * 0.40f)
     val u = r * 0.9f
@@ -121,32 +115,6 @@ private fun DrawScope.drawSunWithCloud() {
     drawCircle(cloud, u * 1.1f, Offset(cc.x, cc.y - u * 0.1f))
     drawCircle(cloud, u * 0.85f, Offset(cc.x + u * 1.0f, cc.y + u * 0.15f))
     drawRoundRect(cloud, Offset(cc.x - u * 1.7f, cc.y + u * 0.1f), Size(u * 3.4f, u * 0.9f), CornerRadius(u * 0.45f))
-}
-
-private fun DrawScope.drawMoon() {
-    val r = size.height * 0.15f
-    val c = Offset(size.width * 0.47f, size.height * 0.31f)
-    val a = Path().apply { addOval(androidx.compose.ui.geometry.Rect(c.x - r, c.y - r, c.x + r, c.y + r)) }
-    val b = Path().apply {
-        val o = Offset(c.x + r * 0.5f, c.y - r * 0.15f)
-        addOval(androidx.compose.ui.geometry.Rect(o.x - r * 0.9f, o.y - r * 0.9f, o.x + r * 0.9f, o.y + r * 0.9f))
-    }
-    val crescent = Path.combine(PathOperation.Difference, a, b)
-    drawCircle(Color(0xFFB98CFF).copy(alpha = 0.22f), r * 1.6f, c)
-    drawPath(crescent, Brush.linearGradient(listOf(Color(0xFFF1EAFB), Color(0xFFBFA9E6)), Offset(c.x - r, c.y - r), Offset(c.x + r, c.y + r)))
-    // small star
-    val s = Offset(size.width * 0.60f, size.height * 0.25f)
-    val sr = r * 0.34f
-    val star = Path().apply {
-        for (i in 0 until 10) {
-            val ang = (-PI / 2 + i * PI / 5).toFloat()
-            val rr = if (i % 2 == 0) sr else sr * 0.45f
-            val p = Offset(s.x + cos(ang) * rr, s.y + sin(ang) * rr)
-            if (i == 0) moveTo(p.x, p.y) else lineTo(p.x, p.y)
-        }
-        close()
-    }
-    drawPath(star, Color(0xFFD9C2FF))
 }
 
 private val STAR_POINTS = listOf(
@@ -161,99 +129,67 @@ private fun DrawScope.drawStarField() {
     }
 }
 
-private fun DrawScope.drawSunClockBook() {
-    val gold = Color(0xFFE9B93A)
-    val light = Color(0xFFFFE08A)
-    val r = size.height * 0.095f
-    val c = Offset(size.width * 0.40f, size.height * 0.30f)
-    rays(c, r * 1.2f, r * 1.75f, 14, gold, r * 0.2f)
-    drawCircle(Brush.radialGradient(listOf(light, gold), c, r), r, c)
-    drawCircle(Color(0xFF3A2A06), r * 0.78f, c)
-    drawCircle(gold, r * 0.78f, c, style = Stroke(r * 0.1f))
-    drawLine(light, c, Offset(c.x, c.y - r * 0.55f), r * 0.1f, StrokeCap.Round)
-    drawLine(light, c, Offset(c.x + r * 0.4f, c.y + r * 0.15f), r * 0.1f, StrokeCap.Round)
-    // open book
-    val bx = size.width * 0.58f
-    val by = size.height * 0.31f
-    val bw = size.height * 0.16f
-    val bh = size.height * 0.15f
-    val left = Path().apply {
-        moveTo(bx, by - bh * 0.4f); lineTo(bx - bw, by - bh * 0.6f); lineTo(bx - bw, by + bh * 0.5f); lineTo(bx, by + bh * 0.7f); close()
-    }
-    val right = Path().apply {
-        moveTo(bx, by - bh * 0.4f); lineTo(bx + bw, by - bh * 0.6f); lineTo(bx + bw, by + bh * 0.5f); lineTo(bx, by + bh * 0.7f); close()
-    }
-    drawPath(left, Brush.linearGradient(listOf(light, gold)))
-    drawPath(right, Brush.linearGradient(listOf(gold, light)))
-    drawLine(Color(0xFF3A2A06), Offset(bx, by - bh * 0.4f), Offset(bx, by + bh * 0.7f), size.height * 0.012f)
-    for (i in 1..3) {
-        val y = by - bh * 0.3f + i * bh * 0.22f
-        drawLine(Color(0xFF3A2A06).copy(alpha = 0.7f), Offset(bx - bw * 0.85f, y - bh * 0.1f), Offset(bx - bw * 0.15f, y), size.height * 0.008f)
-        drawLine(Color(0xFF3A2A06).copy(alpha = 0.7f), Offset(bx + bw * 0.15f, y), Offset(bx + bw * 0.85f, y - bh * 0.1f), size.height * 0.008f)
-    }
-}
 
-private fun frameColors(kind: DetailsTabKind): Pair<Color, Color> = when (kind) {
-    DetailsTabKind.DAY -> Color(0xFF2F7BFF) to Color(0xFF8DB8FF)
-    DetailsTabKind.ASTRO -> Color(0xFF9B4DFF) to Color(0xFFD2A8FF)
-    DetailsTabKind.SOLAR -> Color(0xFFD4A017) to Color(0xFFFFE08A)
-}
-
-/** Soft decorative background: light glow (day), galaxies (astro), mandala arcs (solar). */
-private fun DrawScope.drawBackdrop(kind: DetailsTabKind) {
-    val dp = density
-    when (kind) {
-        DetailsTabKind.DAY -> {
-            drawCircle(
-                Brush.radialGradient(listOf(Color(0xFF3D8BFF).copy(alpha = 0.35f), Color.Transparent), Offset(size.width / 2, size.height * 0.35f), size.width * 0.55f),
-                size.width * 0.55f, Offset(size.width / 2, size.height * 0.35f)
-            )
-            // glowing tech lines on both sides
-            listOf(0.18f, 0.82f).forEach { fx ->
-                drawLine(Color(0xFF6FA8FF).copy(alpha = 0.55f), Offset(size.width * fx, size.height * 0.18f), Offset(size.width * fx, size.height * 0.62f), 1.2f * dp, StrokeCap.Round)
-            }
-        }
-        DetailsTabKind.ASTRO -> {
-            // two small galaxies
-            listOf(Offset(size.width * 0.22f, size.height * 0.30f) to 0.07f, Offset(size.width * 0.80f, size.height * 0.42f) to 0.06f).forEach { (c, k) ->
-                val rr = size.width * k
-                drawOval(Color(0xFFFFC9A0).copy(alpha = 0.55f), Offset(c.x - rr, c.y - rr * 0.38f), Size(rr * 2, rr * 0.76f))
-                drawOval(Color(0xFF8F6BFF).copy(alpha = 0.35f), Offset(c.x - rr * 1.5f, c.y - rr * 0.6f), Size(rr * 3, rr * 1.2f), style = Stroke(1f * dp))
-                drawCircle(Color.White.copy(alpha = 0.85f), 1.4f * dp, c)
-            }
-        }
-        DetailsTabKind.SOLAR -> {
-            val c = Offset(size.width / 2, size.height * 0.5f)
-            listOf(0.26f, 0.38f, 0.5f).forEach { k ->
-                drawCircle(Color(0xFFD4A017).copy(alpha = 0.16f), size.height * k, c, style = Stroke(1f * dp))
-            }
-            // faint constellation
-            val pts = listOf(Offset(0.12f, 0.28f), Offset(0.2f, 0.18f), Offset(0.27f, 0.30f), Offset(0.34f, 0.2f))
-            pts.zipWithNext().forEach { (a, b) ->
-                drawLine(Color(0xFFFFE08A).copy(alpha = 0.35f), Offset(size.width * a.x, size.height * a.y), Offset(size.width * b.x, size.height * b.y), 0.8f * dp)
-            }
-            pts.forEach { drawCircle(Color(0xFFFFE08A).copy(alpha = 0.7f), 1.3f * dp, Offset(size.width * it.x, size.height * it.y)) }
-        }
+private fun DrawScope.drawCalendarIcon() {
+    val h = size.height
+    val w = h * 0.30f
+    val bh = h * 0.27f
+    val left = size.width * 0.5f - w / 2
+    val top = h * 0.17f
+    val accent = Color(0xFF2F7BFF)
+    drawCircle(Color(0xFF3D8BFF).copy(alpha = 0.25f), w * 0.95f, Offset(size.width / 2, top + bh / 2))
+    // body
+    drawRoundRect(Color(0xFFF2F6FF), Offset(left, top), Size(w, bh), CornerRadius(h * 0.035f))
+    // header band
+    drawRoundRect(accent, Offset(left, top), Size(w, bh * 0.30f), CornerRadius(h * 0.035f))
+    drawRect(accent, Offset(left, top + bh * 0.15f), Size(w, bh * 0.15f))
+    // binding rings
+    listOf(0.28f, 0.72f).forEach { fx ->
+        drawRoundRect(Color(0xFFC9D6F2), Offset(left + w * fx - h * 0.012f, top - h * 0.04f), Size(h * 0.024f, h * 0.075f), CornerRadius(h * 0.012f))
     }
-}
-
-/** Curly ornament in each corner of the inner frame. */
-private fun DrawScope.drawCornerFlourishes(kind: DetailsTabKind) {
-    val (main, soft) = frameColors(kind)
-    val dp = density
-    val inset = 8 * dp
-    val r = 9 * dp
-    val corners = listOf(
-        Triple(Offset(inset, inset), 0f, 1f to 1f), Triple(Offset(size.width - inset, inset), 90f, -1f to 1f),
-        Triple(Offset(inset, size.height - inset), 270f, 1f to -1f), Triple(Offset(size.width - inset, size.height - inset), 180f, -1f to -1f)
-    )
-    corners.forEach { (p, startAngle, dir) ->
-        val cx = p.x + dir.first * r * 0.9f
-        val cy = p.y + dir.second * r * 0.9f
-        drawArc(
-            soft.copy(alpha = 0.9f), startAngle, 90f, false,
-            Offset(cx - r, cy - r), Size(r * 2, r * 2), style = Stroke(1.3f * dp, cap = StrokeCap.Round)
+    // day grid
+    val cols = 4
+    val rows = 2
+    val gx = left + w * 0.12f
+    val gy = top + bh * 0.42f
+    val cw = (w * 0.76f) / cols
+    val ch = (bh * 0.46f) / rows
+    for (r in 0 until rows) for (cI in 0 until cols) {
+        val hi = (r == 1 && cI == 2)
+        drawRoundRect(
+            if (hi) Color(0xFFFF5A5A) else Color(0xFF5B73A8).copy(alpha = 0.75f),
+            Offset(gx + cI * cw + cw * 0.15f, gy + r * ch + ch * 0.15f), Size(cw * 0.7f, ch * 0.62f), CornerRadius(h * 0.01f)
         )
-        drawCircle(main, 1.6f * dp, Offset(p.x + dir.first * r * 1.9f, p.y + dir.second * r * 1.9f))
     }
+}
+
+private fun DrawScope.drawTelescope() {
+    val h = size.height
+    val c = Offset(size.width * 0.5f, h * 0.29f)
+    val metal = Brush.linearGradient(listOf(Color(0xFFF1EAFB), Color(0xFFA990D8)), Offset(c.x - h * 0.2f, c.y), Offset(c.x + h * 0.2f, c.y))
+    drawCircle(Color(0xFFB98CFF).copy(alpha = 0.22f), h * 0.22f, c)
+    // tripod
+    val leg = Color(0xFFCDB8F2)
+    val base = Offset(c.x, c.y + h * 0.03f)
+    drawLine(leg, base, Offset(c.x - h * 0.11f, h * 0.60f), h * 0.018f, StrokeCap.Round)
+    drawLine(leg, base, Offset(c.x + h * 0.11f, h * 0.60f), h * 0.018f, StrokeCap.Round)
+    drawLine(leg, base, Offset(c.x, h * 0.60f), h * 0.018f, StrokeCap.Round)
+    // tube (tilted up to the right)
+    rotate(-28f, c) {
+        val tl = h * 0.36f
+        val th = h * 0.085f
+        // main tube
+        drawRoundRect(metal, Offset(c.x - tl * 0.45f, c.y - th / 2), Size(tl * 0.8f, th), CornerRadius(th * 0.3f))
+        // objective flare
+        drawRoundRect(Color(0xFFE6DDF7), Offset(c.x + tl * 0.30f, c.y - th * 0.75f), Size(tl * 0.28f, th * 1.5f), CornerRadius(th * 0.25f))
+        drawOval(Color(0xFF6C4BC4), Offset(c.x + tl * 0.50f, c.y - th * 0.6f), Size(th * 0.45f, th * 1.2f))
+        // eyepiece
+        drawRoundRect(Color(0xFFBFA9E6), Offset(c.x - tl * 0.62f, c.y - th * 0.28f), Size(tl * 0.18f, th * 0.56f), CornerRadius(th * 0.15f))
+        // bands
+        drawRect(Color(0xFF7D5BD0), Offset(c.x - tl * 0.1f, c.y - th / 2), Size(th * 0.25f, th))
+    }
+    // sparkle
+    val sp = Offset(c.x + h * 0.21f, c.y - h * 0.17f)
+    drawLine(Color.White, Offset(sp.x - h * 0.03f, sp.y), Offset(sp.x + h * 0.03f, sp.y), h * 0.008f, StrokeCap.Round)
+    drawLine(Color.White, Offset(sp.x, sp.y - h * 0.03f), Offset(sp.x, sp.y + h * 0.03f), h * 0.008f, StrokeCap.Round)
 }
