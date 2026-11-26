@@ -91,8 +91,6 @@ private fun DrawScope.drawFrame(kind: DetailsTabKind) {
         Offset(inset + 4 * dp, size.height - inset - 4 * dp), Offset(size.width - inset - 4 * dp, size.height - inset - 4 * dp)
     )
     pts.forEach { drawCircle(soft, 1.8f * dp, it) }
-    // top notch (small pill) for a "tab" feel
-    drawRoundRect(main.copy(alpha = 0.8f), Offset(size.width / 2 - 14 * dp, 0f), Size(28 * dp, 3.5f * dp), CornerRadius(2 * dp))
 }
 
 private fun DrawScope.rays(center: Offset, r1: Float, r2: Float, count: Int, color: Color, width: Float) {
