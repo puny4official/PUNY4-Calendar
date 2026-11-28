@@ -25,8 +25,15 @@ object IslamicCalendar {
      */
     const val IRAN_OFFSET_DAYS = 1L
 
+    /**
+     * Before 1 Mehr 1405 the official calendar runs 2 days behind the Mehr-1405 alignment
+     * (official: 25 Shawwal 1447 = 25 Farvardin 1405, i.e. 1 Shawwal = 1 Farvardin).
+     */
+    private val OFFSET_SWITCH_JDN: Long by lazy { JalaliCalendar.jalaliToJdn(1405, 7, 1) }
+
     fun jdnToIslamic(jdn: Long): IslamicDate {
-        val l = jdn + IRAN_OFFSET_DAYS - 1948440L + 10632L
+        val off = if (jdn < OFFSET_SWITCH_JDN) IRAN_OFFSET_DAYS - 2L else IRAN_OFFSET_DAYS
+        val l = jdn + off - 1948440L + 10632L
         val n = floor((l - 1.0) / 10631.0).toLong()
         val l2 = l - 10631L * n + 354L
         val j = (floor((10985.0 - l2) / 5316.0) * floor((50.0 * l2) / 17719.0) +
