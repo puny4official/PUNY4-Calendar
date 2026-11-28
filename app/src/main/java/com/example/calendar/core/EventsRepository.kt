@@ -264,7 +264,8 @@ object EventsRepository {
         }
 
         // 2. Islamic Lunar events (Religious and Official holidays in Iran)
-        val islamicEvents = ISLAMIC_EVENTS[Pair(islamic.month, islamic.day)]
+        // Safar has only 29 days in the tabular calendar: the martyrdom of Imam Reza (end of Safar) falls on 29 Safar
+        val islamicEvents = ISLAMIC_EVENTS[Pair(islamic.month, if (islamic.month == 2 && islamic.day == 29) 30 else islamic.day)]
         if (islamicEvents != null) {
             list.addAll(islamicEvents)
         }
