@@ -31,8 +31,15 @@ object IslamicCalendar {
      */
     private val OFFSET_SWITCH_JDN: Long by lazy { JalaliCalendar.jalaliToJdn(1405, 7, 1) }
 
+    /** From 28 Ordibehesht 1405 (1 Dhu al-Hijja; 6 Khordad = Eid al-Adha) the lag is 1 day. */
+    private val OFFSET_SWITCH_1_JDN: Long by lazy { JalaliCalendar.jalaliToJdn(1405, 2, 28) }
+
     fun jdnToIslamic(jdn: Long): IslamicDate {
-        val off = if (jdn < OFFSET_SWITCH_JDN) IRAN_OFFSET_DAYS - 2L else IRAN_OFFSET_DAYS
+        val off = when {
+            jdn < OFFSET_SWITCH_1_JDN -> IRAN_OFFSET_DAYS - 2L
+            jdn < OFFSET_SWITCH_JDN -> IRAN_OFFSET_DAYS - 1L
+            else -> IRAN_OFFSET_DAYS
+        }
         val l = jdn + off - 1948440L + 10632L
         val n = floor((l - 1.0) / 10631.0).toLong()
         val l2 = l - 10631L * n + 354L
