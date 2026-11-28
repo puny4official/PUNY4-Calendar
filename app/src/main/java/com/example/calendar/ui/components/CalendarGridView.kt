@@ -868,8 +868,8 @@ private fun CalendarTypeChip(
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .height(30.dp)
-            .clip(RoundedCornerShape(8.dp))
+            .height(40.dp)
+            .clip(RoundedCornerShape(10.dp))
             .background(
                 if (isSelected) HolidayPurple else MaterialTheme.colorScheme.surface,
                 RoundedCornerShape(8.dp)
@@ -884,7 +884,7 @@ private fun CalendarTypeChip(
     ) {
         Text(
             text = label,
-            fontSize = 12.5.sp,
+            fontSize = 15.sp,
             fontWeight = FontWeight.Bold,
             color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
