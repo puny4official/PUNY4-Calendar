@@ -127,6 +127,14 @@ fun CalendarGridView(
     val isFa = (appLanguage == AppLanguage.PERSIAN)
     var showDatePickerDialog by remember { mutableStateOf(false) }
     var showMonthlyPredictionsDialog by remember { mutableStateOf(false) }
+    var handledForecastRequest by remember { mutableStateOf(com.example.calendar.core.ForecastTrigger.request) }
+    val forecastRequest = com.example.calendar.core.ForecastTrigger.request
+    LaunchedEffect(forecastRequest) {
+        if (forecastRequest != handledForecastRequest) {
+            handledForecastRequest = forecastRequest
+            showMonthlyPredictionsDialog = true
+        }
+    }
     var showMoreCalendars by remember { mutableStateOf(false) }
 
     val monthlyPrediction = remember(calendarType, currentYear, currentMonth) {
@@ -285,42 +293,6 @@ Box(
                                 )
                             }
 
-                            // Monthly Predictions compact chip
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = if (showMonthlyPredictionsDialog) HolidayPurple else HolidayPurpleContainer.copy(alpha = 0.5f),
-                                border = BorderStroke(
-                                    1.dp,
-                                    if (showMonthlyPredictionsDialog) HolidayPurple else HolidayPurple.copy(alpha = 0.4f)
-                                ),
-                                modifier = Modifier
-                                    .weight(1.15f)
-                                    .height(30.dp)
-                                    .clickable {
-                                            showMonthlyPredictionsDialog = true
-                                            showMoreCalendars = false // close the drawer
-                                        }
-                                    .testTag("monthly_predictions_chip")
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(horizontal = 2.dp)
-                                ) {
-                                    Text(text = "🔮", fontSize = 11.sp)
-                                    Spacer(modifier = Modifier.width(3.dp))
-                                    Text(
-                                        text = if (isFa) "پیشگویی" else "Forecast",
-                                        fontSize = 12.5.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (showMonthlyPredictionsDialog) Color.White else OnHolidayPurpleContainer,
-                                        maxLines = 1,
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-                            }
                         }
                     }
                 }

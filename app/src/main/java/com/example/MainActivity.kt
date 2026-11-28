@@ -694,6 +694,13 @@ class MainActivity : ComponentActivity() {
                                         actions = {
                                             if (selectedTab == MainTab.CALENDAR) {
                                                 IconButton(
+                                                    onClick = { com.example.calendar.core.ForecastTrigger.fire() },
+                                                    modifier = Modifier.testTag("top_bar_forecast_button")
+                                                ) {
+                                                    Text(text = "🔮", fontSize = 24.sp)
+                                                }
+
+                                                IconButton(
                                                     onClick = { showEventSearchDialog = true },
                                                     modifier = Modifier.testTag("top_bar_search_events_button")
                                                 ) {
