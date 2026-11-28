@@ -268,65 +268,20 @@ Box(
                     CalendarType.IMPERIAL -> if (isFa) "باستان" else "Ancient"
                 }
 
-                // The chosen calendar always sits in the first slot; the other two slide out from the drawer
-                CalendarTypeChip(
-                    label = typeLabel(calendarType),
-                    isSelected = true,
-                    testTag = "calendar_chip_${calendarType.name.lowercase()}",
-                    modifier = Modifier.weight(1f),
-                    onClick = { showMoreCalendars = false }
-                )
-
-                // The ( › ) button: points toward the hidden chips, flips when the drawer is open.
-                // It gets a purple outline while the active calendar is hidden inside the drawer.
-                val hiddenTypeActive = false // the active calendar is always visible in the first slot
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(30.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
-                        .border(
-                            1.dp,
-                            if (hiddenTypeActive) HolidayPurple else MaterialTheme.colorScheme.outlineVariant,
-                            RoundedCornerShape(8.dp)
-                        )
-                        .clickable { showMoreCalendars = !showMoreCalendars }
-                        .testTag("calendar_more_types_button")
-                ) {
-                    Icon(
-                        imageVector = if (showMoreCalendars) {
-                            Icons.AutoMirrored.Filled.KeyboardArrowLeft
-                        } else {
-                            Icons.AutoMirrored.Filled.KeyboardArrowRight
-                        },
-                        contentDescription = if (isFa) "تقویم‌های بیشتر" else "More calendars",
-                        tint = if (hiddenTypeActive) HolidayPurple else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-
                 // Fixed-size slot: keeps the layout stable and pushes the star button to the end
-                Box(modifier = Modifier.weight(3.15f)) {
-                    DrawerSlot(
-                        visible = showMoreCalendars,
-                        enter = expandHorizontally(tween(220)) + fadeIn(tween(220)),
-                        exit = shrinkHorizontally(tween(180)) + fadeOut(tween(180))
-                    ) {
+                Box(modifier = Modifier.weight(1f)) {
+                    run {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            listOf(CalendarType.SOLAR_HIJRI, CalendarType.GREGORIAN, CalendarType.LUNAR_HIJRI, CalendarType.IMPERIAL).filter { it != calendarType }.forEach { type ->
+                            listOf(CalendarType.SOLAR_HIJRI, CalendarType.IMPERIAL, CalendarType.GREGORIAN, CalendarType.LUNAR_HIJRI).forEach { type ->
                                 CalendarTypeChip(
                                     label = typeLabel(type),
-                                    isSelected = false,
+                                    isSelected = type == calendarType,
                                     testTag = "calendar_chip_${type.name.lowercase()}",
                                     modifier = Modifier.weight(1f),
-                                    onClick = {
-                                        onCalendarTypeChanged(type)
-                                        showMoreCalendars = false // close the drawer after choosing
-                                    }
+                                    onClick = { onCalendarTypeChanged(type) }
                                 )
                             }
 
